@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useTheme, cssVar } from "./ThemeContext";
+import ThemeToggle from "./ThemeToggle";
 
 /*
  *  ╔══════════════════════════════════════════════════════════════════════╗
  *  ║  AEROLAB — CFD Wind Tunnel Dashboard                               ║
- *  ║  Combines Standard & Pro simulators in a unified research UI       ║
+ *  ║  Fixed, themed, and performance-optimized                          ║
  *  ╚══════════════════════════════════════════════════════════════════════╝
  */
 
@@ -72,29 +74,52 @@ function parseSVGToPolygon(svgText, numPoints = 120) {
   } catch { return null; }
 }
 
-// ─── DXF Parser ────────────────────────────────────────────────────────────────
+// ─── DXF Parser (improved robustness) ──────────────────────────────────────────
 function parseDXFToPolygon(dxfText) {
   const lines = dxfText.split(/\r?\n/).map(l => l.trim());
   const pts = [];
   let i = 0;
+
+  // Look for LWPOLYLINE entities first
   while (i < lines.length) {
     if (lines[i] === "LWPOLYLINE") {
       i++;
-      while (i < lines.length && lines[i] !== "ENDSEC") {
-        if (lines[i] === "10") { const x = parseFloat(lines[i + 1]); const y = parseFloat(lines[i + 3]); if (!isNaN(x) && !isNaN(y)) pts.push([x, y]); i += 4; }
-        else i++;
+      let currentX = null;
+      while (i < lines.length && lines[i] !== "0") {
+        const code = parseInt(lines[i], 10);
+        if (code === 10 && i + 1 < lines.length) {
+          currentX = parseFloat(lines[i + 1]);
+          i += 2;
+        } else if (code === 20 && i + 1 < lines.length && currentX !== null) {
+          const y = parseFloat(lines[i + 1]);
+          if (!isNaN(currentX) && !isNaN(y)) pts.push([currentX, y]);
+          currentX = null;
+          i += 2;
+        } else {
+          i++;
+        }
       }
       if (pts.length > 2) return normalizePolygon(pts);
     }
     i++;
   }
+
+  // Fallback: collect all 10/20 pairs
   i = 0;
-  while (i < lines.length - 1) {
-    if (lines[i] === "10") {
-      const x = parseFloat(lines[i + 1]), y = parseFloat(lines[i + 3]);
-      if (!isNaN(x) && !isNaN(y)) pts.push([x, y]);
+  let pendingX = null;
+  while (i < lines.length) {
+    const code = parseInt(lines[i], 10);
+    if (code === 10 && i + 1 < lines.length) {
+      pendingX = parseFloat(lines[i + 1]);
+      i += 2;
+    } else if (code === 20 && i + 1 < lines.length && pendingX !== null) {
+      const y = parseFloat(lines[i + 1]);
+      if (!isNaN(pendingX) && !isNaN(y)) pts.push([pendingX, y]);
+      pendingX = null;
+      i += 2;
+    } else {
+      i++;
     }
-    i++;
   }
   return pts.length > 2 ? normalizePolygon(dedupPoints(pts)) : null;
 }
@@ -194,6 +219,10 @@ class FlowSolver {
     this.vy = new Float32Array(this.n);
     this.p = new Float32Array(this.n).fill(1);
     this.solid = new Uint8Array(this.n);
+    // Pre-allocate scratch buffers to avoid GC
+    this._nvx = new Float32Array(this.n);
+    this._nvy = new Float32Array(this.n);
+    this._np = new Float32Array(this.n);
   }
   idx(i, j) { return j * COLS + i; }
   buildSolid(transformedPoly) {
@@ -205,17 +234,18 @@ class FlowSolver {
           this.solid[this.idx(i, j)] = 1;
   }
   step(inletVx, turb, nu) {
-    const nvx = new Float32Array(this.n), nvy = new Float32Array(this.n), np = new Float32Array(this.n);
+    const nvx = this._nvx, nvy = this._nvy, np = this._np;
+    nvx.fill(0); nvy.fill(0); np.fill(0);
     const dt = 0.38;
     for (let j = 1; j < ROWS - 1; j++) {
       for (let i = 1; i < COLS - 1; i++) {
         const k = this.idx(i, j);
         if (this.solid[k]) continue;
         const kl = k - 1, kr = k + 1, kd = k - COLS, ku = k + COLS;
-        const dvxdx = (this.vx[kr] - this.vx[kl]) / 2;
-        const dvxdy = (this.vx[ku] - this.vx[kd]) / 2;
-        const dvydx = (this.vy[kr] - this.vy[kl]) / 2;
-        const dvydy = (this.vy[ku] - this.vy[kd]) / 2;
+        const dvxdx = (this.vx[kr] - this.vx[kl]) * 0.5;
+        const dvxdy = (this.vx[ku] - this.vx[kd]) * 0.5;
+        const dvydx = (this.vy[kr] - this.vy[kl]) * 0.5;
+        const dvydy = (this.vy[ku] - this.vy[kd]) * 0.5;
         const lapVx = this.vx[kl] + this.vx[kr] + this.vx[kd] + this.vx[ku] - 4 * this.vx[k];
         const lapVy = this.vy[kl] + this.vy[kr] + this.vy[kd] + this.vy[ku] - 4 * this.vy[k];
         const t = (Math.random() - 0.5) * turb * 0.035;
@@ -243,26 +273,44 @@ class FlowSolver {
   }
 }
 
-// ─── Particle ──────────────────────────────────────────────────────────────────
+// ─── Particle (with pre-allocated trail) ───────────────────────────────────────
 class Particle {
-  constructor() { this.reset(); }
+  constructor() {
+    this.trail = new Array(20);
+    this.trailLen = 0;
+    this.trailIdx = 0;
+    this.reset();
+  }
   reset() {
     this.x = Math.random() * 4;
     this.y = 0.5 + Math.random() * (ROWS - 1.5);
-    this.age = 0; this.life = 0.55 + Math.random() * 0.45;
-    this.trail = [];
+    this.age = 0;
+    this.life = 0.55 + Math.random() * 0.45;
+    this.trailLen = 0;
+    this.trailIdx = 0;
   }
   update(solver) {
     const ci = this.x | 0, cj = this.y | 0;
     if (ci < 0 || ci >= COLS || cj < 0 || cj >= ROWS) { this.reset(); return; }
     const k = solver.idx(ci, cj);
     if (solver.solid[k]) { this.reset(); return; }
-    this.trail.push({ x: this.x * DX, y: this.y * DY });
-    if (this.trail.length > 20) this.trail.shift();
+    // Ring buffer trail
+    const idx = this.trailIdx % 20;
+    this.trail[idx] = { x: this.x * DX, y: this.y * DY };
+    this.trailIdx++;
+    if (this.trailLen < 20) this.trailLen++;
     this.x += solver.vx[k] * 1.1;
     this.y += solver.vy[k] * 1.1;
     this.age += 0.016;
     if (this.age >= this.life || this.x >= COLS) this.reset();
+  }
+  getTrail() {
+    const out = [];
+    const start = this.trailIdx - this.trailLen;
+    for (let i = start; i < this.trailIdx; i++) {
+      out.push(this.trail[((i % 20) + 20) % 20]);
+    }
+    return out;
   }
 }
 
@@ -276,8 +324,9 @@ const IconWind = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="non
 const IconChart = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>;
 const IconGear = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
 const IconLayers = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
+const IconKeyboard = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>;
 
-// ─── History recorder (stores last N stats snapshots) ──────────────────────────
+// ─── History recorder ──────────────────────────────────────────────────────────
 function useHistory(maxLen = 100) {
   const ref = useRef([]);
   const push = useCallback((entry) => {
@@ -287,14 +336,15 @@ function useHistory(maxLen = 100) {
   return [ref, push];
 }
 
-
 // ═══════════════════════════════════════════════════════════════════════════════
 //   MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function CFDLab() {
+  const { isDark, mode } = useTheme();
+
   // ── Navigation ──
-  const [activeView, setActiveView] = useState("tunnel"); // tunnel | analysis | about
+  const [activeView, setActiveView] = useState("tunnel");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // ── Simulation state ──
@@ -307,6 +357,8 @@ export default function CFDLab() {
   const frameRef = useRef(0);
   const isDrawingRef = useRef(false);
   const drawPointsRef = useRef([]);
+  // FIX: pre-allocate ImageData to reuse across frames
+  const imageDataRef = useRef(null);
 
   // ── UI state ──
   const [tab, setTab] = useState("preset");
@@ -318,6 +370,8 @@ export default function CFDLab() {
   const [error, setError] = useState("");
   const [simplify, setSimplify] = useState(0);
   const [stats, setStats] = useState({ cl: 0, cd: 0, re: 0, maxV: 0 });
+  // FIX: track frame count in state for display (throttled)
+  const [displayFrame, setDisplayFrame] = useState(0);
 
   // Shape transform
   const [cx, setCx] = useState(COLS * 0.4);
@@ -335,7 +389,7 @@ export default function CFDLab() {
   const [historyRef, pushHistory] = useHistory(200);
   const [historySnap, setHistorySnap] = useState([]);
 
-  // Refs for render loop
+  // Refs for render loop (to avoid stale closures)
   const runningRef = useRef(false);
   const viewRef = useRef("velocity");
   const polyRef = useRef(normPoly);
@@ -344,14 +398,11 @@ export default function CFDLab() {
   const aoaRef = useRef(aoa);
   const simplifyRef = useRef(0);
   const velRef = useRef(1.4), turbRef = useRef(0.3), nuRef = useRef(0.18);
+  const themeRef = useRef(isDark);
 
+  useEffect(() => { themeRef.current = isDark; }, [isDark]);
   useEffect(() => { runningRef.current = running; }, [running]);
   useEffect(() => { viewRef.current = viewMode; }, [viewMode]);
-  useEffect(() => { aoaRef.current = aoa; rebuildSolid(); }, [aoa]);
-  useEffect(() => { cxRef.current = cx; rebuildSolid(); }, [cx]);
-  useEffect(() => { cyRef.current = cy; rebuildSolid(); }, [cy]);
-  useEffect(() => { sxRef.current = scaleX; rebuildSolid(); }, [scaleX]);
-  useEffect(() => { syRef.current = scaleY; rebuildSolid(); }, [scaleY]);
   useEffect(() => { velRef.current = velocity; }, [velocity]);
   useEffect(() => { turbRef.current = turbulence; }, [turbulence]);
   useEffect(() => { nuRef.current = viscosity; }, [viscosity]);
@@ -364,44 +415,85 @@ export default function CFDLab() {
     solverRef.current.buildSolid(tpoly);
   }, []);
 
+  // FIX: unified effect for transform params — single rebuild instead of 5 separate effects
+  useEffect(() => {
+    aoaRef.current = aoa;
+    cxRef.current = cx;
+    cyRef.current = cy;
+    sxRef.current = scaleX;
+    syRef.current = scaleY;
+    rebuildSolid();
+  }, [aoa, cx, cy, scaleX, scaleY, rebuildSolid]);
+
   useEffect(() => {
     polyRef.current = normPoly;
     simplifyRef.current = simplify;
     rebuildSolid();
   }, [normPoly, simplify, rebuildSolid]);
 
+  // ── Keyboard shortcuts ──
+  useEffect(() => {
+    const handler = (e) => {
+      // Don't capture if user is in an input
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      switch (e.code) {
+        case "Space":
+          e.preventDefault();
+          setRunning(r => !r);
+          break;
+        case "KeyR":
+          solverRef.current = new FlowSolver();
+          rebuildSolid();
+          break;
+        case "Digit1": setViewMode("velocity"); break;
+        case "Digit2": setViewMode("pressure"); break;
+        case "Digit3": setViewMode("streamlines"); break;
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [rebuildSolid]);
+
   // ── Render loop ──
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    // FIX: pre-allocate ImageData once
+    imageDataRef.current = ctx.createImageData(SIM_W, SIM_H);
 
     const loop = () => {
       rafRef.current = requestAnimationFrame(loop);
       const solver = solverRef.current;
       const inV = velRef.current;
-      if (runningRef.current) solver.step(inV, turbRef.current, nuRef.current);
+      const isRunning = runningRef.current;
+      if (isRunning) solver.step(inV, turbRef.current, nuRef.current);
       frameRef.current++;
 
-      ctx.fillStyle = "#030a12";
+      const dark = themeRef.current;
+      const bgR = dark ? 3 : 230, bgG = dark ? 10 : 238, bgB = dark ? 18 : 244;
+      const solidR = dark ? 50 : 160, solidG = dark ? 62 : 175, solidB = dark ? 78 : 195;
+
+      ctx.fillStyle = dark ? "#030a12" : "#e6eef4";
       ctx.fillRect(0, 0, SIM_W, SIM_H);
 
       const vm = viewRef.current;
-      const img = ctx.createImageData(SIM_W, SIM_H);
+      const img = imageDataRef.current;
       const buf = img.data;
 
       for (let j = 0; j < ROWS; j++) {
         for (let i = 0; i < COLS; i++) {
           const k = solver.idx(i, j);
-          let r = 3, g = 10, b = 18;
-          if (solver.solid[k]) { r = 50; g = 62; b = 78; }
-          else if (vm !== "streamlines") {
+          let r = bgR, g = bgG, b = bgB;
+          if (solver.solid[k]) {
+            r = solidR; g = solidG; b = solidB;
+          } else if (vm !== "streamlines") {
             const vx = solver.vx[k], vy = solver.vy[k];
             const spd = Math.sqrt(vx * vx + vy * vy);
             let col;
             if (vm === "velocity") {
               const t = Math.min(spd / (inV * 2.2), 1);
-              col = hslRGB((1 - t) * 0.667, 1, 0.35 + t * 0.35);
+              col = hslRGB((1 - t) * 0.667, 1, dark ? 0.35 + t * 0.35 : 0.3 + t * 0.4);
             } else {
               const cp = 1 - (vx * vx + vy * vy) / (inV * inV + 1e-4);
               const t = Math.max(0, Math.min(1, (cp + 1.5) / 3));
@@ -425,19 +517,25 @@ export default function CFDLab() {
       if (vm === "streamlines" || vm === "velocity") {
         ctx.lineCap = "round";
         particlesRef.current.forEach(p => {
-          if (p.trail.length < 2) return;
+          const trail = p.getTrail();
+          if (trail.length < 2) return;
           ctx.beginPath();
-          p.trail.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
+          trail.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
           const a = (1 - p.age / p.life) * (vm === "streamlines" ? 0.75 : 0.4);
-          ctx.strokeStyle = vm === "streamlines" ? `rgba(80,210,255,${a})` : `rgba(255,255,255,${a})`;
-          ctx.lineWidth = vm === "streamlines" ? 1.3 : 0.7;
+          if (vm === "streamlines") {
+            ctx.strokeStyle = dark ? `rgba(80,210,255,${a})` : `rgba(10,100,180,${a})`;
+            ctx.lineWidth = 1.3;
+          } else {
+            ctx.strokeStyle = dark ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a * 0.6})`;
+            ctx.lineWidth = 0.7;
+          }
           ctx.stroke();
         });
       }
 
       // Velocity vectors
       if (vm === "velocity") {
-        ctx.strokeStyle = "rgba(255,255,255,0.14)";
+        ctx.strokeStyle = dark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.1)";
         ctx.lineWidth = 0.7;
         for (let j = 2; j < ROWS - 2; j += 4)
           for (let i = 2; i < COLS - 2; i += 5) {
@@ -454,21 +552,22 @@ export default function CFDLab() {
       if (raw) {
         const simp = simplifyRef.current > 0 ? simplifyPolygon(raw, simplifyRef.current * 0.005) : raw;
         const tpoly = transformPolygon(simp, cxRef.current, cyRef.current, sxRef.current, syRef.current, aoaRef.current);
+        const outlineColor = dark ? "#40e8ff" : "#0a7ea4";
         ctx.beginPath();
         tpoly.forEach(([gx, gy], i) => {
           const px = gx * DX, py = gy * DY;
           i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
         });
         ctx.closePath();
-        ctx.strokeStyle = "#40e8ff";
+        ctx.strokeStyle = outlineColor;
         ctx.lineWidth = 1.5;
-        ctx.shadowColor = "#40e8ff";
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = outlineColor;
+        ctx.shadowBlur = dark ? 10 : 4;
         ctx.stroke();
         ctx.shadowBlur = 0;
 
         if (aoaRef.current !== 0) {
-          ctx.strokeStyle = "rgba(255,200,60,0.35)";
+          ctx.strokeStyle = dark ? "rgba(255,200,60,0.35)" : "rgba(180,120,0,0.3)";
           ctx.setLineDash([5, 5]);
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -479,8 +578,8 @@ export default function CFDLab() {
         }
       }
 
-      // Compute stats
-      if (runningRef.current && frameRef.current % 10 === 0) {
+      // Compute stats (throttled)
+      if (isRunning && frameRef.current % 10 === 0) {
         let maxV = 0, totalFy = 0, totalFx = 0;
         for (let k = 0; k < solver.n; k++) {
           if (!solver.solid[k]) {
@@ -501,6 +600,11 @@ export default function CFDLab() {
         pushHistory(newStats);
       }
 
+      // FIX: Update displayed frame count (throttled to reduce re-renders)
+      if (frameRef.current % 30 === 0) {
+        setDisplayFrame(frameRef.current);
+      }
+
       // Mini canvas (for analysis view)
       const miniC = miniCanvasRef.current;
       if (miniC) {
@@ -510,7 +614,7 @@ export default function CFDLab() {
     };
     rafRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafRef.current);
-  }, []);
+  }, [pushHistory]);
 
   // ── File handlers ──
   const handleSVG = e => {
@@ -519,7 +623,7 @@ export default function CFDLab() {
     const reader = new FileReader();
     reader.onload = ev => {
       const poly = parseSVGToPolygon(ev.target.result);
-      if (!poly) { setError("Could not parse SVG"); setShapeReady(true); return; }
+      if (!poly) { setError("Could not parse SVG — ensure it contains a path, polygon, rect, circle, or ellipse element."); setShapeReady(true); return; }
       setNormPoly(poly); setShapeReady(true);
     };
     reader.readAsText(file);
@@ -531,7 +635,7 @@ export default function CFDLab() {
     const reader = new FileReader();
     reader.onload = ev => {
       const poly = parseDXFToPolygon(ev.target.result);
-      if (!poly) { setError("Could not parse DXF"); setShapeReady(true); return; }
+      if (!poly) { setError("Could not parse DXF — only LWPOLYLINE and point-based entities are supported."); setShapeReady(true); return; }
       setNormPoly(poly); setShapeReady(true);
     };
     reader.readAsText(file);
@@ -541,6 +645,7 @@ export default function CFDLab() {
     const file = e.target.files[0]; if (!file) return;
     setError(""); setShapeReady(false);
     const imgEl = new Image();
+    const blobUrl = URL.createObjectURL(file); // FIX: track for cleanup
     imgEl.onload = () => {
       const offscreen = document.createElement("canvas");
       const W2 = Math.min(imgEl.width, 200), H2 = Math.min(imgEl.height, 200);
@@ -549,34 +654,56 @@ export default function CFDLab() {
       ctx2.drawImage(imgEl, 0, 0, W2, H2);
       const imageData = ctx2.getImageData(0, 0, W2, H2);
       const poly = traceImageToPolygon(imageData, W2, H2);
-      if (!poly) { setError("Could not trace edges"); setShapeReady(true); return; }
+      URL.revokeObjectURL(blobUrl); // FIX: clean up blob
+      if (!poly) { setError("Could not trace edges — try a high-contrast silhouette image."); setShapeReady(true); return; }
       setNormPoly(poly); setShapeReady(true);
     };
-    imgEl.src = URL.createObjectURL(file);
+    imgEl.onerror = () => {
+      URL.revokeObjectURL(blobUrl);
+      setError("Failed to load image."); setShapeReady(true);
+    };
+    imgEl.src = blobUrl;
   };
 
-  // ── Drawing ──
-  const startDraw = e => {
-    isDrawingRef.current = true;
-    drawPointsRef.current = [];
-    const dc = drawCanvasRef.current;
-    dc.getContext("2d").clearRect(0, 0, dc.width, dc.height);
-  };
-  const moveDraw = e => {
-    if (!isDrawingRef.current) return;
+  // ── Drawing (FIX: capture initial point, add touch support) ──
+  const getDrawPos = (e) => {
     const dc = drawCanvasRef.current;
     const rect = dc.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (dc.width / rect.width);
-    const y = (e.clientY - rect.top) * (dc.height / rect.height);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return [
+      (clientX - rect.left) * (dc.width / rect.width),
+      (clientY - rect.top) * (dc.height / rect.height),
+    ];
+  };
+
+  const startDraw = e => {
+    e.preventDefault();
+    isDrawingRef.current = true;
+    const dc = drawCanvasRef.current;
+    dc.getContext("2d").clearRect(0, 0, dc.width, dc.height);
+    const [x, y] = getDrawPos(e);
+    drawPointsRef.current = [[x, y]]; // FIX: capture initial point
+  };
+
+  const moveDraw = e => {
+    e.preventDefault();
+    if (!isDrawingRef.current) return;
+    const [x, y] = getDrawPos(e);
     drawPointsRef.current.push([x, y]);
-    const ctx2 = dc.getContext("2d");
-    ctx2.strokeStyle = "#40e8ff"; ctx2.lineWidth = 2; ctx2.lineCap = "round";
+    const ctx2 = drawCanvasRef.current.getContext("2d");
+    ctx2.strokeStyle = isDark ? "#40e8ff" : "#0a7ea4";
+    ctx2.lineWidth = 2;
+    ctx2.lineCap = "round";
     const pts = drawPointsRef.current;
     if (pts.length > 1) {
-      ctx2.beginPath(); ctx2.moveTo(pts[pts.length - 2][0], pts[pts.length - 2][1]);
-      ctx2.lineTo(x, y); ctx2.stroke();
+      ctx2.beginPath();
+      ctx2.moveTo(pts[pts.length - 2][0], pts[pts.length - 2][1]);
+      ctx2.lineTo(x, y);
+      ctx2.stroke();
     }
   };
+
   const endDraw = () => {
     isDrawingRef.current = false;
     const pts = drawPointsRef.current;
@@ -585,15 +712,21 @@ export default function CFDLab() {
     if (poly) { setNormPoly(poly); setError(""); setShapeReady(true); }
   };
 
-  // ── Regime ──
-  const regime = stats.re < 2300 ? { label: "Laminar", col: "#00ff88" } :
-    stats.re < 4000 ? { label: "Transitional", col: "#ffaa44" } : { label: "Turbulent", col: "#ff5566" };
+  // ── Regime (memoized) ──
+  const regime = useMemo(() => {
+    if (stats.re < 2300) return { label: "Laminar", col: "var(--accent-green)" };
+    if (stats.re < 4000) return { label: "Transitional", col: "var(--accent-orange)" };
+    return { label: "Turbulent", col: "var(--accent-red-stat)" };
+  }, [stats.re]);
 
   // ── Snapshot history for chart ──
   useEffect(() => {
     const iv = setInterval(() => setHistorySnap([...historyRef.current]), 500);
     return () => clearInterval(iv);
-  }, []);
+  }, [historyRef]);
+
+  // ── Styles that reference CSS variables ──
+  const S = useMemo(() => createStyles(), []);
 
   // ─────────────────────────────────────────────────────────────────────────────
   //  RENDER
@@ -601,40 +734,46 @@ export default function CFDLab() {
 
   return (
     <div style={{
-      background: "#020810", minHeight: "100vh",
+      background: "var(--bg-root)", minHeight: "100vh",
       fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace",
-      color: "#c0daf0", display: "flex", flexDirection: "column",
+      color: "var(--text-primary)", display: "flex", flexDirection: "column",
+      transition: "background 0.4s ease, color 0.4s ease",
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet"/>
 
       {/* ═══ TOP BAR ═══ */}
       <div style={{
         display: "flex", alignItems: "center", gap: 16,
         padding: "14px 24px",
-        background: "linear-gradient(180deg, rgba(6,18,32,0.98) 0%, rgba(4,12,24,0.95) 100%)",
-        borderBottom: "1px solid #0a1e34",
+        background: "var(--bg-topbar)",
+        borderBottom: "1px solid var(--border-primary)",
         position: "sticky", top: 0, zIndex: 100,
-        backdropFilter: "blur(12px)",
+        backdropFilter: "var(--topbar-blur)",
+        transition: "background 0.4s, border-color 0.4s",
       }}>
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg, #0a2a4a 0%, #0d3a60 100%)",
-            border: "1px solid #1a4a6a",
+            background: isDark
+              ? "linear-gradient(135deg, #0a2a4a 0%, #0d3a60 100%)"
+              : "linear-gradient(135deg, #dce8f4 0%, #c8d8ec 100%)",
+            border: "1px solid var(--border-accent)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 0 20px rgba(64,232,255,0.1)",
+            boxShadow: "var(--shadow-logo)",
+            transition: "all 0.4s",
           }}>
             <IconWind />
           </div>
           <div>
             <div style={{
               fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 800,
-              background: "linear-gradient(90deg, #40e8ff, #80f0ff, #40e8ff)",
+              background: isDark
+                ? "linear-gradient(90deg, #40e8ff, #80f0ff, #40e8ff)"
+                : "linear-gradient(90deg, #0a6e94, #0a9ec4, #0a6e94)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               letterSpacing: 2,
             }}>AEROLAB</div>
-            <div style={{ fontSize: 8, color: "#2a5a7a", letterSpacing: 4, marginTop: -2 }}>CFD RESEARCH PLATFORM</div>
+            <div style={{ fontSize: 8, color: "var(--text-faint)", letterSpacing: 4, marginTop: -2 }}>CFD RESEARCH PLATFORM</div>
           </div>
         </div>
 
@@ -649,9 +788,9 @@ export default function CFDLab() {
               display: "flex", alignItems: "center", gap: 7,
               padding: "8px 18px", fontSize: 10, letterSpacing: 1.5,
               fontFamily: "inherit", fontWeight: activeView === id ? 600 : 400,
-              background: activeView === id ? "rgba(64,232,255,0.08)" : "transparent",
-              border: `1px solid ${activeView === id ? "#1a4a6a" : "transparent"}`,
-              color: activeView === id ? "#40e8ff" : "#3a6a8a",
+              background: activeView === id ? "var(--accent-cyan-glow)" : "transparent",
+              border: `1px solid ${activeView === id ? "var(--border-accent)" : "transparent"}`,
+              color: activeView === id ? "var(--accent-cyan)" : "var(--text-muted)",
               borderRadius: 8, cursor: "pointer",
               transition: "all 0.25s ease",
             }}>{icon}{label}</button>
@@ -660,26 +799,30 @@ export default function CFDLab() {
 
         <div style={{ flex: 1 }} />
 
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
         {/* Status */}
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 6,
             padding: "5px 14px", borderRadius: 20,
-            background: running ? "rgba(0,255,136,0.06)" : "rgba(255,100,80,0.06)",
+            background: running ? "var(--accent-green-glow)" : "var(--accent-red-glow)",
             border: `1px solid ${running ? "rgba(0,255,136,0.2)" : "rgba(255,100,80,0.15)"}`,
+            transition: "all 0.3s",
           }}>
             <div style={{
               width: 7, height: 7, borderRadius: "50%",
-              background: running ? "#00ff88" : "#ff5040",
-              boxShadow: `0 0 8px ${running ? "#00ff88" : "#ff5040"}`,
+              background: running ? "var(--accent-green)" : "var(--accent-red)",
+              boxShadow: `0 0 8px ${running ? "var(--accent-green)" : "var(--accent-red)"}`,
               animation: running ? "pulse 1.5s infinite" : "none",
             }} />
-            <span style={{ fontSize: 9, letterSpacing: 2, color: running ? "#00ff88" : "#ff5040" }}>
+            <span style={{ fontSize: 9, letterSpacing: 2, color: running ? "var(--accent-green)" : "var(--accent-red)" }}>
               {running ? "LIVE" : "IDLE"}
             </span>
           </div>
-          <div style={{ fontSize: 9, color: "#1a4060", letterSpacing: 1 }}>
-            Frame #{frameRef.current}
+          <div style={{ fontSize: 9, color: "var(--text-faint)", letterSpacing: 1 }}>
+            Frame #{displayFrame}
           </div>
         </div>
       </div>
@@ -693,8 +836,8 @@ export default function CFDLab() {
             width: sidebarOpen ? 268 : 0, minWidth: sidebarOpen ? 268 : 0,
             transition: "all 0.3s ease",
             overflow: "hidden",
-            borderRight: "1px solid #0a1e34",
-            background: "rgba(3,10,20,0.6)",
+            borderRight: "1px solid var(--border-primary)",
+            background: isDark ? "rgba(3,10,20,0.6)" : "rgba(245,248,252,0.8)",
             display: "flex", flexDirection: "column",
           }}>
             <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12, overflowY: "auto", flex: 1 }}>
@@ -732,10 +875,14 @@ export default function CFDLab() {
                 )}
                 {tab === "draw" && (
                   <div>
-                    <div style={{ fontSize: 9, color: "#3a7a9a", marginBottom: 6 }}>Draw a closed outline below</div>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 6 }}>Draw a closed outline below</div>
                     <canvas ref={drawCanvasRef} width={208} height={140}
-                      style={{ background: "#020c18", border: "1px solid #0d2540", borderRadius: 6, cursor: "crosshair", display: "block", width: "100%", touchAction: "none" }}
+                      style={{
+                        background: "var(--bg-canvas)", border: "1px solid var(--border-subtle)",
+                        borderRadius: 6, cursor: "crosshair", display: "block", width: "100%", touchAction: "none",
+                      }}
                       onMouseDown={startDraw} onMouseMove={moveDraw} onMouseUp={endDraw} onMouseLeave={endDraw}
+                      onTouchStart={startDraw} onTouchMove={moveDraw} onTouchEnd={endDraw}
                     />
                   </div>
                 )}
@@ -747,31 +894,53 @@ export default function CFDLab() {
                 )}
 
                 {error && <div style={S.errorBox}>{error}</div>}
-                {!shapeReady && <div style={{ marginTop: 8, fontSize: 9, color: "#ffaa44" }}>Processing shape…</div>}
+                {!shapeReady && <div style={{ marginTop: 8, fontSize: 9, color: "var(--accent-orange)" }}>Processing shape…</div>}
               </div>
 
               {/* ── Shape Transform ── */}
               <div style={S.panel}>
                 <div style={S.sectionHeader}><IconLayers /> Shape Transform</div>
-                <SliderRow label="Position X" value={cx.toFixed(1)} min={10} max={COLS - 10} step={0.5} onChange={setCx} unit="" col="#40e8ff" />
-                <SliderRow label="Position Y" value={cy.toFixed(1)} min={4} max={ROWS - 4} step={0.5} onChange={setCy} unit="" col="#40e8ff" />
-                <SliderRow label="Scale X" value={scaleX.toFixed(1)} min={5} max={COLS * 0.6} step={0.5} onChange={setScaleX} unit="" col="#a080ff" />
-                <SliderRow label="Scale Y" value={scaleY.toFixed(1)} min={3} max={ROWS * 0.8} step={0.5} onChange={setScaleY} unit="" col="#a080ff" />
-                <SliderRow label="AoA" value={aoa} min={-25} max={35} step={1} onChange={setAoa} unit="°" col="#00ff88" />
+                <SliderRow label="Position X" value={cx.toFixed(1)} min={10} max={COLS - 10} step={0.5} onChange={setCx} unit="" col="var(--accent-cyan)" />
+                <SliderRow label="Position Y" value={cy.toFixed(1)} min={4} max={ROWS - 4} step={0.5} onChange={setCy} unit="" col="var(--accent-cyan)" />
+                <SliderRow label="Scale X" value={scaleX.toFixed(1)} min={5} max={COLS * 0.6} step={0.5} onChange={setScaleX} unit="" col="var(--accent-purple)" />
+                <SliderRow label="Scale Y" value={scaleY.toFixed(1)} min={3} max={ROWS * 0.8} step={0.5} onChange={setScaleY} unit="" col="var(--accent-purple)" />
+                <SliderRow label="AoA" value={aoa} min={-25} max={35} step={1} onChange={setAoa} unit="°" col="var(--accent-green)" />
               </div>
 
               {/* ── Simplify ── */}
               <div style={S.panel}>
                 <div style={S.sectionHeader}><IconGear /> Simplification</div>
-                <SliderRow label="Tolerance" value={simplify} min={0} max={20} step={1} onChange={v => { setSimplify(v); simplifyRef.current = v; rebuildSolid(); }} unit="" col="#ffaa44" />
+                <SliderRow label="Tolerance" value={simplify} min={0} max={20} step={1}
+                  onChange={v => setSimplify(v)} unit="" col="var(--accent-orange)" />
               </div>
 
               {/* ── Flow Parameters ── */}
               <div style={S.panel}>
                 <div style={S.sectionHeader}><IconWind /> Flow Parameters</div>
-                <SliderRow label="Velocity" value={velocity} min={0.2} max={3} step={0.05} onChange={setVelocity} unit=" U" col="#40e8ff" />
-                <SliderRow label="Turbulence" value={turbulence} min={0} max={2} step={0.05} onChange={setTurbulence} unit="%" col="#ffaa44" />
-                <SliderRow label="Viscosity ν" value={viscosity} min={0.02} max={0.5} step={0.01} onChange={setViscosity} unit="" col="#a080ff" />
+                <SliderRow label="Velocity" value={velocity} min={0.2} max={3} step={0.05} onChange={setVelocity} unit=" U" col="var(--accent-cyan)" />
+                <SliderRow label="Turbulence" value={turbulence} min={0} max={2} step={0.05} onChange={setTurbulence} unit="%" col="var(--accent-orange)" />
+                <SliderRow label="Viscosity ν" value={viscosity} min={0.02} max={0.5} step={0.01} onChange={setViscosity} unit="" col="var(--accent-purple)" />
+              </div>
+
+              {/* ── Keyboard shortcuts ── */}
+              <div style={{ ...S.panel, padding: 12 }}>
+                <div style={S.sectionHeader}><IconKeyboard /> Shortcuts</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {[
+                    ["Space", "Play / Pause"],
+                    ["R", "Reset solver"],
+                    ["1 / 2 / 3", "Velocity / Pressure / Streamlines"],
+                  ].map(([key, desc]) => (
+                    <div key={key} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <kbd style={{
+                        fontSize: 8, padding: "2px 6px", borderRadius: 4,
+                        background: "var(--bg-input)", border: "1px solid var(--border-primary)",
+                        color: "var(--text-muted)", fontFamily: "inherit",
+                      }}>{key}</kbd>
+                      <span style={{ fontSize: 9, color: "var(--text-dim)" }}>{desc}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -784,18 +953,23 @@ export default function CFDLab() {
           {activeView === "tunnel" && (
             <>
               {/* Controls bar */}
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <button onClick={() => setSidebarOpen(v => !v)} style={{
                   ...S.btn(false), padding: "8px 10px", fontSize: 10,
                 }}>☰</button>
 
-                <div style={{ display: "flex", gap: 4, background: "rgba(4,14,26,0.7)", borderRadius: 8, padding: 3, border: "1px solid #0a1e34" }}>
+                <div style={{
+                  display: "flex", gap: 4,
+                  background: isDark ? "rgba(4,14,26,0.7)" : "rgba(255,255,255,0.7)",
+                  borderRadius: 8, padding: 3, border: "1px solid var(--border-primary)",
+                  transition: "all 0.3s",
+                }}>
                   {["velocity", "pressure", "streamlines"].map(m => (
                     <button key={m} onClick={() => setViewMode(m)} style={{
                       padding: "7px 16px", fontSize: 9, letterSpacing: 1.5, fontFamily: "inherit",
-                      background: viewMode === m ? "rgba(64,232,255,0.1)" : "transparent",
+                      background: viewMode === m ? "var(--accent-cyan-glow)" : "transparent",
                       border: "none",
-                      color: viewMode === m ? "#40e8ff" : "#2a5a8a",
+                      color: viewMode === m ? "var(--accent-cyan)" : "var(--text-dim)",
                       borderRadius: 6, cursor: "pointer", fontWeight: viewMode === m ? 600 : 400,
                       transition: "all 0.2s",
                     }}>{m.toUpperCase()}</button>
@@ -807,10 +981,11 @@ export default function CFDLab() {
                 <button onClick={() => setRunning(r => !r)} style={{
                   display: "flex", alignItems: "center", gap: 7,
                   padding: "8px 20px", fontSize: 10, letterSpacing: 1.5, fontFamily: "inherit",
-                  background: running ? "rgba(255,80,60,0.1)" : "rgba(0,255,136,0.1)",
-                  border: `1px solid ${running ? "rgba(255,80,60,0.3)" : "rgba(0,255,136,0.3)"}`,
-                  color: running ? "#ff5040" : "#00ff88",
+                  background: running ? "var(--accent-red-glow)" : "var(--accent-green-glow)",
+                  border: `1px solid ${running ? "var(--accent-red)" : "var(--accent-green)"}`,
+                  color: running ? "var(--accent-red)" : "var(--accent-green)",
                   borderRadius: 8, cursor: "pointer", fontWeight: 600,
+                  transition: "all 0.3s",
                 }}>
                   {running ? <><IconPause /> PAUSE</> : <><IconPlay /> RUN</>}
                 </button>
@@ -826,49 +1001,51 @@ export default function CFDLab() {
               {/* Canvas */}
               <div style={{
                 position: "relative", borderRadius: 10, overflow: "hidden",
-                border: "1px solid #0a1e34",
-                boxShadow: "0 4px 40px rgba(0,10,30,0.5), inset 0 0 60px rgba(0,0,0,0.3)",
+                border: "1px solid var(--border-primary)",
+                boxShadow: "var(--shadow-canvas)",
+                transition: "all 0.4s",
               }}>
-                <div style={{ position: "absolute", top: 8, left: 14, fontSize: 9, color: "#0d3050", zIndex: 10, letterSpacing: 3 }}>INLET →</div>
-                <div style={{ position: "absolute", top: 8, right: 14, fontSize: 9, color: "#0d3050", zIndex: 10, letterSpacing: 3 }}>→ OUTLET</div>
+                <div style={{ position: "absolute", top: 8, left: 14, fontSize: 9, color: "var(--text-faint)", zIndex: 10, letterSpacing: 3 }}>INLET →</div>
+                <div style={{ position: "absolute", top: 8, right: 14, fontSize: 9, color: "var(--text-faint)", zIndex: 10, letterSpacing: 3 }}>→ OUTLET</div>
                 <canvas ref={canvasRef} width={SIM_W} height={SIM_H} style={{ display: "block", width: "100%", height: "auto" }} />
                 {/* Colorbar */}
                 <div style={{ position: "absolute", bottom: 12, right: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 8, color: "#3a6a8a", letterSpacing: 1 }}>{viewMode === "pressure" ? "HI" : "FAST"}</span>
+                  <span style={{ fontSize: 8, color: "var(--text-muted)", letterSpacing: 1 }}>{viewMode === "pressure" ? "HI" : "FAST"}</span>
                   <div style={{
                     width: 6, height: 60, borderRadius: 3,
-                    background: viewMode === "pressure" ? "linear-gradient(to bottom,#dc2626,#2563eb)" : "linear-gradient(to bottom,#ef4444,#3b82f6)",
+                    background: viewMode === "pressure" ? "var(--colorbar-pressure)" : "var(--colorbar-velocity)",
                   }} />
-                  <span style={{ fontSize: 8, color: "#3a6a8a", letterSpacing: 1 }}>{viewMode === "pressure" ? "LO" : "SLOW"}</span>
+                  <span style={{ fontSize: 8, color: "var(--text-muted)", letterSpacing: 1 }}>{viewMode === "pressure" ? "LO" : "SLOW"}</span>
                 </div>
               </div>
 
               {/* Stats Row */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
                 {[
-                  { label: "Lift Coefficient", val: stats.cl.toFixed(3), sub: "CL", col: "#00ff88" },
-                  { label: "Drag Coefficient", val: stats.cd.toFixed(3), sub: "CD", col: "#ffaa44" },
-                  { label: "Reynolds Number", val: stats.re > 999 ? (stats.re / 1000).toFixed(1) + "k" : stats.re, sub: "Re", col: "#a080ff" },
-                  { label: "Peak Velocity", val: stats.maxV.toFixed(3), sub: "U/U₀", col: "#40e8ff" },
+                  { label: "Lift Coefficient", val: stats.cl.toFixed(3), sub: "CL", col: "var(--accent-green)" },
+                  { label: "Drag Coefficient", val: stats.cd.toFixed(3), sub: "CD", col: "var(--accent-orange)" },
+                  { label: "Reynolds Number", val: stats.re > 999 ? (stats.re / 1000).toFixed(1) + "k" : stats.re, sub: "Re", col: "var(--accent-purple)" },
+                  { label: "Peak Velocity", val: stats.maxV.toFixed(3), sub: "U/U₀", col: "var(--accent-cyan)" },
                   { label: "Flow Regime", val: regime.label, sub: `Re=${stats.re}`, col: regime.col },
                 ].map(({ label, val, sub, col }) => (
                   <div key={label} style={{
-                    background: "rgba(4,14,26,0.8)", borderRadius: 10,
-                    border: `1px solid ${col}15`,
+                    background: "var(--bg-panel)", borderRadius: 10,
+                    border: "1px solid var(--border-primary)",
                     padding: "14px 16px",
                     position: "relative", overflow: "hidden",
+                    transition: "all 0.4s",
                   }}>
                     <div style={{
                       position: "absolute", top: 0, left: 0, right: 0, height: 2,
-                      background: `linear-gradient(90deg, transparent, ${col}40, transparent)`,
+                      background: `linear-gradient(90deg, transparent, ${col}, transparent)`,
+                      opacity: 0.4,
                     }} />
-                    <div style={{ fontSize: 8, color: "#3a6a8a", letterSpacing: 2.5, marginBottom: 8 }}>{label.toUpperCase()}</div>
+                    <div style={{ fontSize: 8, color: "var(--text-muted)", letterSpacing: 2.5, marginBottom: 8 }}>{label.toUpperCase()}</div>
                     <div style={{
                       fontSize: 22, fontWeight: 800, color: col,
-                      textShadow: `0 0 16px ${col}33`,
                       fontFamily: "'Outfit', sans-serif",
                     }}>{val}</div>
-                    <div style={{ fontSize: 9, color: "#2a5a7a", marginTop: 4 }}>{sub}</div>
+                    <div style={{ fontSize: 9, color: "var(--text-dim)", marginTop: 4 }}>{sub}</div>
                   </div>
                 ))}
               </div>
@@ -887,20 +1064,18 @@ export default function CFDLab() {
           )}
 
           {/* ═══ ABOUT VIEW ═══ */}
-          {activeView === "about" && (
-            <AboutView />
-          )}
+          {activeView === "about" && <AboutView />}
         </div>
       </div>
 
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        input[type=range] { -webkit-appearance: none; appearance: none; height: 3px; background: #0a1828; border-radius: 2px; outline: none; }
+        input[type=range] { -webkit-appearance: none; appearance: none; height: 3px; background: var(--bg-input); border-radius: 2px; outline: none; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: currentColor; cursor: pointer; box-shadow: 0 0 6px currentColor; }
         button:hover { opacity: 0.88; }
         *::-webkit-scrollbar { width: 5px; }
         *::-webkit-scrollbar-track { background: transparent; }
-        *::-webkit-scrollbar-thumb { background: #0a2040; border-radius: 3px; }
+        *::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
       `}</style>
     </div>
   );
@@ -908,18 +1083,19 @@ export default function CFDLab() {
 
 // ─── Shared UI Components ──────────────────────────────────────────────────────
 
-function SliderRow({ label, value, min, max, step, onChange, unit, col = "#40e8ff" }) {
+function SliderRow({ label, value, min, max, step, onChange, unit, col = "var(--accent-cyan)" }) {
   return (
     <div style={{ marginBottom: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-        <span style={{ fontSize: 9, color: "#3a6a8a", letterSpacing: 1.5 }}>{label}</span>
+        <span style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 1.5 }}>{label}</span>
         <span style={{ fontSize: 10, fontFamily: "'JetBrains Mono', monospace", color: col, fontWeight: 700 }}>{value}{unit}</span>
       </div>
-      <div style={{ position: "relative", height: 3, background: "#0a1828", borderRadius: 2 }}>
+      <div style={{ position: "relative", height: 3, background: "var(--bg-input)", borderRadius: 2 }}>
         <div style={{
           position: "absolute", left: 0, top: 0, height: "100%",
           width: `${((value - min) / (max - min)) * 100}%`,
-          background: col, borderRadius: 2, boxShadow: `0 0 8px ${col}55`,
+          background: col, borderRadius: 2,
+          transition: "width 0.1s ease-out",
         }} />
         <input type="range" min={min} max={max} step={step} value={value}
           onChange={e => onChange(+e.target.value)}
@@ -933,6 +1109,7 @@ function SliderRow({ label, value, min, max, step, onChange, unit, col = "#40e8f
 
 function AnalysisView({ stats, regime, historySnap, miniCanvasRef, running }) {
   const chartRef = useRef(null);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const canvas = chartRef.current;
@@ -941,8 +1118,8 @@ function AnalysisView({ stats, regime, historySnap, miniCanvasRef, running }) {
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    // Draw grid
-    ctx.strokeStyle = "#0a1e34";
+    const gridColor = isDark ? "#0a1e34" : "#c8d8e8";
+    ctx.strokeStyle = gridColor;
     ctx.lineWidth = 0.5;
     for (let i = 0; i < 6; i++) {
       const y = (i / 5) * h;
@@ -966,8 +1143,6 @@ function AnalysisView({ stats, regime, historySnap, miniCanvasRef, running }) {
         i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       });
       ctx.stroke();
-
-      // Glow
       ctx.strokeStyle = color + "33";
       ctx.lineWidth = 6;
       ctx.stroke();
@@ -976,39 +1151,38 @@ function AnalysisView({ stats, regime, historySnap, miniCanvasRef, running }) {
     const cls = historySnap.map(s => s.cl);
     const cds = historySnap.map(s => s.cd);
     const maxCoeff = Math.max(...cls, ...cds, 0.1);
+    drawLine(cls, isDark ? "#00ff88" : "#0a8a4a", maxCoeff);
+    drawLine(cds, isDark ? "#ffaa44" : "#c07820", maxCoeff);
+  }, [historySnap, isDark]);
 
-    drawLine(cls, "#00ff88", maxCoeff);
-    drawLine(cds, "#ffaa44", maxCoeff);
-  }, [historySnap]);
+  const S = useMemo(() => createStyles(), []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "#40e8ff", letterSpacing: 2 }}>
+      <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 800, color: "var(--accent-cyan)", letterSpacing: 2 }}>
         Live Analysis
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        {/* Coefficient History */}
         <div style={S.panel}>
           <div style={S.sectionHeader}><IconChart /> Coefficient History</div>
-          <canvas ref={chartRef} width={500} height={200} style={{ width: "100%", height: 200, borderRadius: 6, background: "#020c18" }} />
+          <canvas ref={chartRef} width={500} height={200} style={{ width: "100%", height: 200, borderRadius: 6, background: "var(--bg-canvas)" }} />
           <div style={{ display: "flex", gap: 20, marginTop: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ width: 12, height: 3, background: "#00ff88", borderRadius: 2 }} />
-              <span style={{ fontSize: 9, color: "#4a8a6a" }}>CL (Lift)</span>
+              <div style={{ width: 12, height: 3, background: "var(--accent-green)", borderRadius: 2 }} />
+              <span style={{ fontSize: 9, color: "var(--text-muted)" }}>CL (Lift)</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ width: 12, height: 3, background: "#ffaa44", borderRadius: 2 }} />
-              <span style={{ fontSize: 9, color: "#8a7a4a" }}>CD (Drag)</span>
+              <div style={{ width: 12, height: 3, background: "var(--accent-orange)", borderRadius: 2 }} />
+              <span style={{ fontSize: 9, color: "var(--text-muted)" }}>CD (Drag)</span>
             </div>
           </div>
         </div>
 
-        {/* Live Preview */}
         <div style={S.panel}>
           <div style={S.sectionHeader}><IconWind /> Live Preview</div>
-          <canvas ref={miniCanvasRef} width={440} height={200} style={{ width: "100%", height: 200, borderRadius: 6, background: "#020c18" }} />
-          <div style={{ marginTop: 8, fontSize: 9, color: running ? "#00ff88" : "#ff5040" }}>
+          <canvas ref={miniCanvasRef} width={440} height={200} style={{ width: "100%", height: 200, borderRadius: 6, background: "var(--bg-canvas)" }} />
+          <div style={{ marginTop: 8, fontSize: 9, color: running ? "var(--accent-green)" : "var(--accent-red)" }}>
             {running ? "● Simulation running" : "○ Simulation paused"}
           </div>
         </div>
@@ -1017,9 +1191,9 @@ function AnalysisView({ stats, regime, historySnap, miniCanvasRef, running }) {
       {/* Data Table */}
       <div style={S.panel}>
         <div style={S.sectionHeader}><IconChart /> Current Data</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1, background: "#0a1e34", borderRadius: 6, overflow: "hidden", marginTop: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1, background: "var(--border-primary)", borderRadius: 6, overflow: "hidden", marginTop: 8 }}>
           {["Parameter", "Value", "Unit", "Status", "Min", "Max"].map(h => (
-            <div key={h} style={{ background: "#060e1a", padding: "10px 14px", fontSize: 9, color: "#3a6a8a", letterSpacing: 2, fontWeight: 600 }}>{h}</div>
+            <div key={h} style={{ background: "var(--bg-table-header)", padding: "10px 14px", fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, fontWeight: 600 }}>{h}</div>
           ))}
           {[
             ["Lift Coeff", stats.cl.toFixed(4), "CL", stats.cl > 0.5 ? "HIGH" : "NORMAL", "0.000", "2.000"],
@@ -1029,11 +1203,12 @@ function AnalysisView({ stats, regime, historySnap, miniCanvasRef, running }) {
           ].map(([param, val, unit, status, min, max], ri) => (
             [param, val, unit, status, min, max].map((cell, ci) => (
               <div key={`${ri}-${ci}`} style={{
-                background: ri % 2 ? "#040c18" : "#050e1c",
+                background: ri % 2 ? "var(--bg-table-odd)" : "var(--bg-table-even)",
                 padding: "10px 14px", fontSize: 10,
-                color: ci === 3 ? (cell === "HIGH" || cell === "ELEVATED" || cell === "WARNING" ? "#ffaa44" : "#00ff88") : "#8ab0d0",
+                color: ci === 3 ? (cell === "HIGH" || cell === "ELEVATED" || cell === "WARNING" ? "var(--accent-orange)" : "var(--accent-green)") : "var(--text-secondary)",
                 fontFamily: ci === 1 ? "'JetBrains Mono', monospace" : "inherit",
                 fontWeight: ci === 1 ? 600 : 400,
+                transition: "background 0.3s",
               }}>{cell}</div>
             ))
           )).flat()}
@@ -1046,23 +1221,28 @@ function AnalysisView({ stats, regime, historySnap, miniCanvasRef, running }) {
 // ─── About View ────────────────────────────────────────────────────────────────
 
 function AboutView() {
+  const { isDark } = useTheme();
+  const S = useMemo(() => createStyles(), []);
+
   return (
     <div style={{ maxWidth: 700, display: "flex", flexDirection: "column", gap: 20 }}>
       <div>
         <div style={{
           fontFamily: "'Outfit', sans-serif", fontSize: 32, fontWeight: 900,
-          background: "linear-gradient(90deg, #40e8ff, #a080ff)",
+          background: isDark
+            ? "linear-gradient(90deg, #40e8ff, #a080ff)"
+            : "linear-gradient(90deg, #0a7ea4, #7050cc)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
           letterSpacing: 2, marginBottom: 8,
         }}>AEROLAB</div>
-        <div style={{ fontSize: 11, color: "#3a6a8a", letterSpacing: 3, marginBottom: 24 }}>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", letterSpacing: 3, marginBottom: 24 }}>
           COMPUTATIONAL FLUID DYNAMICS WIND TUNNEL SIMULATOR
         </div>
       </div>
 
       <div style={S.panel}>
         <div style={S.sectionHeader}><IconLayers /> Overview</div>
-        <p style={{ fontSize: 12, lineHeight: 1.9, color: "#7aa0c0", margin: 0 }}>
+        <p style={{ fontSize: 12, lineHeight: 1.9, color: "var(--text-secondary)", margin: 0 }}>
           AeroLab is an interactive 2D CFD wind tunnel simulator that solves a simplified
           Navier-Stokes formulation in real-time. The solver uses a finite-difference
           advection-diffusion scheme with configurable inlet velocity, turbulence
@@ -1083,10 +1263,12 @@ function AboutView() {
           ].map(({ title, desc }) => (
             <div key={title} style={{
               padding: "14px 16px", borderRadius: 8,
-              background: "rgba(10,30,52,0.5)", border: "1px solid #0a1e34",
+              background: isDark ? "rgba(10,30,52,0.5)" : "rgba(220,232,244,0.5)",
+              border: "1px solid var(--border-primary)",
+              transition: "all 0.3s",
             }}>
-              <div style={{ fontSize: 11, color: "#40e8ff", fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>{title}</div>
-              <div style={{ fontSize: 10, color: "#4a7a9a", lineHeight: 1.7 }}>{desc}</div>
+              <div style={{ fontSize: 11, color: "var(--accent-cyan)", fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>{title}</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.7 }}>{desc}</div>
             </div>
           ))}
         </div>
@@ -1101,9 +1283,9 @@ function AboutView() {
             ["Walls", "Slip-free reflection with normal velocity reversal"],
             ["Body", "No-slip solid cells with zero velocity and elevated pressure"],
           ].map(([label, desc]) => (
-            <div key={label} style={{ display: "flex", gap: 12, padding: "8px 0", borderBottom: "1px solid #0a1e34" }}>
-              <span style={{ fontSize: 10, color: "#40e8ff", width: 60, flexShrink: 0, fontWeight: 600 }}>{label}</span>
-              <span style={{ fontSize: 10, color: "#5a8aaa", lineHeight: 1.6 }}>{desc}</span>
+            <div key={label} style={{ display: "flex", gap: 12, padding: "8px 0", borderBottom: "1px solid var(--border-primary)" }}>
+              <span style={{ fontSize: 10, color: "var(--accent-cyan)", width: 60, flexShrink: 0, fontWeight: 600 }}>{label}</span>
+              <span style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.6 }}>{desc}</span>
             </div>
           ))}
         </div>
@@ -1112,47 +1294,50 @@ function AboutView() {
   );
 }
 
-// ─── Shared Styles ─────────────────────────────────────────────────────────────
-const S = {
-  panel: {
-    background: "rgba(4,14,26,0.85)",
-    border: "1px solid #0a1e34",
-    borderRadius: 10,
-    padding: 16,
-  },
-  sectionHeader: {
-    fontSize: 9, color: "#3a6a8a", letterSpacing: 3,
-    textTransform: "uppercase", marginBottom: 14,
-    display: "flex", alignItems: "center", gap: 8, fontWeight: 600,
-  },
-  btn: (active, col = "#40e8ff") => ({
-    padding: "7px 12px", fontSize: 9, letterSpacing: 1.5,
-    fontFamily: "'JetBrains Mono', monospace",
-    background: active ? `rgba(64,232,255,0.1)` : "transparent",
-    border: `1px solid ${active ? col : "#0a1e34"}`,
-    color: active ? col : "#2a5a8a",
-    borderRadius: 6, cursor: "pointer",
-    transition: "all 0.2s",
-  }),
-  tabBtn: (active) => ({
-    padding: "5px 10px", fontSize: 8, letterSpacing: 1.5,
-    fontFamily: "'JetBrains Mono', monospace",
-    background: active ? "rgba(64,232,255,0.1)" : "transparent",
-    border: `1px solid ${active ? "#1a4a6a" : "#0a1e34"}`,
-    color: active ? "#40e8ff" : "#2a5a8a",
-    borderRadius: 5, cursor: "pointer",
-    transition: "all 0.2s",
-  }),
-  fileBtn: {
-    display: "flex", alignItems: "center", gap: 8, padding: "12px 14px",
-    background: "rgba(64,232,255,0.04)", border: "1px dashed #0d3a5c",
-    borderRadius: 8, cursor: "pointer", color: "#3a8aaa", fontSize: 10,
-    letterSpacing: 1.5, justifyContent: "center", width: "100%",
-    transition: "all 0.2s",
-  },
-  errorBox: {
-    marginTop: 10, fontSize: 9, color: "#ff5566",
-    background: "rgba(255,50,60,0.06)", border: "1px solid rgba(255,85,102,0.2)",
-    borderRadius: 6, padding: "8px 12px", lineHeight: 1.6,
-  },
-};
+// ─── Shared Styles (using CSS variables for theming) ───────────────────────────
+function createStyles() {
+  return {
+    panel: {
+      background: "var(--bg-panel)",
+      border: "1px solid var(--border-primary)",
+      borderRadius: 10,
+      padding: 16,
+      transition: "background 0.4s, border-color 0.4s",
+    },
+    sectionHeader: {
+      fontSize: 9, color: "var(--text-muted)", letterSpacing: 3,
+      textTransform: "uppercase", marginBottom: 14,
+      display: "flex", alignItems: "center", gap: 8, fontWeight: 600,
+    },
+    btn: (active) => ({
+      padding: "7px 12px", fontSize: 9, letterSpacing: 1.5,
+      fontFamily: "'JetBrains Mono', monospace",
+      background: active ? "var(--accent-cyan-glow)" : "transparent",
+      border: `1px solid ${active ? "var(--accent-cyan)" : "var(--border-primary)"}`,
+      color: active ? "var(--accent-cyan)" : "var(--text-dim)",
+      borderRadius: 6, cursor: "pointer",
+      transition: "all 0.2s",
+    }),
+    tabBtn: (active) => ({
+      padding: "5px 10px", fontSize: 8, letterSpacing: 1.5,
+      fontFamily: "'JetBrains Mono', monospace",
+      background: active ? "var(--accent-cyan-glow)" : "transparent",
+      border: `1px solid ${active ? "var(--border-accent)" : "var(--border-primary)"}`,
+      color: active ? "var(--accent-cyan)" : "var(--text-dim)",
+      borderRadius: 5, cursor: "pointer",
+      transition: "all 0.2s",
+    }),
+    fileBtn: {
+      display: "flex", alignItems: "center", gap: 8, padding: "12px 14px",
+      background: "var(--accent-cyan-glow)", border: "1px dashed var(--border-accent)",
+      borderRadius: 8, cursor: "pointer", color: "var(--text-muted)", fontSize: 10,
+      letterSpacing: 1.5, justifyContent: "center", width: "100%",
+      transition: "all 0.2s",
+    },
+    errorBox: {
+      marginTop: 10, fontSize: 9, color: "var(--accent-red-stat)",
+      background: "var(--accent-red-glow)", border: "1px solid var(--accent-red)",
+      borderRadius: 6, padding: "8px 12px", lineHeight: 1.6,
+    },
+  };
+}
