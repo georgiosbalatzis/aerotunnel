@@ -6,7 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const SIM_W = 1000, SIM_H = 450;
 const COLS = 400, ROWS = 180;
-const DEFAULT_PARTICLES = 400, MAX_PARTICLES = 3000, TRAIL_LEN = 32;
+const DEFAULT_PARTICLES = 600, MAX_PARTICLES = 3000, TRAIL_LEN = 120;
 
 // ── Colormaps (256 ABGR) ──
 function buildTurboLUT(){const l=new Uint32Array(256);for(let i=0;i<256;i++){const t=i/255,r=Math.max(0,Math.min(255,(34.61+t*(1172.33-t*(10793.56-t*(33300.12-t*(38394.49-t*14825.05)))))|0)),g=Math.max(0,Math.min(255,(23.31+t*(557.33+t*(1225.33-t*(3574.96-t*(1073.77+t*707.56)))))|0)),b=Math.max(0,Math.min(255,(27.2+t*(3211.1-t*(15327.97-t*(27814.0-t*(22569.18-t*6838.66)))))|0));l[i]=(255<<24)|(b<<16)|(g<<8)|r;}return l;}
@@ -18,11 +18,265 @@ function pointInPolygon(px,py,poly){let ins=false;for(let i=0,j=poly.length-1;i<
 function normalizePolygon(pts){if(!pts||pts.length<3)return null;const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),rx=x1-x0||1,ry=y1-y0||1;return pts.map(p=>[(p[0]-x0)/rx,(p[1]-y0)/ry]);}
 function transformPolygon(n,cx,cy,sx,sy,aoa){const r=aoa*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return n.map(([nx,ny])=>{const lx=(nx-.5)*sx,ly=(ny-.5)*sy;return[cx+c*lx-s*ly,cy+s*lx+c*ly];});}
 function simplifyPolygon(pts,tol){if(pts.length<=4)return pts;const r=[pts[0]];for(let i=1;i<pts.length-1;i++){const p=r[r.length-1],n=pts[i+1],c=pts[i],dx=n[0]-p[0],dy=n[1]-p[1],l=Math.sqrt(dx*dx+dy*dy)||1;if(Math.abs(dy*c[0]-dx*c[1]+n[0]*p[1]-n[1]*p[0])/l>tol)r.push(c);}r.push(pts[pts.length-1]);return r;}
-function generatePreset(type){const p=[];if(type==="airfoil"){for(let t=0;t<=Math.PI*2;t+=.04){const c=Math.cos(t),s=Math.sin(t);p.push([.5+.48*c*(.5+.5*c),.5+.18*s*(1+.3*c)]);}}else if(type==="cylinder"){for(let t=0;t<=Math.PI*2;t+=.05)p.push([.5+.45*Math.cos(t),.5+.45*Math.sin(t)]);}else if(type==="wedge"){p.push([.05,.25],[.95,.5],[.05,.75]);}else if(type==="bluff"){p.push([.1,.1],[.9,.1],[.9,.9],[.1,.9]);}return p;}
+function generatePreset(type){const p=[];if(type==="airfoil"){for(let t=0;t<=Math.PI*2;t+=.04){const c=Math.cos(t),s=Math.sin(t);p.push([.5+.48*c*(.5+.5*c),.5+.18*s*(1+.3*c)]);}}else if(type==="cylinder"){for(let t=0;t<=Math.PI*2;t+=.05)p.push([.5+.45*Math.cos(t),.5+.45*Math.sin(t)]);}else if(type==="wedge"){p.push([.05,.25],[.95,.5],[.05,.75]);}else if(type==="bluff"){p.push([.1,.1],[.9,.1],[.9,.9],[.1,.9]);}
+  // ── F1 presets (traced from FIA P226 2026 concept blueprint) ──
+  else if(type==="f1car"){
+    // Side profile: nose→front wing→chassis→halo→sidepod→engine cover→rear wing→diffuser→floor
+    // Normalized 0-1, higher point density at complex features
+    const raw=[
+      // Nose tip & front wing
+      [0,.58],[.01,.55],[.02,.52],[.03,.49],[.04,.46],[.05,.43],[.06,.41],
+      [.07,.40],[.08,.40],[.09,.41],[.10,.42],
+      // Nose cone ramp up
+      [.11,.41],[.12,.39],[.13,.37],[.14,.36],[.15,.35],[.16,.34],[.17,.33],
+      // Chassis top (driver area)
+      [.18,.32],[.20,.31],[.22,.30],[.24,.29],[.26,.28],[.28,.27],
+      // Halo structure
+      [.29,.27],[.30,.25],[.31,.23],[.32,.22],[.33,.21],[.34,.21],[.35,.22],[.36,.23],
+      [.37,.24],[.38,.24],[.39,.23],[.40,.22],[.41,.22],[.42,.23],[.43,.25],[.44,.27],
+      // Airbox / engine cover
+      [.45,.27],[.46,.26],[.47,.25],[.48,.24],[.50,.23],[.52,.22],[.54,.22],
+      [.56,.22],[.58,.22],[.60,.22],[.62,.23],[.64,.23],
+      // Engine cover spine down to rear
+      [.66,.24],[.68,.25],[.70,.26],[.72,.27],[.74,.28],[.76,.29],
+      // Rear wing support
+      [.78,.30],[.79,.29],[.80,.27],[.81,.25],[.82,.22],[.83,.20],[.84,.18],
+      // Rear wing top
+      [.85,.17],[.86,.17],[.87,.17],[.88,.18],[.89,.19],
+      // Rear wing endplate down
+      [.90,.20],[.91,.22],[.92,.25],[.93,.28],[.94,.32],[.95,.36],
+      // Rear crash structure / light
+      [.96,.38],[.97,.40],[.98,.42],[.99,.44],[1.0,.46],
+      // === BOTTOM (floor, diffuser, underside) — going right to left ===
+      [1.0,.50],[.99,.52],[.98,.54],[.97,.56],[.96,.58],
+      // Diffuser
+      [.95,.60],[.94,.62],[.93,.63],[.92,.64],[.90,.65],[.88,.66],
+      // Rear floor
+      [.86,.66],[.84,.66],[.82,.66],[.80,.66],[.78,.66],
+      // Flat floor
+      [.76,.66],[.74,.66],[.72,.66],[.70,.66],[.68,.66],[.66,.66],[.64,.66],
+      [.62,.66],[.60,.66],[.58,.66],[.56,.66],[.54,.66],[.52,.66],[.50,.66],
+      [.48,.66],[.46,.66],[.44,.66],[.42,.66],[.40,.66],
+      // Front floor rise
+      [.38,.66],[.36,.66],[.34,.65],[.32,.65],[.30,.64],[.28,.64],
+      // Front suspension area
+      [.26,.64],[.24,.64],[.22,.65],[.20,.65],[.18,.66],
+      // Front wing underside
+      [.16,.66],[.14,.67],[.12,.67],[.10,.67],[.08,.67],
+      [.07,.66],[.06,.64],[.05,.62],[.04,.61],[.03,.60],[.02,.59],[.01,.58],[0,.58]
+    ];
+    raw.forEach(([x,y])=>p.push([x,y]));
+  } else if(type==="frontwing"){
+    // F1 front wing — multi-element inverted airfoil profile
+    const pts=[
+      [0,.55],[.02,.48],[.04,.42],[.06,.38],[.08,.35],[.10,.33],[.12,.31],
+      [.15,.29],[.18,.27],[.22,.26],[.26,.25],[.30,.24],[.35,.24],[.40,.24],
+      [.45,.24],[.50,.25],[.55,.26],[.60,.27],[.65,.29],[.70,.31],
+      [.75,.33],[.80,.36],[.85,.40],[.88,.44],[.90,.48],[.92,.52],
+      // Flap trailing edge
+      [.93,.54],[.94,.56],[.95,.58],[.96,.59],[.97,.60],[.98,.61],[1.0,.62],
+      // Bottom return (pressure surface)
+      [1.0,.65],[.98,.66],[.96,.67],[.94,.67],[.92,.67],[.90,.66],
+      [.85,.65],[.80,.64],[.75,.63],[.70,.62],[.65,.62],[.60,.62],
+      [.55,.62],[.50,.63],[.45,.63],[.40,.64],[.35,.64],[.30,.65],
+      [.25,.66],[.20,.66],[.15,.67],[.12,.67],[.10,.66],[.08,.65],
+      [.06,.63],[.04,.61],[.02,.59],[0,.57]
+    ];
+    pts.forEach(([x,y])=>p.push([x,y]));
+  } else if(type==="rearwing"){
+    // F1 DRS rear wing — high-downforce configuration
+    const pts=[
+      [0,.50],[.02,.44],[.04,.38],[.06,.34],[.08,.30],[.10,.27],[.13,.24],
+      [.16,.22],[.20,.20],[.25,.19],[.30,.18],[.35,.18],[.40,.18],
+      [.45,.18],[.50,.19],[.55,.20],[.60,.21],[.65,.23],[.70,.25],
+      [.75,.28],[.80,.32],[.85,.37],[.88,.41],[.90,.45],[.92,.48],
+      [.94,.50],[.96,.52],[.98,.53],[1.0,.54],
+      // Bottom surface (pressure side)
+      [1.0,.58],[.98,.60],[.96,.62],[.94,.64],[.92,.65],[.90,.66],
+      [.85,.67],[.80,.68],[.75,.68],[.70,.68],[.65,.68],[.60,.68],
+      [.55,.68],[.50,.68],[.45,.68],[.40,.68],[.35,.68],[.30,.67],
+      [.25,.66],[.20,.65],[.16,.64],[.13,.62],[.10,.60],[.08,.58],
+      [.06,.56],[.04,.54],[.02,.52],[0,.50]
+    ];
+    pts.forEach(([x,y])=>p.push([x,y]));
+  }
+  return p;}
 
-// Parsers (compact)
-function parseSVGToPolygon(svg,np=120){try{const doc=new DOMParser().parseFromString(svg,"image/svg+xml"),el=doc.querySelector("path,polygon,polyline,rect,circle,ellipse");if(!el)return null;const tag=el.tagName.toLowerCase();let pts=[];if(tag==="polygon"||tag==="polyline"){const raw=el.getAttribute("points").trim().split(/[\s,]+/);for(let i=0;i<raw.length-1;i+=2)pts.push([parseFloat(raw[i]),parseFloat(raw[i+1])]);}else if(tag==="rect"){const x=+el.getAttribute("x")||0,y=+el.getAttribute("y")||0,w=+el.getAttribute("width"),h=+el.getAttribute("height");pts=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];}else if(tag==="circle"||tag==="ellipse"){const cx=+(el.getAttribute("cx")||0),cy=+(el.getAttribute("cy")||0),rx=+(el.getAttribute("r")||el.getAttribute("rx")||50),ry=+(el.getAttribute("r")||el.getAttribute("ry")||rx);for(let i=0;i<=np;i++){const t=(i/np)*Math.PI*2;pts.push([cx+rx*Math.cos(t),cy+ry*Math.sin(t)]);}}else if(tag==="path"){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.style.cssText="position:absolute;visibility:hidden;width:0;height:0";document.body.appendChild(s);const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.setAttribute("d",el.getAttribute("d"));s.appendChild(p);const tl=p.getTotalLength();for(let i=0;i<=np;i++){const pt=p.getPointAtLength((i/np)*tl);pts.push([pt.x,pt.y]);}document.body.removeChild(s);}return normalizePolygon(pts);}catch{return null;}}
+// ── Enhanced SVG Parser (handles compound SVGs with groups and multiple paths) ──
+function parseSVGToPolygon(svgText, numPoints = 200) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgText, "image/svg+xml");
+    // Collect ALL shape elements, including inside <g> groups
+    const elements = doc.querySelectorAll("path,polygon,polyline,rect,circle,ellipse");
+    if (elements.length === 0) return null;
+
+    const allPoints = [];
+    const tempSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    tempSvg.style.cssText = "position:absolute;visibility:hidden;width:0;height:0";
+    document.body.appendChild(tempSvg);
+
+    // Apply transforms from parent <g> elements
+    function getTransformMatrix(el) {
+      const transforms = [];
+      let node = el;
+      while (node && node !== doc.documentElement) {
+        const t = node.getAttribute && node.getAttribute("transform");
+        if (t) transforms.unshift(t);
+        node = node.parentNode;
+      }
+      return transforms.join(" ");
+    }
+
+    elements.forEach(el => {
+      const tag = el.tagName.toLowerCase();
+      let pts = [];
+      const ptsPerElement = Math.max(30, Math.floor(numPoints / elements.length));
+
+      if (tag === "polygon" || tag === "polyline") {
+        const raw = (el.getAttribute("points") || "").trim().split(/[\s,]+/);
+        for (let i = 0; i < raw.length - 1; i += 2) {
+          const x = parseFloat(raw[i]), y = parseFloat(raw[i+1]);
+          if (!isNaN(x) && !isNaN(y)) pts.push([x, y]);
+        }
+      } else if (tag === "rect") {
+        const x = +el.getAttribute("x") || 0, y = +el.getAttribute("y") || 0;
+        const w = +el.getAttribute("width"), h = +el.getAttribute("height");
+        if (w && h) pts = [[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
+      } else if (tag === "circle" || tag === "ellipse") {
+        const cx = +(el.getAttribute("cx") || 0), cy = +(el.getAttribute("cy") || 0);
+        const rx = +(el.getAttribute("r") || el.getAttribute("rx") || 50);
+        const ry = +(el.getAttribute("r") || el.getAttribute("ry") || rx);
+        for (let i = 0; i <= ptsPerElement; i++) {
+          const t = (i / ptsPerElement) * Math.PI * 2;
+          pts.push([cx + rx * Math.cos(t), cy + ry * Math.sin(t)]);
+        }
+      } else if (tag === "path") {
+        const d = el.getAttribute("d");
+        if (!d) return;
+        const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        pathEl.setAttribute("d", d);
+        // Apply parent transforms
+        const parentTransform = getTransformMatrix(el);
+        if (parentTransform) {
+          const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          g.setAttribute("transform", parentTransform);
+          g.appendChild(pathEl);
+          tempSvg.appendChild(g);
+        } else {
+          tempSvg.appendChild(pathEl);
+        }
+        try {
+          const total = pathEl.getTotalLength();
+          if (total > 0) {
+            for (let i = 0; i <= ptsPerElement; i++) {
+              const pt = pathEl.getPointAtLength((i / ptsPerElement) * total);
+              pts.push([pt.x, pt.y]);
+            }
+          }
+        } catch(e) { /* skip malformed paths */ }
+        if (parentTransform) tempSvg.lastChild.remove(); else pathEl.remove();
+      }
+
+      if (pts.length >= 3) allPoints.push(...pts);
+    });
+
+    document.body.removeChild(tempSvg);
+
+    if (allPoints.length < 3) return null;
+
+    // Compute convex hull or just use all points sorted by angle from centroid
+    const cx = allPoints.reduce((s, p) => s + p[0], 0) / allPoints.length;
+    const cy = allPoints.reduce((s, p) => s + p[1], 0) / allPoints.length;
+    allPoints.sort((a, b) => Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx));
+
+    // Downsample if too many points
+    const maxPts = 300;
+    let final = allPoints;
+    if (final.length > maxPts) {
+      const step = Math.ceil(final.length / maxPts);
+      final = final.filter((_, i) => i % step === 0);
+    }
+
+    return normalizePolygon(final);
+  } catch { return null; }
+}
+
+// ── STL Parser (ASCII + Binary) — extracts 2D cross-section at mid-Z ──
+function parseSTLToPolygon(data) {
+  try {
+    // Try ASCII first
+    const text = typeof data === "string" ? data : new TextDecoder().decode(data.slice(0, 1000));
+    if (text.trim().startsWith("solid")) {
+      return parseSTLASCII(typeof data === "string" ? data : new TextDecoder().decode(data));
+    }
+    // Binary STL
+    return parseSTLBinary(data);
+  } catch { return null; }
+}
+
+function parseSTLASCII(text) {
+  const vertices = [];
+  const regex = /vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g;
+  let m;
+  while ((m = regex.exec(text))) {
+    vertices.push([parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3])]);
+  }
+  return stlVerticesToPolygon(vertices);
+}
+
+function parseSTLBinary(buf) {
+  const dv = new DataView(buf instanceof ArrayBuffer ? buf : buf.buffer);
+  const numTriangles = dv.getUint32(80, true);
+  const vertices = [];
+  for (let i = 0; i < numTriangles; i++) {
+    const offset = 84 + i * 50;
+    for (let v = 0; v < 3; v++) {
+      const vo = offset + 12 + v * 12;
+      vertices.push([dv.getFloat32(vo, true), dv.getFloat32(vo + 4, true), dv.getFloat32(vo + 8, true)]);
+    }
+  }
+  return stlVerticesToPolygon(vertices);
+}
+
+function stlVerticesToPolygon(vertices) {
+  if (vertices.length < 3) return null;
+  // Find Z range and take a cross-section at mid-Z
+  const zs = vertices.map(v => v[2]);
+  const zMin = Math.min(...zs), zMax = Math.max(...zs);
+  const zMid = (zMin + zMax) / 2;
+  const tolerance = (zMax - zMin) * 0.05 || 1;
+
+  // Extract 2D points near the mid-Z plane (side profile)
+  const pts2d = [];
+  vertices.forEach(([x, y, z]) => {
+    if (Math.abs(z - zMid) < tolerance) pts2d.push([x, y]);
+  });
+
+  if (pts2d.length < 5) {
+    // Fallback: project all vertices onto XY plane
+    vertices.forEach(([x, y]) => pts2d.push([x, y]));
+  }
+
+  // Deduplicate and sort by angle
+  const cx = pts2d.reduce((s, p) => s + p[0], 0) / pts2d.length;
+  const cy = pts2d.reduce((s, p) => s + p[1], 0) / pts2d.length;
+  pts2d.sort((a, b) => Math.atan2(a[1] - cy, a[0] - cx) - Math.atan2(b[1] - cy, b[0] - cx));
+
+  const maxPts = 250;
+  let final = pts2d;
+  if (final.length > maxPts) {
+    const step = Math.ceil(final.length / maxPts);
+    final = final.filter((_, i) => i % step === 0);
+  }
+
+  return normalizePolygon(final);
+}
+
+// ── DXF Parser ──
 function parseDXFToPolygon(t){const ls=t.split(/\r?\n/).map(l=>l.trim()),pts=[];let i=0,px=null;while(i<ls.length){const c=parseInt(ls[i],10);if(c===10&&i+1<ls.length){px=parseFloat(ls[i+1]);i+=2;}else if(c===20&&i+1<ls.length&&px!==null){const y=parseFloat(ls[i+1]);if(!isNaN(px)&&!isNaN(y))pts.push([px,y]);px=null;i+=2;}else i++;}return pts.length>2?normalizePolygon(pts):null;}
+
+// ── Image Tracer ──
 function traceImageToPolygon(id,w,h,np=100){const d=id.data,edges=[];for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=(y*w+x)*4,br=d[i]*.3+d[i+1]*.59+d[i+2]*.11;if(br<128){const nb=[(y-1)*w+(x-1),(y-1)*w+x,(y-1)*w+(x+1),y*w+(x-1),y*w+(x+1),(y+1)*w+(x-1),(y+1)*w+x,(y+1)*w+(x+1)];if(nb.some(n=>(d[n*4]*.3+d[n*4+1]*.59+d[n*4+2]*.11)>=128))edges.push([x,y]);}}if(edges.length<5)return null;const cx=edges.reduce((s,p)=>s+p[0],0)/edges.length,cy=edges.reduce((s,p)=>s+p[1],0)/edges.length;edges.sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));const st=Math.max(1,Math.floor(edges.length/np));return normalizePolygon(edges.filter((_,i)=>i%st===0));}
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -44,7 +298,7 @@ class LBMSolver {
     this.curl = new Float32Array(this.n);
     this.speed = new Float32Array(this.n);
     this.omega = 1.85;
-    this._initEq(0.1);
+    this._initEq(0.12);
   }
 
   _initEq(u0) {
@@ -186,14 +440,63 @@ class LBMSolver {
   }
 }
 
-// ── Particle: RK2 + bilinear interp ──
+// ── Particle: Wind tunnel smoke rake — inlet-seeded, full-domain traversal, RK2 ──
 class Particle {
-  constructor(){this.x=0;this.y=0;this.age=0;this.life=0;this.tx=new Float32Array(TRAIL_LEN);this.ty=new Float32Array(TRAIL_LEN);this.tl=0;this.ti=0;this.active=true;this.reset();}
-  reset(){this.x=Math.random()*3;this.y=1+Math.random()*(ROWS-2);this.age=0;this.life=.8+Math.random()*1.2;this.tl=0;this.ti=0;}
-  static vel(s,x,y){const i0=Math.max(0,Math.min(COLS-2,x|0)),j0=Math.max(0,Math.min(ROWS-2,y|0)),tx=x-i0,ty=y-j0,k00=j0*COLS+i0,k10=k00+1,k01=k00+COLS,k11=k01+1;if(s.solid[k00]||s.solid[k10]||s.solid[k01]||s.solid[k11])return[0,0];return[(1-tx)*(1-ty)*s.ux[k00]+tx*(1-ty)*s.ux[k10]+(1-tx)*ty*s.ux[k01]+tx*ty*s.ux[k11],(1-tx)*(1-ty)*s.uy[k00]+tx*(1-ty)*s.uy[k10]+(1-tx)*ty*s.uy[k01]+tx*ty*s.uy[k11]];}
-  update(s){if(!this.active)return;if(this.x<0||this.x>=COLS-1||this.y<1||this.y>=ROWS-1){this.reset();return;}if(s.solid[(this.y|0)*COLS+(this.x|0)]){this.reset();return;}const i=this.ti%TRAIL_LEN;this.tx[i]=this.x*(SIM_W/COLS);this.ty[i]=this.y*(SIM_H/ROWS);this.ti++;if(this.tl<TRAIL_LEN)this.tl++;const[a,b]=Particle.vel(s,this.x,this.y),[c,d]=Particle.vel(s,this.x+a*.5,this.y+b*.5);this.x+=c;this.y+=d;this.age+=.016;if(this.age>=this.life||this.x>=COLS-1||this.x<0)this.reset();}
+  constructor(laneY){
+    this.x=0;this.y=0;this.age=0;
+    this.tx=new Float32Array(TRAIL_LEN);this.ty=new Float32Array(TRAIL_LEN);
+    this.tl=0;this.ti=0;this.active=true;
+    this.laneY=laneY||0; // assigned vertical lane for organized seeding
+    this.reset();
+  }
+  reset(){
+    // Seed at inlet (x=0..2) in assigned lane with small random scatter
+    this.x=Math.random()*2;
+    this.y=this.laneY>0?this.laneY+(Math.random()-.5)*2:2+Math.random()*(ROWS-4);
+    this.age=0;
+    this.tl=0;this.ti=0;
+  }
+  static vel(s,x,y){
+    const i0=Math.max(0,Math.min(COLS-2,x|0)),j0=Math.max(0,Math.min(ROWS-2,y|0));
+    const tx=x-i0,ty=y-j0;
+    const k00=j0*COLS+i0,k10=k00+1,k01=k00+COLS,k11=k01+1;
+    if(s.solid[k00]||s.solid[k10]||s.solid[k01]||s.solid[k11])return[0,0];
+    return[
+      (1-tx)*(1-ty)*s.ux[k00]+tx*(1-ty)*s.ux[k10]+(1-tx)*ty*s.ux[k01]+tx*ty*s.ux[k11],
+      (1-tx)*(1-ty)*s.uy[k00]+tx*(1-ty)*s.uy[k10]+(1-tx)*ty*s.uy[k01]+tx*ty*s.uy[k11]
+    ];
+  }
+  update(s){
+    if(!this.active)return;
+    // Reset if out of domain
+    if(this.x<0||this.x>=COLS-1||this.y<1||this.y>=ROWS-1){this.reset();return;}
+    if(s.solid[(this.y|0)*COLS+(this.x|0)]){this.reset();return;}
+    // Store trail point
+    const idx=this.ti%TRAIL_LEN;
+    this.tx[idx]=this.x*(SIM_W/COLS);
+    this.ty[idx]=this.y*(SIM_H/ROWS);
+    this.ti++;if(this.tl<TRAIL_LEN)this.tl++;
+    // RK2 midpoint integration
+    const[a,b]=Particle.vel(s,this.x,this.y);
+    const[c,d]=Particle.vel(s,this.x+a*.5,this.y+b*.5);
+    this.x+=c;this.y+=d;
+    this.age+=.016;
+    // Only reset on domain exit — particles live until they leave
+    if(this.x>=COLS-2||this.x<0||this.y<1||this.y>=ROWS-1)this.reset();
+  }
 }
-function mkPool(){return Array.from({length:MAX_PARTICLES},(_,i)=>{const p=new Particle();p.active=i<DEFAULT_PARTICLES;return p;});}
+function mkPool(){
+  // Create organized smoke rake: particles assigned to vertical lanes
+  const pool=[];
+  const numLanes=Math.min(MAX_PARTICLES,60); // 60 organized lanes
+  for(let i=0;i<MAX_PARTICLES;i++){
+    const laneY=3+((i%numLanes)/numLanes)*(ROWS-6); // evenly spaced lanes
+    const p=new Particle(laneY);
+    p.active=i<DEFAULT_PARTICLES;
+    pool.push(p);
+  }
+  return pool;
+}
 function resPool(pool,n){const t=Math.min(n,MAX_PARTICLES);for(let i=0;i<pool.length;i++){if(i<t){if(!pool[i].active){pool[i].active=true;pool[i].reset();}}else pool[i].active=false;}}
 
 // ── Icons ──
@@ -217,19 +520,19 @@ export default function CFDLab(){
   const solverRef=useRef(null),particlesRef=useRef(mkPool());
   const canvasRef=useRef(null),drawCanvasRef=useRef(null),miniCanvasRef=useRef(null),rafRef=useRef(null),frameRef=useRef(0),isDrawingRef=useRef(false),drawPointsRef=useRef([]),imageDataRef=useRef(null);
   const[tab,setTab]=useState("preset"),[running,setRunning]=useState(false),[viewMode,setViewMode]=useState("velocity");
-  const[normPoly,setNormPoly]=useState(()=>generatePreset("airfoil")),[presetType,setPresetType]=useState("airfoil");
+  const[normPoly,setNormPoly]=useState(()=>generatePreset("f1car")),[presetType,setPresetType]=useState("f1car");
   const[shapeReady,setShapeReady]=useState(true),[error,setError]=useState(""),[simplify,setSimplify]=useState(0);
   const[stats,setStats]=useState({cl:0,cd:0,re:0,maxV:0}),[displayFrame,setDisplayFrame]=useState(0);
   const[particleCount,setParticleCount]=useState(DEFAULT_PARTICLES),[trailOpacity,setTrailOpacity]=useState(1);
   const[simSpeed,setSimSpeed]=useState(1),[fps,setFps]=useState(0);
   const fpsF=useRef(0),fpsT=useRef(performance.now());
-  const[cx,setCx]=useState(COLS*.35),[cy,setCy]=useState(ROWS/2),[scaleX,setScaleX]=useState(COLS*.25),[scaleY,setScaleY]=useState(ROWS*.45),[aoa,setAoa]=useState(5);
-  const[velocity,setVelocity]=useState(.1),[turbulence,setTurbulence]=useState(.3),[viscosity,setViscosity]=useState(.02);
+  const[cx,setCx]=useState(COLS*.35),[cy,setCy]=useState(ROWS/2),[scaleX,setScaleX]=useState(COLS*.25),[scaleY,setScaleY]=useState(ROWS*.45),[aoa,setAoa]=useState(0);
+  const[velocity,setVelocity]=useState(.12),[turbulence,setTurbulence]=useState(.15),[viscosity,setViscosity]=useState(.015);
   const[historyRef,pushHistory]=useHistory(200),[historySnap,setHistorySnap]=useState([]);
-  const rRef=useRef(false),vmRef=useRef("velocity"),pRef=useRef(null),cxR=useRef(0),cyR=useRef(0),sxR=useRef(0),syR=useRef(0),aoR=useRef(0),siR=useRef(0),vR=useRef(.1),tR=useRef(.3),nR=useRef(.02),thR=useRef(true),pcR=useRef(DEFAULT_PARTICLES),toR=useRef(1),ssR=useRef(1);
+  const rRef=useRef(false),vmRef=useRef("velocity"),pRef=useRef(null),cxR=useRef(0),cyR=useRef(0),sxR=useRef(0),syR=useRef(0),aoR=useRef(0),siR=useRef(0),vR=useRef(.12),tR=useRef(.15),nR=useRef(.015),thR=useRef(true),pcR=useRef(DEFAULT_PARTICLES),toR=useRef(1),ssR=useRef(1);
 
   // Init solver
-  useEffect(()=>{if(!solverRef.current){const s=new LBMSolver(COLS,ROWS);s.setViscosity(.02);solverRef.current=s;}},[]);
+  useEffect(()=>{if(!solverRef.current){const s=new LBMSolver(COLS,ROWS);s.setViscosity(.015);solverRef.current=s;}},[]);
 
   useEffect(()=>{thR.current=isDark},[isDark]);useEffect(()=>{rRef.current=running},[running]);useEffect(()=>{vmRef.current=viewMode},[viewMode]);
   useEffect(()=>{vR.current=velocity},[velocity]);useEffect(()=>{tR.current=turbulence},[turbulence]);
@@ -301,15 +604,38 @@ export default function CFDLab(){
       }
       ctx.putImageData(img,0,0);
 
-      // Particles
+      // Particles — professional CFD streamline rendering
       const parts=particlesRef.current,pC=pcR.current,tO=toR.current;
       for(let pi=0;pi<pC&&pi<parts.length;pi++)parts[pi].update(solver);
       if((vm==="streamlines"||vm==="velocity"||vm==="vorticity")&&tO>0){
         ctx.lineCap="round";ctx.lineJoin="round";
-        for(let pi=0;pi<pC&&pi<parts.length;pi++){const p=parts[pi];if(!p.active||p.tl<2)continue;
-          ctx.beginPath();const st=p.ti-p.tl;for(let ti=st;ti<p.ti;ti++){const idx=((ti%TRAIL_LEN)+TRAIL_LEN)%TRAIL_LEN;ti===st?ctx.moveTo(p.tx[idx],p.ty[idx]):ctx.lineTo(p.tx[idx],p.ty[idx]);}
-          const a=(1-p.age/p.life)*(vm==="streamlines"?.8:.35)*tO;
-          ctx.strokeStyle=vm==="streamlines"?(dark?`rgba(130,220,255,${a})`:`rgba(10,80,160,${a})`):(dark?`rgba(255,255,255,${a})`:`rgba(0,0,0,${a*.5})`);ctx.lineWidth=vm==="streamlines"?1.2:.6;ctx.stroke();}
+        const isStreamMode=vm==="streamlines";
+        for(let pi=0;pi<pC&&pi<parts.length;pi++){
+          const p=parts[pi];if(!p.active||p.tl<3)continue;
+          const st=p.ti-p.tl;
+          // Draw trail with per-segment gradient (fade from head to tail)
+          for(let ti=st+1;ti<p.ti;ti++){
+            const idx0=((((ti-1)%TRAIL_LEN)+TRAIL_LEN)%TRAIL_LEN);
+            const idx1=(((ti%TRAIL_LEN)+TRAIL_LEN)%TRAIL_LEN);
+            const progress=(ti-st)/(p.tl); // 0=tail, 1=head
+            const alpha=(0.15+progress*0.7)*tO*(isStreamMode?1:.5);
+            ctx.beginPath();
+            ctx.moveTo(p.tx[idx0],p.ty[idx0]);
+            ctx.lineTo(p.tx[idx1],p.ty[idx1]);
+            if(isStreamMode){
+              // Velocity-colored streamlines (cyan→white for speed)
+              const r=Math.min(255,(130+progress*125)|0);
+              const g=Math.min(255,(220+progress*35)|0);
+              const b=255;
+              ctx.strokeStyle=dark?`rgba(${r},${g},${b},${alpha})`:`rgba(${10+progress*40|0},${60+progress*60|0},${160+progress*40|0},${alpha})`;
+              ctx.lineWidth=0.6+progress*1.0;
+            } else {
+              ctx.strokeStyle=dark?`rgba(255,255,255,${alpha*.6})`:`rgba(0,0,0,${alpha*.4})`;
+              ctx.lineWidth=0.4+progress*0.4;
+            }
+            ctx.stroke();
+          }
+        }
       }
       // Outline
       const raw=pRef.current;if(raw){const simp=siR.current>0?simplifyPolygon(raw,siR.current*.005):raw;const tp=transformPolygon(simp,cxR.current,cyR.current,sxR.current,syR.current,aoR.current);const oc=dark?"#40e8ff":"#0a7ea4";ctx.beginPath();tp.forEach(([gx,gy],i)=>{const px=gx*DX,py=gy*DY;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});ctx.closePath();ctx.strokeStyle=oc;ctx.lineWidth=1.2;ctx.shadowColor=oc;ctx.shadowBlur=dark?8:3;ctx.stroke();ctx.shadowBlur=0;}
@@ -324,6 +650,29 @@ export default function CFDLab(){
   const handleSVG=e=>{const f=e.target.files[0];if(!f)return;setError("");setShapeReady(false);const r=new FileReader();r.onload=ev=>{const p=parseSVGToPolygon(ev.target.result);if(!p){setError("Could not parse SVG.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};r.readAsText(f);};
   const handleDXF=e=>{const f=e.target.files[0];if(!f)return;setError("");setShapeReady(false);const r=new FileReader();r.onload=ev=>{const p=parseDXFToPolygon(ev.target.result);if(!p){setError("Could not parse DXF.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};r.readAsText(f);};
   const handleImage=e=>{const f=e.target.files[0];if(!f)return;setError("");setShapeReady(false);const u=URL.createObjectURL(f);const img=new Image();img.onload=()=>{const c=document.createElement("canvas"),W=Math.min(img.width,200),H=Math.min(img.height,200);c.width=W;c.height=H;const x=c.getContext("2d");x.drawImage(img,0,0,W,H);const p=traceImageToPolygon(x.getImageData(0,0,W,H),W,H);URL.revokeObjectURL(u);if(!p){setError("Could not trace.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};img.onerror=()=>{URL.revokeObjectURL(u);setError("Failed.");setShapeReady(true);};img.src=u;};
+
+  // STL handler
+  const handleSTL=e=>{const f=e.target.files[0];if(!f)return;setError("");setShapeReady(false);const r=new FileReader();r.onload=ev=>{const p=parseSTLToPolygon(ev.target.result);if(!p){setError("Could not extract 2D profile from STL. Ensure it's a valid ASCII or binary STL.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};r.readAsArrayBuffer(f);};
+
+  // Universal drag-and-drop handler (auto-detects file type)
+  const handleDrop=useCallback((e)=>{
+    e.preventDefault();e.stopPropagation();
+    const file=e.dataTransfer?.files?.[0];if(!file)return;
+    setError("");setShapeReady(false);
+    const name=file.name.toLowerCase();
+    if(name.endsWith(".svg")){
+      const r=new FileReader();r.onload=ev=>{const p=parseSVGToPolygon(ev.target.result);if(!p){setError("Could not parse SVG.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};r.readAsText(file);
+    }else if(name.endsWith(".dxf")){
+      const r=new FileReader();r.onload=ev=>{const p=parseDXFToPolygon(ev.target.result);if(!p){setError("Could not parse DXF.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};r.readAsText(file);
+    }else if(name.endsWith(".stl")){
+      const r=new FileReader();r.onload=ev=>{const p=parseSTLToPolygon(ev.target.result);if(!p){setError("Could not extract profile from STL.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};r.readAsArrayBuffer(file);
+    }else if(name.endsWith(".step")||name.endsWith(".stp")||name.endsWith(".iges")||name.endsWith(".igs")){
+      setError("STEP/IGES files require conversion. Export your CAD model as SVG or STL first, then import here.");setShapeReady(true);
+    }else if(file.type?.startsWith("image/")){
+      const u=URL.createObjectURL(file);const img=new Image();img.onload=()=>{const c=document.createElement("canvas"),W=Math.min(img.width,200),H=Math.min(img.height,200);c.width=W;c.height=H;const x=c.getContext("2d");x.drawImage(img,0,0,W,H);const p=traceImageToPolygon(x.getImageData(0,0,W,H),W,H);URL.revokeObjectURL(u);if(!p){setError("Could not trace edges.");setShapeReady(true);return;}setNormPoly(p);setShapeReady(true);};img.onerror=()=>{URL.revokeObjectURL(u);setError("Failed to load image.");setShapeReady(true);};img.src=u;
+    }else{setError(`Unsupported format: ${name.split(".").pop()}. Use SVG, STL, DXF, or PNG/JPG.`);setShapeReady(true);}
+  },[]);
+  const handleDragOver=useCallback(e=>{e.preventDefault();e.stopPropagation();},[]);
   const getDP=e=>{const dc=drawCanvasRef.current,r=dc.getBoundingClientRect(),cx=e.touches?e.touches[0].clientX:e.clientX,cy=e.touches?e.touches[0].clientY:e.clientY;return[(cx-r.left)*(dc.width/r.width),(cy-r.top)*(dc.height/r.height)];};
   const startDraw=e=>{e.preventDefault();isDrawingRef.current=true;drawCanvasRef.current.getContext("2d").clearRect(0,0,drawCanvasRef.current.width,drawCanvasRef.current.height);drawPointsRef.current=[getDP(e)];};
   const moveDraw=e=>{e.preventDefault();if(!isDrawingRef.current)return;const[x,y]=getDP(e);drawPointsRef.current.push([x,y]);const c=drawCanvasRef.current.getContext("2d");c.strokeStyle=isDark?"#40e8ff":"#0a7ea4";c.lineWidth=2;c.lineCap="round";const pts=drawPointsRef.current;if(pts.length>1){c.beginPath();c.moveTo(pts[pts.length-2][0],pts[pts.length-2][1]);c.lineTo(x,y);c.stroke();}};
@@ -331,7 +680,7 @@ export default function CFDLab(){
   const regime=useMemo(()=>{if(stats.re<2300)return{label:"Laminar",col:"var(--accent-green)"};if(stats.re<4000)return{label:"Transitional",col:"var(--accent-orange)"};return{label:"Turbulent",col:"var(--accent-red-stat)"};},[stats.re]);
   useEffect(()=>{const iv=setInterval(()=>setHistorySnap([...historyRef.current]),500);return()=>clearInterval(iv);},[historyRef]);
   const exportCSV=useCallback(()=>{const d=historyRef.current;if(!d.length)return;const b=new Blob(["timestamp,cl,cd,re,maxV\n"+d.map(r=>`${r.t},${r.cl},${r.cd},${r.re},${r.maxV}`).join("\n")],{type:"text/csv"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=`aerolab-${Date.now()}.csv`;a.click();URL.revokeObjectURL(u);},[historyRef]);
-  const resetAll=useCallback(()=>{setRunning(false);setVelocity(.1);setTurbulence(.3);setViscosity(.02);setCx(COLS*.35);setCy(ROWS/2);setScaleX(COLS*.25);setScaleY(ROWS*.45);setAoa(5);setSimplify(0);setParticleCount(DEFAULT_PARTICLES);setTrailOpacity(1);setSimSpeed(1);setPresetType("airfoil");setNormPoly(generatePreset("airfoil"));const s=new LBMSolver(COLS,ROWS);s.setViscosity(.02);solverRef.current=s;},[]);
+  const resetAll=useCallback(()=>{setRunning(false);setVelocity(.12);setTurbulence(.15);setViscosity(.015);setCx(COLS*.35);setCy(ROWS/2);setScaleX(COLS*.25);setScaleY(ROWS*.45);setAoa(0);setSimplify(0);setParticleCount(DEFAULT_PARTICLES);setTrailOpacity(1);setSimSpeed(1);setPresetType("f1car");setNormPoly(generatePreset("f1car"));const s=new LBMSolver(COLS,ROWS);s.setViscosity(.015);solverRef.current=s;},[]);
 
   const S=useMemo(()=>({panel:{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:10,padding:16,transition:"background .4s,border-color .4s"},sh:{fontSize:9,color:"var(--text-muted)",letterSpacing:3,textTransform:"uppercase",marginBottom:14,display:"flex",alignItems:"center",gap:8,fontWeight:600},btn:a=>({padding:"7px 12px",fontSize:9,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",background:a?"var(--accent-cyan-glow)":"transparent",border:`1px solid ${a?"var(--accent-cyan)":"var(--border-primary)"}`,color:a?"var(--accent-cyan)":"var(--text-dim)",borderRadius:6,cursor:"pointer",transition:"all .2s"}),tab:a=>({padding:"5px 10px",fontSize:8,letterSpacing:1.5,fontFamily:"'JetBrains Mono',monospace",background:a?"var(--accent-cyan-glow)":"transparent",border:`1px solid ${a?"var(--border-accent)":"var(--border-primary)"}`,color:a?"var(--accent-cyan)":"var(--text-dim)",borderRadius:5,cursor:"pointer"}),fb:{display:"flex",alignItems:"center",gap:8,padding:"12px 14px",background:"var(--accent-cyan-glow)",border:"1px dashed var(--border-accent)",borderRadius:8,cursor:"pointer",color:"var(--text-muted)",fontSize:10,letterSpacing:1.5,justifyContent:"center",width:"100%"},err:{marginTop:10,fontSize:9,color:"var(--accent-red-stat)",background:"var(--accent-red-glow)",border:"1px solid var(--accent-red)",borderRadius:6,padding:"8px 12px"}}),[]);
 
@@ -344,11 +693,30 @@ export default function CFDLab(){
     </div>
     <div style={{display:"flex",flex:1,overflow:"hidden"}}>
       {activeView==="tunnel"&&<div style={{width:sidebarOpen?268:0,minWidth:sidebarOpen?268:0,transition:"all .3s",overflow:"hidden",borderRight:"1px solid var(--border-primary)",background:isDark?"rgba(3,10,20,.6)":"rgba(245,248,252,.8)",display:"flex",flexDirection:"column"}}><div style={{padding:16,display:"flex",flexDirection:"column",gap:12,overflowY:"auto",flex:1}}>
-        <div style={S.panel}><div style={S.sh}><IconGear/> Import</div><div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>{["preset","svg","dxf","draw","image"].map(id=><button key={id} onClick={()=>{setTab(id);setError("")}} style={S.tab(tab===id)}>{id.toUpperCase()}</button>)}</div>{tab==="preset"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:5}}>{["airfoil","cylinder","wedge","bluff"].map(p=><button key={p} onClick={()=>{setPresetType(p);setNormPoly(generatePreset(p))}} style={S.btn(presetType===p)}>{p}</button>)}</div>}{tab==="svg"&&<label style={S.fb}><IconUpload/> .svg<input type="file" accept=".svg" style={{display:"none"}} onChange={handleSVG}/></label>}{tab==="dxf"&&<label style={S.fb}><IconUpload/> .dxf<input type="file" accept=".dxf" style={{display:"none"}} onChange={handleDXF}/></label>}{tab==="draw"&&<div><div style={{fontSize:9,color:"var(--text-muted)",marginBottom:6}}>Draw outline</div><canvas ref={drawCanvasRef} width={208} height={140} style={{background:"var(--bg-canvas)",border:"1px solid var(--border-subtle)",borderRadius:6,cursor:"crosshair",display:"block",width:"100%",touchAction:"none"}} onMouseDown={startDraw} onMouseMove={moveDraw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={moveDraw} onTouchEnd={endDraw}/></div>}{tab==="image"&&<label style={S.fb}><IconImage/> PNG/JPG<input type="file" accept="image/*" style={{display:"none"}} onChange={handleImage}/></label>}{error&&<div style={S.err}>{error}</div>}{!shapeReady&&<div style={{marginTop:8,fontSize:9,color:"var(--accent-orange)"}}>Processing…</div>}</div>
+        <div style={S.panel} onDrop={handleDrop} onDragOver={handleDragOver}><div style={S.sh}><IconGear/> Import</div><div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>{["preset","f1","svg","stl","dxf","draw","image"].map(id=><button key={id} onClick={()=>{setTab(id);setError("")}} style={S.tab(tab===id)}>{id.toUpperCase()}</button>)}</div>
+          {tab==="preset"&&<div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:5}}>{["airfoil","cylinder","wedge","bluff"].map(p=><button key={p} onClick={()=>{setPresetType(p);setNormPoly(generatePreset(p))}} style={S.btn(presetType===p)}>{p}</button>)}</div><div style={{fontSize:8,color:"var(--accent-cyan)",letterSpacing:2,marginTop:10,marginBottom:6,fontWeight:600}}>⬡ F1STORIES.GR</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>{[["f1car","F1 Car"],["frontwing","Front Wing"],["rearwing","Rear Wing"]].map(([id,label])=><button key={id} onClick={()=>{setPresetType(id);setNormPoly(generatePreset(id))}} style={S.btn(presetType===id)}>{label}</button>)}</div></div>}
+          {tab==="f1"&&<div><div style={{fontSize:8,color:"var(--accent-cyan)",letterSpacing:2,marginBottom:8,fontWeight:600}}>F1STORIES.GR COLLECTION</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>{["f1car","frontwing","rearwing"].map(p=><button key={p} onClick={()=>{setPresetType(p);setNormPoly(generatePreset(p))}} style={S.btn(presetType===p)}>{p==="f1car"?"F1 Car":p==="frontwing"?"Front Wing":"Rear Wing"}</button>)}</div><div style={{fontSize:8,color:"var(--text-faint)",marginTop:8,lineHeight:1.6}}>Simplified F1 profiles from f1stories.gr. Import your own CAD model via SVG or STL for accurate geometry.</div></div>}
+          {tab==="svg"&&<label style={S.fb}><IconUpload/> Upload .svg (compound supported)<input type="file" accept=".svg" style={{display:"none"}} onChange={handleSVG}/></label>}
+          {tab==="stl"&&<div><label style={S.fb}><IconUpload/> Upload .stl (ASCII or binary)<input type="file" accept=".stl" style={{display:"none"}} onChange={handleSTL}/></label><div style={{fontSize:8,color:"var(--text-faint)",marginTop:6,lineHeight:1.5}}>STL files are sliced at mid-Z to extract a 2D cross-section. Best results with side-profile exports.</div></div>}
+          {tab==="dxf"&&<label style={S.fb}><IconUpload/> Upload .dxf<input type="file" accept=".dxf" style={{display:"none"}} onChange={handleDXF}/></label>}
+          {tab==="draw"&&<div><div style={{fontSize:9,color:"var(--text-muted)",marginBottom:6}}>Draw outline</div><canvas ref={drawCanvasRef} width={208} height={140} style={{background:"var(--bg-canvas)",border:"1px solid var(--border-subtle)",borderRadius:6,cursor:"crosshair",display:"block",width:"100%",touchAction:"none"}} onMouseDown={startDraw} onMouseMove={moveDraw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={moveDraw} onTouchEnd={endDraw}/></div>}
+          {tab==="image"&&<label style={S.fb}><IconImage/> PNG/JPG (auto-trace silhouette)<input type="file" accept="image/*" style={{display:"none"}} onChange={handleImage}/></label>}
+          {/* Drag-drop zone */}
+          <div style={{marginTop:10,padding:"10px 12px",border:"1px dashed var(--border-subtle)",borderRadius:6,textAlign:"center",fontSize:8,color:"var(--text-faint)",letterSpacing:1,lineHeight:1.6}}>
+            DROP ANY FILE HERE<br/>SVG · STL · DXF · PNG · JPG
+          </div>
+          {error&&<div style={S.err}>{error}</div>}
+          {!shapeReady&&<div style={{marginTop:8,fontSize:9,color:"var(--accent-orange)"}}>Processing…</div>}
+        </div>
         <div style={S.panel}><div style={S.sh}><IconLayers/> Transform</div><SliderRow l="Pos X" v={cx.toFixed(0)} min={10} max={COLS-10} step={1} set={setCx} col="var(--accent-cyan)"/><SliderRow l="Pos Y" v={cy.toFixed(0)} min={4} max={ROWS-4} step={1} set={setCy} col="var(--accent-cyan)"/><SliderRow l="Scale X" v={scaleX.toFixed(0)} min={10} max={COLS*.5} step={1} set={setScaleX} col="var(--accent-purple)"/><SliderRow l="Scale Y" v={scaleY.toFixed(0)} min={5} max={ROWS*.7} step={1} set={setScaleY} col="var(--accent-purple)"/><SliderRow l="AoA" v={aoa} min={-25} max={35} step={1} set={setAoa} u="°" col="var(--accent-green)"/></div>
         <div style={S.panel}><div style={S.sh}><IconWind/> Flow</div><SliderRow l="Velocity" v={velocity.toFixed(3)} min={.02} max={.18} step={.005} set={setVelocity} u=" U" col="var(--accent-cyan)"/><SliderRow l="Turbulence" v={turbulence.toFixed(1)} min={0} max={3} step={.1} set={setTurbulence} col="var(--accent-orange)"/><SliderRow l="Viscosity ν" v={viscosity.toFixed(3)} min={.005} max={.1} step={.001} set={setViscosity} col="var(--accent-purple)"/></div>
         <div style={S.panel}><div style={S.sh}><IconParticles/> Particles</div><SliderRow l="Count" v={particleCount} min={0} max={MAX_PARTICLES} step={10} set={setParticleCount} col="var(--accent-cyan)"/><SliderRow l="Opacity" v={trailOpacity.toFixed(2)} min={0} max={1} step={.05} set={setTrailOpacity} col="var(--accent-purple)"/><SliderRow l={`Speed (${simSpeed}×)`} v={simSpeed} min={1} max={10} step={1} set={setSimSpeed} u="×" col="var(--accent-orange)"/><div style={{display:"flex",gap:4,marginTop:6}}>{[{l:"OFF",v:0},{l:"LOW",v:100},{l:"MED",v:DEFAULT_PARTICLES},{l:"HIGH",v:1000},{l:"MAX",v:MAX_PARTICLES}].map(({l,v})=><button key={l} onClick={()=>setParticleCount(v)} style={{...S.tab(particleCount===v),flex:1,textAlign:"center",padding:"4px 2px",fontSize:7}}>{l}</button>)}</div></div>
         <div style={{...S.panel,padding:12}}><div style={S.sh}><IconKeyboard/> Keys</div><div style={{display:"flex",flexDirection:"column",gap:4}}>{[["Space","Play/Pause"],["R","Reset"],["1-4","Views"],["[ ]","±Particles"]].map(([k,d])=><div key={k} style={{display:"flex",gap:8,alignItems:"center"}}><kbd style={{fontSize:8,padding:"2px 6px",borderRadius:4,background:"var(--bg-input)",border:"1px solid var(--border-primary)",color:"var(--text-muted)",fontFamily:"inherit"}}>{k}</kbd><span style={{fontSize:9,color:"var(--text-dim)"}}>{d}</span></div>)}</div></div>
+        {/* f1stories.gr branding */}
+        <div style={{textAlign:"center",padding:"12px 0 4px",marginTop:4}}>
+          <a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{fontSize:10,fontWeight:700,color:"var(--accent-cyan)",textDecoration:"none",letterSpacing:2,fontFamily:"'Outfit',sans-serif"}}>f1stories.gr</a>
+          <div style={{fontSize:7,color:"var(--text-faint)",marginTop:3,letterSpacing:1.5}}>AEROLAB CFD · LBM D2Q9</div>
+        </div>
       </div></div>}
       <div style={{flex:1,display:"flex",flexDirection:"column",padding:20,gap:14,overflowY:"auto"}}>
         {activeView==="tunnel"&&<>
@@ -395,6 +763,6 @@ function AnalysisView({stats,regime,hist,miniRef,running,exp}){const cRef=useRef
 function AboutView(){const{isDark}=useTheme();return(<div style={{maxWidth:700,display:"flex",flexDirection:"column",gap:20}}>
   <div><div style={{fontFamily:"'Outfit',sans-serif",fontSize:32,fontWeight:900,background:isDark?"linear-gradient(90deg,#40e8ff,#a080ff)":"linear-gradient(90deg,#0a7ea4,#7050cc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:2,marginBottom:8}}>AEROLAB</div><div style={{fontSize:11,color:"var(--text-muted)",letterSpacing:3,marginBottom:6}}>LATTICE BOLTZMANN CFD WIND TUNNEL</div><div style={{fontSize:10,color:"var(--text-dim)"}}>A project by <a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{color:"var(--accent-cyan)",textDecoration:"none",fontWeight:600}}>f1stories.gr</a></div></div>
   <div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:10,padding:16}}><div style={{fontSize:9,color:"var(--text-muted)",letterSpacing:3,marginBottom:14,fontWeight:600}}><IconLayers/> OVERVIEW</div><p style={{fontSize:12,lineHeight:1.9,color:"var(--text-secondary)",margin:0}}>AeroLab uses a Lattice Boltzmann D2Q9 solver with BGK collision, Zou-He inlet BCs, and bounce-back walls on a {COLS}×{ROWS} grid ({(COLS*ROWS).toLocaleString()} cells). Particles trace pathlines via RK2 midpoint integration with bilinear velocity interpolation. Per-pixel bilinear heatmap rendering with Turbo and CoolWarm colormaps. Built by f1stories.gr.</p></div>
-  <div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:10,padding:16}}><div style={{fontSize:9,color:"var(--text-muted)",letterSpacing:3,marginBottom:14,fontWeight:600}}><IconGear/> FEATURES</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>{[{t:"LBM D2Q9",d:"Collide-stream with Float64 precision, omega-clamped stability"},{t:"4 View Modes",d:"Velocity, pressure, streamlines, vorticity"},{t:"RK2 Particles",d:"Midpoint integration + bilinear interpolation"},{t:"Zou-He BCs",d:"Proper inlet velocity, zero-gradient outlet"},{t:"Bilinear Heatmap",d:"Per-pixel smooth rendering, no cell edges"},{t:"Live Telemetry",d:"CL, CD, Re, regime, FPS, CSV export"}].map(({t,d})=><div key={t} style={{padding:"14px 16px",borderRadius:8,background:isDark?"rgba(10,30,52,.5)":"rgba(220,232,244,.5)",border:"1px solid var(--border-primary)"}}><div style={{fontSize:11,color:"var(--accent-cyan)",fontWeight:600,marginBottom:6}}>{t}</div><div style={{fontSize:10,color:"var(--text-muted)",lineHeight:1.7}}>{d}</div></div>)}</div></div>
+  <div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:10,padding:16}}><div style={{fontSize:9,color:"var(--text-muted)",letterSpacing:3,marginBottom:14,fontWeight:600}}><IconGear/> FEATURES</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>{[{t:"LBM D2Q9",d:"Collide-stream with Float64 precision, omega-clamped stability"},{t:"CAD Import",d:"SVG (compound), STL (binary+ASCII, mid-Z slice), DXF, image trace, freehand draw"},{t:"F1 Presets",d:"Built-in F1 car, front wing, and rear wing profiles from f1stories.gr"},{t:"4 View Modes",d:"Velocity, pressure, streamlines, vorticity"},{t:"RK2 Particles",d:"Midpoint integration + bilinear interpolation for accurate pathlines"},{t:"Drag & Drop",d:"Drop any SVG, STL, DXF, or image file directly onto the import panel"}].map(({t,d})=><div key={t} style={{padding:"14px 16px",borderRadius:8,background:isDark?"rgba(10,30,52,.5)":"rgba(220,232,244,.5)",border:"1px solid var(--border-primary)"}}><div style={{fontSize:11,color:"var(--accent-cyan)",fontWeight:600,marginBottom:6}}>{t}</div><div style={{fontSize:10,color:"var(--text-muted)",lineHeight:1.7}}>{d}</div></div>)}</div></div>
   <div style={{textAlign:"center",padding:"24px 0 8px",borderTop:"1px solid var(--border-primary)"}}><a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{fontFamily:"'Outfit',sans-serif",fontSize:14,fontWeight:700,color:"var(--accent-cyan)",textDecoration:"none",letterSpacing:2}}>f1stories.gr</a><div style={{fontSize:9,color:"var(--text-faint)",marginTop:6,letterSpacing:1.5}}>AERODYNAMICS • MOTORSPORT • ENGINEERING</div></div>
 </div>);}
