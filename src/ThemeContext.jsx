@@ -1,101 +1,120 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 /*
- * Theme system inspired by f1stories/betcast toggle pattern.
- * Uses CSS custom properties for zero-repaint theme switching.
+ * Theme system — f1stories.gr design language
+ * Deep blacks, racing accents, editorial typography tokens
  */
 
 const ThemeContext = createContext(null);
 
-// ── Token definitions ──────────────────────────────────────────────────────────
 const themes = {
   dark: {
-    "--bg-root": "#020810",
-    "--bg-panel": "rgba(4,14,26,0.85)",
-    "--bg-panel-hover": "rgba(8,22,40,0.9)",
-    "--bg-topbar": "linear-gradient(180deg, rgba(6,18,32,0.98) 0%, rgba(4,12,24,0.95) 100%)",
-    "--bg-canvas": "#030a12",
-    "--bg-input": "#0a1828",
-    "--bg-table-odd": "#040c18",
-    "--bg-table-even": "#050e1c",
-    "--bg-table-header": "#060e1a",
+    "--bg-root": "#08060d",
+    "--bg-panel": "rgba(14,12,20,0.92)",
+    "--bg-panel-hover": "rgba(22,18,32,0.95)",
+    "--bg-topbar": "rgba(8,6,13,0.96)",
+    "--bg-canvas": "#0a0810",
+    "--bg-input": "#16121f",
+    "--bg-table-odd": "#0c0a14",
+    "--bg-table-even": "#100e18",
+    "--bg-table-header": "#0e0c16",
 
-    "--border-primary": "#0a1e34",
-    "--border-accent": "#1a4a6a",
-    "--border-subtle": "#0d2540",
+    "--border-primary": "rgba(255,255,255,0.06)",
+    "--border-accent": "rgba(64,232,255,0.15)",
+    "--border-subtle": "rgba(255,255,255,0.04)",
+    "--border-hover": "rgba(64,232,255,0.25)",
 
-    "--text-primary": "#c0daf0",
-    "--text-secondary": "#7aa0c0",
-    "--text-muted": "#3a6a8a",
-    "--text-dim": "#2a5a7a",
-    "--text-faint": "#1a4060",
-    "--text-heading": "#40e8ff",
+    "--text-primary": "#e8e4f0",
+    "--text-secondary": "#a098b4",
+    "--text-muted": "#6a6280",
+    "--text-dim": "#4a4460",
+    "--text-faint": "#2e2a3c",
+    "--text-heading": "#ffffff",
 
     "--accent-cyan": "#40e8ff",
-    "--accent-cyan-glow": "rgba(64,232,255,0.1)",
-    "--accent-cyan-border": "rgba(64,232,255,0.15)",
-    "--accent-green": "#00ff88",
-    "--accent-green-glow": "rgba(0,255,136,0.06)",
-    "--accent-orange": "#ffaa44",
-    "--accent-red": "#ff5040",
-    "--accent-red-glow": "rgba(255,80,60,0.06)",
-    "--accent-purple": "#a080ff",
-    "--accent-red-stat": "#ff5566",
+    "--accent-cyan-glow": "rgba(64,232,255,0.08)",
+    "--accent-cyan-border": "rgba(64,232,255,0.12)",
+    "--accent-green": "#00e676",
+    "--accent-green-glow": "rgba(0,230,118,0.06)",
+    "--accent-orange": "#ff9100",
+    "--accent-orange-glow": "rgba(255,145,0,0.06)",
+    "--accent-red": "#ff3d3d",
+    "--accent-red-glow": "rgba(255,61,61,0.06)",
+    "--accent-purple": "#aa3bff",
+    "--accent-purple-glow": "rgba(170,59,255,0.08)",
+    "--accent-red-stat": "#ff5252",
 
-    "--solid-fill": "rgb(50,62,78)",
-    "--scrollbar-thumb": "#0a2040",
+    "--solid-fill": "rgb(40,36,52)",
+    "--scrollbar-thumb": "rgba(255,255,255,0.08)",
 
-    "--shadow-canvas": "0 4px 40px rgba(0,10,30,0.5), inset 0 0 60px rgba(0,0,0,0.3)",
-    "--shadow-logo": "0 0 20px rgba(64,232,255,0.1)",
+    "--shadow-canvas": "0 8px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03)",
+    "--shadow-logo": "0 0 30px rgba(170,59,255,0.15)",
+    "--shadow-card": "0 2px 20px rgba(0,0,0,0.3)",
+    "--shadow-card-hover": "0 4px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(64,232,255,0.1)",
 
-    "--colorbar-velocity": "linear-gradient(to bottom,#ef4444,#3b82f6)",
-    "--colorbar-pressure": "linear-gradient(to bottom,#dc2626,#2563eb)",
+    "--colorbar-velocity": "linear-gradient(to bottom,#ff3d3d,#aa3bff,#40e8ff)",
+    "--colorbar-pressure": "linear-gradient(to bottom,#ff3d3d,#aa3bff,#40e8ff)",
 
-    "--topbar-blur": "blur(12px)",
+    "--topbar-blur": "blur(20px) saturate(1.8)",
+    "--glass-bg": "rgba(14,12,20,0.75)",
+    "--glass-border": "rgba(255,255,255,0.06)",
+
+    "--gradient-brand": "linear-gradient(135deg, #aa3bff 0%, #40e8ff 100%)",
+    "--gradient-warm": "linear-gradient(135deg, #ff3d3d 0%, #ff9100 100%)",
   },
   light: {
-    "--bg-root": "#f0f4f8",
-    "--bg-panel": "rgba(255,255,255,0.92)",
-    "--bg-panel-hover": "rgba(245,248,252,0.95)",
-    "--bg-topbar": "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,254,0.96) 100%)",
-    "--bg-canvas": "#e8eef4",
-    "--bg-input": "#dce4ee",
-    "--bg-table-odd": "#f5f8fc",
-    "--bg-table-even": "#edf2f8",
-    "--bg-table-header": "#e4eaf2",
+    "--bg-root": "#f4f2f7",
+    "--bg-panel": "rgba(255,255,255,0.95)",
+    "--bg-panel-hover": "rgba(248,246,252,0.98)",
+    "--bg-topbar": "rgba(255,255,255,0.92)",
+    "--bg-canvas": "#ece8f4",
+    "--bg-input": "#e4e0ee",
+    "--bg-table-odd": "#f8f6fc",
+    "--bg-table-even": "#f0eef6",
+    "--bg-table-header": "#e8e4f0",
 
-    "--border-primary": "#c8d8e8",
-    "--border-accent": "#6aaccf",
-    "--border-subtle": "#d0dcea",
+    "--border-primary": "rgba(0,0,0,0.08)",
+    "--border-accent": "rgba(120,40,220,0.2)",
+    "--border-subtle": "rgba(0,0,0,0.04)",
+    "--border-hover": "rgba(120,40,220,0.3)",
 
-    "--text-primary": "#1a2a3a",
-    "--text-secondary": "#3a5068",
-    "--text-muted": "#6a8aa0",
-    "--text-dim": "#8aaaba",
-    "--text-faint": "#aabece",
-    "--text-heading": "#0a7ea4",
+    "--text-primary": "#1a1428",
+    "--text-secondary": "#4a4060",
+    "--text-muted": "#7a7290",
+    "--text-dim": "#9a94a8",
+    "--text-faint": "#bab4c8",
+    "--text-heading": "#0e0a18",
 
-    "--accent-cyan": "#0a7ea4",
-    "--accent-cyan-glow": "rgba(10,126,164,0.08)",
-    "--accent-cyan-border": "rgba(10,126,164,0.2)",
-    "--accent-green": "#0a8a4a",
-    "--accent-green-glow": "rgba(10,138,74,0.06)",
-    "--accent-orange": "#c07820",
-    "--accent-red": "#cc3030",
-    "--accent-red-glow": "rgba(204,48,48,0.06)",
-    "--accent-purple": "#7050cc",
-    "--accent-red-stat": "#d04050",
+    "--accent-cyan": "#0891b2",
+    "--accent-cyan-glow": "rgba(8,145,178,0.08)",
+    "--accent-cyan-border": "rgba(8,145,178,0.2)",
+    "--accent-green": "#059669",
+    "--accent-green-glow": "rgba(5,150,105,0.06)",
+    "--accent-orange": "#d97706",
+    "--accent-orange-glow": "rgba(217,119,6,0.06)",
+    "--accent-red": "#dc2626",
+    "--accent-red-glow": "rgba(220,38,38,0.06)",
+    "--accent-purple": "#7c3aed",
+    "--accent-purple-glow": "rgba(124,58,237,0.08)",
+    "--accent-red-stat": "#ef4444",
 
-    "--solid-fill": "rgb(160,175,195)",
-    "--scrollbar-thumb": "#b8c8d8",
+    "--solid-fill": "rgb(180,174,196)",
+    "--scrollbar-thumb": "rgba(0,0,0,0.12)",
 
-    "--shadow-canvas": "0 4px 24px rgba(0,20,60,0.08), inset 0 0 40px rgba(0,0,0,0.02)",
-    "--shadow-logo": "0 0 12px rgba(10,126,164,0.15)",
+    "--shadow-canvas": "0 4px 30px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)",
+    "--shadow-logo": "0 0 20px rgba(124,58,237,0.12)",
+    "--shadow-card": "0 2px 12px rgba(0,0,0,0.06)",
+    "--shadow-card-hover": "0 4px 20px rgba(0,0,0,0.1), 0 0 0 1px rgba(124,58,237,0.1)",
 
-    "--colorbar-velocity": "linear-gradient(to bottom,#ef4444,#3b82f6)",
-    "--colorbar-pressure": "linear-gradient(to bottom,#dc2626,#2563eb)",
+    "--colorbar-velocity": "linear-gradient(to bottom,#ef4444,#7c3aed,#0891b2)",
+    "--colorbar-pressure": "linear-gradient(to bottom,#ef4444,#7c3aed,#0891b2)",
 
-    "--topbar-blur": "blur(12px)",
+    "--topbar-blur": "blur(20px) saturate(1.4)",
+    "--glass-bg": "rgba(255,255,255,0.7)",
+    "--glass-border": "rgba(0,0,0,0.06)",
+
+    "--gradient-brand": "linear-gradient(135deg, #7c3aed 0%, #0891b2 100%)",
+    "--gradient-warm": "linear-gradient(135deg, #dc2626 0%, #d97706 100%)",
   },
 };
 
@@ -108,7 +127,6 @@ export function ThemeProvider({ children }) {
     return window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
   });
 
-  // Apply CSS variables to :root
   useEffect(() => {
     const tokens = themes[mode];
     const root = document.documentElement;
@@ -132,9 +150,4 @@ export function useTheme() {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error("useTheme must be inside ThemeProvider");
   return ctx;
-}
-
-// Helper: get current CSS variable value
-export function cssVar(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
