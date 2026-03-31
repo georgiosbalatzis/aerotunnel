@@ -1,135 +1,2235 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTheme } from "./ThemeContext";
 import ThemeToggle from "./ThemeToggle";
+import "./cfdlab.css";
 
-/*
- *  ╔══════════════════════════════════════════════════════════════════════╗
- *  ║  AEROLAB — CFD Wind Tunnel   ·   f1stories.gr                     ║
- *  ║  Lattice Boltzmann D2Q9 · v3 — Heavy branding + QoL              ║
- *  ╚══════════════════════════════════════════════════════════════════════╝
- */
+const isMobile = typeof window !== "undefined" && window.innerWidth < 960;
+const SIM_W = isMobile ? 640 : 1000;
+const SIM_H = isMobile ? 320 : 450;
+const COLS = isMobile ? 208 : 300;
+const ROWS = isMobile ? 104 : 135;
+const DEFAULT_PARTICLES = isMobile ? 220 : 420;
+const MAX_PARTICLES = isMobile ? 900 : 2000;
+const TRAIL_LEN = isMobile ? 56 : 80;
 
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-const SIM_W = isMobile ? 600 : 1000, SIM_H = isMobile ? 270 : 450;
-const COLS = isMobile ? 200 : 300, ROWS = isMobile ? 90 : 135;
-const DEFAULT_PARTICLES = isMobile ? 200 : 400, MAX_PARTICLES = isMobile ? 800 : 2000, TRAIL_LEN = isMobile ? 50 : 80;
+const VIEW_OPTIONS = [
+  { id: "tunnel", label: "Pit Wall", eyebrow: "01" },
+  { id: "analysis", label: "Timing Tower", eyebrow: "02" },
+  { id: "about", label: "Garage Notes", eyebrow: "03" },
+];
 
-function buildTurbo(){const l=new Uint32Array(256);for(let i=0;i<256;i++){const t=i/255,r=Math.max(0,Math.min(255,(34.61+t*(1172.33-t*(10793.56-t*(33300.12-t*(38394.49-t*14825.05)))))|0)),g=Math.max(0,Math.min(255,(23.31+t*(557.33+t*(1225.33-t*(3574.96-t*(1073.77+t*707.56)))))|0)),b=Math.max(0,Math.min(255,(27.2+t*(3211.1-t*(15327.97-t*(27814.0-t*(22569.18-t*6838.66)))))|0));l[i]=(255<<24)|(b<<16)|(g<<8)|r;}return l;}
-function buildCW(){const l=new Uint32Array(256);for(let i=0;i<256;i++){const t=i/255;let r,g,b;if(t<.5){const s=t*2;r=(30+s*170)|0;g=(60+s*120)|0;b=(200-s*10)|0}else{const s=(t-.5)*2;r=(200+s*55)|0;g=(180-s*155)|0;b=(190-s*165)|0}l[i]=(255<<24)|(Math.min(255,Math.max(0,b))<<16)|(Math.min(255,Math.max(0,g))<<8)|Math.min(255,Math.max(0,r));}return l;}
-const TURBO=buildTurbo(),COOLWARM=buildCW();
+const MODE_OPTIONS = [
+  {
+    id: "velocity",
+    label: "Velocity",
+    shortLabel: "VEL",
+    accent: "var(--accent-cyan)",
+    description: "Read top-speed build-up through the tunnel like a sector-speed strip.",
+    legend: "Freestream entry to peak local acceleration",
+  },
+  {
+    id: "pressure",
+    label: "Pressure",
+    shortLabel: "PRS",
+    accent: "var(--accent-orange)",
+    description: "Spot loading, suction, and stall-prone pockets across the package.",
+    legend: "High-load stagnation to low-pressure suction",
+  },
+  {
+    id: "streamlines",
+    label: "Streamlines",
+    shortLabel: "STR",
+    accent: "var(--accent-green)",
+    description: "Follow wake paths the way a race engineer reads on-track flow attachment.",
+    legend: "Particle traces, separation length, and wake direction",
+  },
+  {
+    id: "vorticity",
+    label: "Vorticity",
+    shortLabel: "VRT",
+    accent: "var(--accent-red)",
+    description: "Expose the dirty air behind the section and the strength of shed structures.",
+    legend: "Low to high rotational intensity",
+  },
+];
 
-function pip(px,py,poly){let ins=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];if(((yi>py)!==(yj>py))&&px<((xj-xi)*(py-yi))/(yj-yi)+xi)ins=!ins;}return ins;}
-function normPoly(pts){if(!pts||pts.length<3)return null;const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),rx=x1-x0||1,ry=y1-y0||1;return pts.map(p=>[(p[0]-x0)/rx,(p[1]-y0)/ry]);}
-function xformPoly(n,cx,cy,sx,sy,aoa){const r=aoa*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return n.map(([nx,ny])=>{const lx=(nx-.5)*sx,ly=(ny-.5)*sy;return[cx+c*lx-s*ly,cy+s*lx+c*ly];});}
-function simplPoly(pts,tol){if(pts.length<=4)return pts;const r=[pts[0]];for(let i=1;i<pts.length-1;i++){const p=r[r.length-1],n=pts[i+1],c=pts[i],dx=n[0]-p[0],dy=n[1]-p[1],l=Math.sqrt(dx*dx+dy*dy)||1;if(Math.abs(dy*c[0]-dx*c[1]+n[0]*p[1]-n[1]*p[0])/l>tol)r.push(c);}r.push(pts[pts.length-1]);return r;}
-function genPreset(type){const p=[];if(type==="airfoil"){for(let t=0;t<=Math.PI*2;t+=.04){const c=Math.cos(t),s=Math.sin(t);p.push([.5+.48*c*(.5+.5*c),.5+.18*s*(1+.3*c)]);}}else if(type==="cylinder"){for(let t=0;t<=Math.PI*2;t+=.05)p.push([.5+.45*Math.cos(t),.5+.45*Math.sin(t)]);}else if(type==="wedge"){p.push([.05,.25],[.95,.5],[.05,.75]);}else if(type==="bluff"){p.push([.1,.1],[.9,.1],[.9,.9],[.1,.9]);}else if(type==="f1car"){[[0,.58],[.01,.55],[.03,.49],[.05,.43],[.07,.40],[.09,.41],[.12,.39],[.15,.35],[.17,.33],[.20,.31],[.24,.29],[.28,.27],[.30,.25],[.32,.22],[.34,.21],[.36,.23],[.38,.24],[.40,.22],[.42,.23],[.44,.27],[.47,.25],[.50,.23],[.54,.22],[.58,.22],[.62,.23],[.66,.24],[.70,.26],[.74,.28],[.78,.30],[.80,.27],[.82,.22],[.84,.18],[.86,.17],[.88,.18],[.90,.20],[.92,.25],[.94,.32],[.96,.38],[.98,.42],[1,.46],[1,.50],[.98,.54],[.96,.58],[.94,.62],[.90,.65],[.86,.66],[.80,.66],[.70,.66],[.60,.66],[.50,.66],[.40,.66],[.30,.64],[.24,.64],[.18,.66],[.12,.67],[.08,.67],[.06,.64],[.04,.61],[.02,.59],[0,.58]].forEach(v=>p.push(v));}else if(type==="frontwing"){[[0,.55],[.04,.42],[.10,.33],[.18,.27],[.30,.24],[.45,.24],[.60,.27],[.75,.33],[.88,.44],[.95,.58],[1,.62],[1,.65],[.90,.66],[.75,.63],[.60,.62],[.45,.63],[.30,.65],[.15,.67],[.06,.63],[0,.57]].forEach(v=>p.push(v));}else if(type==="rearwing"){[[0,.50],[.06,.34],[.13,.24],[.25,.19],[.40,.18],[.55,.20],[.70,.25],[.85,.37],[.95,.52],[1,.54],[1,.58],[.92,.65],[.75,.68],[.55,.68],[.35,.68],[.20,.65],[.10,.60],[.04,.54],[0,.50]].forEach(v=>p.push(v));}return p;}
+const IMPORT_TABS = [
+  { id: "preset", label: "Presets" },
+  { id: "svg", label: "SVG" },
+  { id: "stl", label: "STL" },
+  { id: "dxf", label: "DXF" },
+  { id: "draw", label: "Sketch" },
+  { id: "image", label: "Image" },
+];
 
-function parseSVG(svg,np=200){try{const doc=new DOMParser().parseFromString(svg,"image/svg+xml"),els=doc.querySelectorAll("path,polygon,polyline,rect,circle,ellipse");if(!els.length)return null;const all=[],ts=document.createElementNS("http://www.w3.org/2000/svg","svg");ts.style.cssText="position:absolute;visibility:hidden;width:0;height:0";document.body.appendChild(ts);els.forEach(el=>{const tag=el.tagName.toLowerCase();let pts=[];const pp=Math.max(20,Math.floor(np/els.length));if(tag==="polygon"||tag==="polyline"){const raw=(el.getAttribute("points")||"").trim().split(/[\s,]+/);for(let i=0;i<raw.length-1;i+=2){const x=parseFloat(raw[i]),y=parseFloat(raw[i+1]);if(!isNaN(x)&&!isNaN(y))pts.push([x,y]);}}else if(tag==="rect"){const x=+el.getAttribute("x")||0,y=+el.getAttribute("y")||0,w=+el.getAttribute("width"),h=+el.getAttribute("height");if(w&&h)pts=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];}else if(tag==="circle"||tag==="ellipse"){const cx=+(el.getAttribute("cx")||0),cy=+(el.getAttribute("cy")||0),rx=+(el.getAttribute("r")||el.getAttribute("rx")||50),ry=+(el.getAttribute("r")||el.getAttribute("ry")||rx);for(let i=0;i<=pp;i++){const t=(i/pp)*Math.PI*2;pts.push([cx+rx*Math.cos(t),cy+ry*Math.sin(t)]);}}else if(tag==="path"){const d=el.getAttribute("d");if(d){const pe=document.createElementNS("http://www.w3.org/2000/svg","path");pe.setAttribute("d",d);ts.appendChild(pe);try{const tl=pe.getTotalLength();for(let i=0;i<=pp;i++){const pt=pe.getPointAtLength((i/pp)*tl);pts.push([pt.x,pt.y]);}}catch{}pe.remove();}}if(pts.length>=3)all.push(...pts);});document.body.removeChild(ts);if(all.length<3)return null;const cx=all.reduce((s,p)=>s+p[0],0)/all.length,cy=all.reduce((s,p)=>s+p[1],0)/all.length;all.sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));if(all.length>300){const st=Math.ceil(all.length/300);return normPoly(all.filter((_,i)=>i%st===0));}return normPoly(all);}catch{return null;}}
-function parseDXF(t){const ls=t.split(/\r?\n/).map(l=>l.trim()),pts=[];let i=0,px=null;while(i<ls.length){const c=parseInt(ls[i],10);if(c===10&&i+1<ls.length){px=parseFloat(ls[i+1]);i+=2;}else if(c===20&&i+1<ls.length&&px!==null){const y=parseFloat(ls[i+1]);if(!isNaN(px)&&!isNaN(y))pts.push([px,y]);px=null;i+=2;}else i++;}return pts.length>2?normPoly(pts):null;}
-function parseSTL(data){try{const text=typeof data==="string"?data:new TextDecoder().decode(data.slice(0,1000));const verts=[];if(text.trim().startsWith("solid")){const full=typeof data==="string"?data:new TextDecoder().decode(data);const re=/vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g;let m;while((m=re.exec(full)))verts.push([parseFloat(m[1]),parseFloat(m[2]),parseFloat(m[3])]);}else{const dv=new DataView(data instanceof ArrayBuffer?data:data.buffer);const nt=dv.getUint32(80,true);for(let i=0;i<nt;i++){const o=84+i*50;for(let v=0;v<3;v++){const vo=o+12+v*12;verts.push([dv.getFloat32(vo,true),dv.getFloat32(vo+4,true),dv.getFloat32(vo+8,true)]);}}}if(verts.length<3)return null;const zs=verts.map(v=>v[2]),zMid=(Math.min(...zs)+Math.max(...zs))/2,tol=(Math.max(...zs)-Math.min(...zs))*.05||1;const pts2d=[];verts.forEach(([x,y,z])=>{if(Math.abs(z-zMid)<tol)pts2d.push([x,y]);});if(pts2d.length<5)verts.forEach(([x,y])=>pts2d.push([x,y]));const cx=pts2d.reduce((s,p)=>s+p[0],0)/pts2d.length,cy=pts2d.reduce((s,p)=>s+p[1],0)/pts2d.length;pts2d.sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));if(pts2d.length>250){const st=Math.ceil(pts2d.length/250);return normPoly(pts2d.filter((_,i)=>i%st===0));}return normPoly(pts2d);}catch{return null;}}
-function traceImg(id,w,h,np=100){const d=id.data,edges=[];for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=(y*w+x)*4,br=d[i]*.3+d[i+1]*.59+d[i+2]*.11;if(br<128){const nb=[(y-1)*w+(x-1),(y-1)*w+x,(y-1)*w+(x+1),y*w+(x-1),y*w+(x+1),(y+1)*w+(x-1),(y+1)*w+x,(y+1)*w+(x+1)];if(nb.some(n=>(d[n*4]*.3+d[n*4+1]*.59+d[n*4+2]*.11)>=128))edges.push([x,y]);}}if(edges.length<5)return null;const cx=edges.reduce((s,p)=>s+p[0],0)/edges.length,cy=edges.reduce((s,p)=>s+p[1],0)/edges.length;edges.sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));const st=Math.max(1,Math.floor(edges.length/np));return normPoly(edges.filter((_,i)=>i%st===0));}
+const PRESET_GROUPS = [
+  {
+    label: "Wind-tunnel benchmarks",
+    items: [
+      { id: "airfoil", label: "Airfoil", description: "Balanced cambered section" },
+      { id: "cylinder", label: "Cylinder", description: "Wake shedding benchmark" },
+      { id: "wedge", label: "Wedge", description: "Sharp leading-edge study" },
+      { id: "bluff", label: "Bluff body", description: "Boxy separation case" },
+    ],
+  },
+  {
+    label: "Single-seater aero parts",
+    items: [
+      { id: "f1car", label: "F1 silhouette", description: "Whole car side profile" },
+      { id: "frontwing", label: "Front wing", description: "Forward aero element" },
+      { id: "rearwing", label: "Rear wing", description: "High downforce rear section" },
+    ],
+  },
+];
 
-const CX=[0,1,0,-1,0,1,-1,-1,1],CY=[0,0,1,0,-1,1,1,-1,-1],WT=[4/9,1/9,1/9,1/9,1/9,1/36,1/36,1/36,1/36],OPP=[0,3,4,1,2,7,8,5,6];
-class LBM{constructor(c,r){this.C=c;this.R=r;this.N=c*r;this.f0=new Float32Array(9*this.N);this.f1=new Float32Array(9*this.N);this.rho=new Float32Array(this.N);this.ux=new Float32Array(this.N);this.uy=new Float32Array(this.N);this.solid=new Uint8Array(this.N);this.spd=new Float32Array(this.N);this.curl=new Float32Array(this.N);this.omega=1.85;this._init(.12);}_init(u0){for(let k=0;k<this.N;k++){this.rho[k]=1;this.ux[k]=u0;this.uy[k]=0;const b=k*9,usq=u0*u0;for(let d=0;d<9;d++){const cu=CX[d]*u0;this.f0[b+d]=WT[d]*(1+3*cu+4.5*cu*cu-1.5*usq);}}}setNu(nu){this.omega=Math.min(1.95,Math.max(.5,1/(3*nu+.5)));}buildSolid(poly){this.solid.fill(0);if(!poly)return;const{C,R}=this;for(let j=0;j<R;j++)for(let i=0;i<C;i++)if(pip(i+.5,j+.5,poly))this.solid[j*C+i]=1;}step(inU,turb){const{C,R,N,f0,f1,rho,ux,uy,solid,omega}=this;for(let j=0;j<R;j++){for(let i=0;i<C;i++){const k=j*C+i,dst=k*9;for(let d=0;d<9;d++){const si=i-CX[d],sj=j-CY[d];f1[dst+d]=(si>=0&&si<C&&sj>=0&&sj<R)?f0[(sj*C+si)*9+d]:f0[k*9+OPP[d]];}}}for(let k=0;k<N;k++){if(!solid[k])continue;const b=k*9;const t1=f1[b+1],t2=f1[b+2],t3=f1[b+3],t4=f1[b+4],t5=f1[b+5],t6=f1[b+6],t7=f1[b+7],t8=f1[b+8];f1[b+1]=t3;f1[b+3]=t1;f1[b+2]=t4;f1[b+4]=t2;f1[b+5]=t7;f1[b+7]=t5;f1[b+6]=t8;f1[b+8]=t6;}for(let k=0;k<N;k++){if(solid[k]){ux[k]=0;uy[k]=0;rho[k]=1;this.spd[k]=0;continue;}const b=k*9;let r=0,vx=0,vy=0;for(let d=0;d<9;d++){const fv=f1[b+d];r+=fv;vx+=CX[d]*fv;vy+=CY[d]*fv;}if(r<.01)r=1;rho[k]=r;ux[k]=vx/r;uy[k]=vy/r;this.spd[k]=Math.sqrt(vx*vx+vy*vy)/r;}const ps=turb*.004;for(let j=1;j<R-1;j++){const k=j*C,b=k*9,v0=(Math.random()-.5)*ps;const ri=(f1[b]+f1[b+2]+f1[b+4]+2*(f1[b+3]+f1[b+6]+f1[b+7]))/(1-inU);f1[b+1]=f1[b+3]+(2/3)*ri*inU;f1[b+5]=f1[b+7]+(1/6)*ri*inU+.5*ri*v0-.5*(f1[b+2]-f1[b+4]);f1[b+8]=f1[b+6]+(1/6)*ri*inU-.5*ri*v0+.5*(f1[b+2]-f1[b+4]);rho[k]=ri;ux[k]=inU;uy[k]=v0;}for(let j=1;j<R-1;j++){const ke=j*C+(C-1),kp=ke-1,be=ke*9,bp=kp*9;for(let d=0;d<9;d++)f1[be+d]=f1[bp+d];rho[ke]=rho[kp];ux[ke]=ux[kp];uy[ke]=uy[kp];this.spd[ke]=this.spd[kp];}for(let i=0;i<C;i++){const kt=i,bt=kt*9;f1[bt+4]=f1[bt+2];f1[bt+7]=f1[bt+5];f1[bt+8]=f1[bt+6];ux[kt]=0;uy[kt]=0;const kb=(R-1)*C+i,bb=kb*9;f1[bb+2]=f1[bb+4];f1[bb+5]=f1[bb+7];f1[bb+6]=f1[bb+8];ux[kb]=0;uy[kb]=0;}for(let k=0;k<N;k++){const b=k*9;if(solid[k]){for(let d=0;d<9;d++)f0[b+d]=f1[b+d];continue;}const r=rho[k],vx=ux[k],vy=uy[k],usq=vx*vx+vy*vy;for(let d=0;d<9;d++){const cu=CX[d]*vx+CY[d]*vy;f0[b+d]=f1[b+d]+omega*(WT[d]*r*(1+3*cu+4.5*cu*cu-1.5*usq)-f1[b+d]);}}for(let j=1;j<R-1;j++)for(let i=1;i<C-1;i++){const k=j*C+i;this.curl[k]=(uy[k+1]-uy[k-1])*.5-(ux[k+C]-ux[k-C])*.5;}}}
+const PRESET_LOOKUP = Object.fromEntries(
+  PRESET_GROUPS.flatMap((group) =>
+    group.items.map((item) => [item.id, { ...item, group: group.label }])
+  )
+);
 
-class Particle{constructor(lY){this.x=0;this.y=0;this.age=0;this.tx=new Float32Array(TRAIL_LEN);this.ty=new Float32Array(TRAIL_LEN);this.tl=0;this.ti=0;this.active=true;this.lY=lY||0;this.reset();}reset(){this.x=Math.random()*2;this.y=this.lY>0?this.lY+(Math.random()-.5)*2:2+Math.random()*(ROWS-4);this.age=0;this.tl=0;this.ti=0;}static v(s,x,y){const i0=Math.max(0,Math.min(COLS-2,x|0)),j0=Math.max(0,Math.min(ROWS-2,y|0)),tx=x-i0,ty=y-j0,k00=j0*COLS+i0,k10=k00+1,k01=k00+COLS,k11=k01+1;if(s.solid[k00]||s.solid[k10]||s.solid[k01]||s.solid[k11])return[0,0];return[(1-tx)*(1-ty)*s.ux[k00]+tx*(1-ty)*s.ux[k10]+(1-tx)*ty*s.ux[k01]+tx*ty*s.ux[k11],(1-tx)*(1-ty)*s.uy[k00]+tx*(1-ty)*s.uy[k10]+(1-tx)*ty*s.uy[k01]+tx*ty*s.uy[k11]];}update(s){if(!this.active)return;if(this.x<0||this.x>=COLS-1||this.y<1||this.y>=ROWS-1){this.reset();return;}if(s.solid[(this.y|0)*COLS+(this.x|0)]){this.reset();return;}const idx=this.ti%TRAIL_LEN;this.tx[idx]=this.x*(SIM_W/COLS);this.ty[idx]=this.y*(SIM_H/ROWS);this.ti++;if(this.tl<TRAIL_LEN)this.tl++;const[a,b]=Particle.v(s,this.x,this.y),[c,d]=Particle.v(s,this.x+a*.5,this.y+b*.5);this.x+=c;this.y+=d;this.age+=.016;if(this.x>=COLS-2||this.x<0||this.y<1||this.y>=ROWS-1)this.reset();}}
-function mkPool(){const pool=[];const nL=Math.min(MAX_PARTICLES,50);for(let i=0;i<MAX_PARTICLES;i++){const p=new Particle(3+((i%nL)/nL)*(ROWS-6));p.active=i<DEFAULT_PARTICLES;pool.push(p);}return pool;}
-function resPool(pool,n){const t=Math.min(n,MAX_PARTICLES);for(let i=0;i<pool.length;i++){if(i<t){if(!pool[i].active){pool[i].active=true;pool[i].reset();}}else pool[i].active=false;}}
-function useHist(ml=200){const r=useRef([]);const p=useCallback(e=>{r.current.push({...e,t:Date.now()});if(r.current.length>ml)r.current.shift();},[ml]);return[r,p];}
+const SHORTCUTS = [
+  ["Space", "Run or pause the solver"],
+  ["R", "Reset solver state"],
+  ["1-4", "Switch the visualization mode"],
+  ["F", "Toggle fullscreen"],
+  ["S", "Capture a snapshot"],
+  ["/", "Show or hide shortcut help"],
+];
 
-// ── f1stories.gr Logo ──
-const F1Logo=({size=20})=><svg width={size} height={size} viewBox="0 0 48 46" fill="none"><path fill="url(#f1lg)" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z"/><defs><linearGradient id="f1lg" x1="0" y1="0" x2="48" y2="46" gradientUnits="userSpaceOnUse"><stop stopColor="#aa3bff"/><stop offset="1" stopColor="#40e8ff"/></linearGradient></defs></svg>;
+const ABOUT_FEATURES = [
+  {
+    title: "Pit wall layout",
+    body: "The main session screen is organized like a race control stack: track feed, setup sheet, timing tower, and engineer notes.",
+  },
+  {
+    title: "Package pipeline",
+    body: "Swap from benchmark sections to wings, import custom geometry, or rough a silhouette directly into the garage pad.",
+  },
+  {
+    title: "Timing export",
+    body: "CL, CD, Reynolds number, and peak velocity stay live throughout the run and can be exported as a lap sheet CSV.",
+  },
+  {
+    title: "Fast setup changes",
+    body: "Update ride attitude, flow conditions, and visual density without losing the live canvas or telemetry context.",
+  },
+];
 
-// ── Collapsible Section ──
-function Section({title,icon,children,defaultOpen=true}){const[open,setOpen]=useState(defaultOpen);return(<div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:12,overflow:"hidden"}}><button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"11px 14px",background:"none",border:"none",cursor:"pointer",color:"var(--text-muted)",fontSize:10,letterSpacing:2,textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}}><span style={{opacity:.5,fontSize:12}}>{icon}</span>{title}<span style={{marginLeft:"auto",fontSize:11,transition:"transform .2s",transform:open?"rotate(0)":"rotate(-90deg)",opacity:.35}}>▾</span></button><div style={{maxHeight:open?900:0,overflow:"hidden",transition:"max-height .3s cubic-bezier(.4,0,.2,1)",padding:open?"0 14px 12px":"0 14px 0"}}>{children}</div></div>);}
+const METHOD_STEPS = [
+  "Roll out a benchmark or import a custom aero package.",
+  "Place the body in the tunnel like a setup change between runs.",
+  "Tune inlet speed, turbulence, and viscosity before a fresh stint.",
+  "Swap between pressure, velocity, wake, and vorticity reads.",
+  "Compare the timing trace before committing to the next package change.",
+];
 
-// ── Stat Card with tooltip ──
-function StatCard({label,value,sub,color,tip}){const[hover,setHover]=useState(false);return(<div style={{background:"var(--bg-panel)",borderRadius:10,border:"1px solid var(--border-primary)",padding:isMobile?"10px":"13px 15px",position:"relative",overflow:"hidden",cursor:tip?"help":"default"}} onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}><div style={{position:"absolute",top:0,left:0,right:0,height:2,background:color,opacity:.3}}/><div style={{fontSize:9,color:"var(--text-dim)",letterSpacing:1.5,fontFamily:"'DM Sans',sans-serif",marginBottom:4}}>{label}</div><div style={{fontSize:isMobile?16:21,fontWeight:700,color,fontFamily:"'Space Mono',monospace",lineHeight:1}}>{value}</div>{!isMobile&&sub&&<div style={{fontSize:8,color:"var(--text-faint)",marginTop:3,fontFamily:"'DM Sans',sans-serif"}}>{sub}</div>}{hover&&tip&&!isMobile&&<div style={{position:"absolute",bottom:"calc(100% + 6px)",left:"50%",transform:"translateX(-50%)",background:"var(--bg-panel)",border:"1px solid var(--border-accent)",borderRadius:8,padding:"7px 11px",fontSize:10,color:"var(--text-secondary)",whiteSpace:"nowrap",zIndex:50,boxShadow:"var(--shadow-card)",fontFamily:"'DM Sans',sans-serif",pointerEvents:"none"}}>{tip}</div>}</div>);}
-
-// ═══ MAIN ═══
-export default function CFDLab(){
-  const{isDark}=useTheme();
-  const[view,setView]=useState("tunnel"),[sideOpen,setSideOpen]=useState(!isMobile),[mobilePanel,setMobilePanel]=useState(null);
-  const solverRef=useRef(null),partsRef=useRef(mkPool());
-  const canvasRef=useRef(null),wrapRef=useRef(null),drawRef=useRef(null),miniRef=useRef(null),rafRef=useRef(null),frameRef=useRef(0),imgRef=useRef(null);
-  const drawingRef=useRef(false),dptsRef=useRef([]);
-  const[tab,setTab]=useState("preset"),[running,setRunning]=useState(false),[vm,setVm]=useState("velocity");
-  const[poly,setPoly]=useState(()=>genPreset("f1car")),[preset,setPreset]=useState("f1car");
-  const[err,setErr]=useState(""),[simplify,setSimplify]=useState(0);
-  const[stats,setStats]=useState({cl:0,cd:0,re:0,maxV:0}),[dFrame,setDFrame]=useState(0);
-  const[pCount,setPCount]=useState(DEFAULT_PARTICLES),[tOpacity,setTOpacity]=useState(1),[simSpd,setSimSpd]=useState(1),[fps,setFps]=useState(0);
-  const fpsF=useRef(0),fpsT=useRef(performance.now());
-  const[cx,setCx]=useState(COLS*.35),[cy,setCy]=useState(ROWS/2),[sx,setSx]=useState(COLS*.25),[sy,setSy]=useState(ROWS*.45),[aoa,setAoa]=useState(0);
-  const[vel,setVel]=useState(.12),[turb,setTurb]=useState(.15),[nu,setNu]=useState(.015);
-  const[hRef,pushH]=useHist(200),[hSnap,setHSnap]=useState([]);
-  const[isFS,setIsFS]=useState(false),[showKeys,setShowKeys]=useState(false),[autoRun,setAutoRun]=useState(true);
-  const rR=useRef(false),vmR=useRef("velocity"),pR=useRef(null),cxR=useRef(0),cyR=useRef(0),sxR=useRef(0),syR=useRef(0),aoR=useRef(0),siR=useRef(0),vR=useRef(.12),tR=useRef(.15),nR=useRef(.015),thR=useRef(true),pcR=useRef(DEFAULT_PARTICLES),toR=useRef(1),ssR=useRef(1);
-
-  useEffect(()=>{if(!solverRef.current){const s=new LBM(COLS,ROWS);s.setNu(.015);solverRef.current=s;}},[]);
-  useEffect(()=>{thR.current=isDark},[isDark]);useEffect(()=>{rR.current=running},[running]);useEffect(()=>{vmR.current=vm},[vm]);
-  useEffect(()=>{vR.current=vel},[vel]);useEffect(()=>{tR.current=turb},[turb]);useEffect(()=>{nR.current=nu;if(solverRef.current)solverRef.current.setNu(nu)},[nu]);
-  useEffect(()=>{pcR.current=pCount;resPool(partsRef.current,pCount)},[pCount]);useEffect(()=>{toR.current=tOpacity},[tOpacity]);useEffect(()=>{ssR.current=simSpd},[simSpd]);
-  const rebuild=useCallback(()=>{const raw=pR.current;if(!raw||!solverRef.current)return;const s=siR.current>0?simplPoly(raw,siR.current*.005):raw;solverRef.current.buildSolid(xformPoly(s,cxR.current,cyR.current,sxR.current,syR.current,aoR.current));},[]);
-  useEffect(()=>{aoR.current=aoa;cxR.current=cx;cyR.current=cy;sxR.current=sx;syR.current=sy;rebuild()},[aoa,cx,cy,sx,sy,rebuild]);
-  useEffect(()=>{pR.current=poly;siR.current=simplify;rebuild();if(autoRun)setRunning(true);},[poly,simplify,rebuild,autoRun]);
-  const toggleFS=useCallback(()=>{const el=wrapRef.current;if(!el)return;if(!document.fullscreenElement)el.requestFullscreen?.().then(()=>setIsFS(true)).catch(()=>{});else{document.exitFullscreen?.();setIsFS(false);}},[]);
-  useEffect(()=>{const h=()=>setIsFS(!!document.fullscreenElement);document.addEventListener("fullscreenchange",h);return()=>document.removeEventListener("fullscreenchange",h);},[]);
-  const snap=useCallback(()=>{const c=canvasRef.current;if(!c)return;const a=document.createElement("a");a.download=`aerolab-${Date.now()}.png`;a.href=c.toDataURL("image/png");a.click();},[]);
-  useEffect(()=>{const h=e=>{if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")return;switch(e.code){case"Space":e.preventDefault();setRunning(r=>!r);break;case"KeyR":{const s=new LBM(COLS,ROWS);s.setNu(nR.current);solverRef.current=s;rebuild();}break;case"Digit1":setVm("velocity");break;case"Digit2":setVm("pressure");break;case"Digit3":setVm("streamlines");break;case"Digit4":setVm("vorticity");break;case"KeyF":toggleFS();break;case"KeyS":if(!e.ctrlKey&&!e.metaKey)snap();break;case"Slash":e.preventDefault();setShowKeys(k=>!k);break;}};window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h)},[rebuild,toggleFS,snap]);
-
-  // ── RENDER LOOP (unchanged perf-critical code) ──
-  useEffect(()=>{const canvas=canvasRef.current;if(!canvas)return;const ctx=canvas.getContext("2d");imgRef.current=ctx.createImageData(SIM_W,SIM_H);const DX=SIM_W/COLS,DY=SIM_H/ROWS;const loop=()=>{rafRef.current=requestAnimationFrame(loop);const solver=solverRef.current;if(!solver)return;const inV=vR.current;if(rR.current){const steps=ssR.current;for(let s=0;s<steps;s++)solver.step(inV,tR.current);}frameRef.current++;fpsF.current++;const now=performance.now();if(now-fpsT.current>=1000){setFps(fpsF.current);fpsF.current=0;fpsT.current=now;}const dark=thR.current,vmode=vmR.current,img=imgRef.current,buf32=new Uint32Array(img.data.buffer);const solidC=dark?((255<<24)|(52<<16)|(36<<8)|40):((255<<24)|(196<<16)|(174<<8)|180);const bgC=dark?((255<<24)|(13<<16)|(8<<8)|10):((255<<24)|(244<<16)|(232<<8)|236);if(vmode==="streamlines"){buf32.fill(bgC);for(let k=0;k<solver.N;k++)if(solver.solid[k]){const i=k%COLS,j=(k/COLS)|0,x0=(i*DX)|0,y0=(j*DY)|0,x1=Math.min(((i+1)*DX)|0,SIM_W),y1=Math.min(((j+1)*DY)|0,SIM_H);for(let py=y0;py<y1;py++)for(let px=x0;px<x1;px++)buf32[py*SIM_W+px]=solidC;}}else{const lut=vmode==="pressure"?COOLWARM:TURBO;const field=vmode==="velocity"?solver.spd:vmode==="pressure"?solver.rho:solver.curl;let fMin=1e9,fMax=-1e9;for(let k=0;k<solver.N;k++){if(solver.solid[k])continue;const v=field[k];if(v<fMin)fMin=v;if(v>fMax)fMax=v;}const fR=fMax-fMin;if(fR<1e-10)buf32.fill(lut[128]);else{const invR=255/fR,invDX=COLS/SIM_W,invDY=ROWS/SIM_H;for(let py=0;py<SIM_H;py++){const j=Math.min(ROWS-1,(py*invDY)|0),ro=py*SIM_W;for(let px=0;px<SIM_W;px++){const i=Math.min(COLS-1,(px*invDX)|0),k=j*COLS+i;buf32[ro+px]=solver.solid[k]?solidC:lut[Math.max(0,Math.min(255,((field[k]-fMin)*invR)|0))];}}}}ctx.putImageData(img,0,0);const parts=partsRef.current,pC=pcR.current,tO=toR.current;for(let pi=0;pi<pC&&pi<parts.length;pi++)parts[pi].update(solver);if((vmode==="streamlines"||vmode==="velocity"||vmode==="vorticity")&&tO>0){ctx.lineCap="round";ctx.lineJoin="round";const isStr=vmode==="streamlines";const alphas=isStr?[.15,.4,.8]:[.08,.2,.35];const widths=isStr?[.4,.7,1.1]:[.3,.5,.6];const colors=isStr?(dark?["rgba(170,59,255,","rgba(100,200,255,","rgba(200,245,255,"]:["rgba(80,30,160,","rgba(10,80,160,","rgba(30,100,180,"]):dark?["rgba(255,255,255,","rgba(255,255,255,","rgba(255,255,255,"]:["rgba(0,0,0,","rgba(0,0,0,","rgba(0,0,0,"];for(let band=0;band<3;band++){const a=alphas[band]*tO;ctx.strokeStyle=colors[band]+a+")";ctx.lineWidth=widths[band];ctx.beginPath();const segS=band===0?0:band===1?Math.floor(TRAIL_LEN*.33):Math.floor(TRAIL_LEN*.66);const segE=band===0?Math.floor(TRAIL_LEN*.33):band===1?Math.floor(TRAIL_LEN*.66):TRAIL_LEN;for(let pi=0;pi<pC&&pi<parts.length;pi++){const p=parts[pi];if(!p.active||p.tl<3)continue;const st=p.ti-p.tl,from=st+Math.floor(segS*p.tl/TRAIL_LEN),to=st+Math.floor(segE*p.tl/TRAIL_LEN);let started=false;for(let ti=from;ti<to&&ti<p.ti;ti++){const idx=((ti%TRAIL_LEN)+TRAIL_LEN)%TRAIL_LEN;if(!started){ctx.moveTo(p.tx[idx],p.ty[idx]);started=true;}else ctx.lineTo(p.tx[idx],p.ty[idx]);}}ctx.stroke();}}const raw=pR.current;if(raw){const s=siR.current>0?simplPoly(raw,siR.current*.005):raw;const tp=xformPoly(s,cxR.current,cyR.current,sxR.current,syR.current,aoR.current);const oc=dark?"#aa3bff":"#7c3aed";ctx.beginPath();tp.forEach(([gx,gy],i)=>{const px=gx*DX,py=gy*DY;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});ctx.closePath();ctx.strokeStyle=oc;ctx.lineWidth=1.5;ctx.shadowColor=oc;ctx.shadowBlur=dark?10:4;ctx.stroke();ctx.shadowBlur=0;}if(rR.current&&frameRef.current%15===0){let mV=0,tFy=0,tFx=0,cnt=0;for(let k=0;k<solver.N;k++){if(solver.solid[k])continue;const sp=solver.spd[k];if(!isFinite(sp))continue;cnt++;if(sp>mV)mV=sp;tFy+=solver.uy[k];tFx+=Math.abs(solver.ux[k]-inV);}const re=(inV*sxR.current)/(nR.current+1e-6)*10;const cl=cnt>0?Math.abs(tFy/cnt*2*(1+aoR.current*.06)):0;const cd=cnt>0?tFx/cnt*.5+.008:0;setStats({cl:+cl.toFixed(4),cd:+cd.toFixed(4),re:Math.round(re),maxV:inV>0?+(mV/inV).toFixed(3):0});pushH({cl:+cl.toFixed(4),cd:+cd.toFixed(4),re:Math.round(re),maxV:inV>0?+(mV/inV).toFixed(3):0});}if(frameRef.current%30===0)setDFrame(frameRef.current);const mc=miniRef.current;if(mc)mc.getContext("2d").drawImage(canvas,0,0,mc.width,mc.height);};rafRef.current=requestAnimationFrame(loop);return()=>cancelAnimationFrame(rafRef.current);},[pushH]);
-
-  const handleFile=useCallback((file)=>{if(!file)return;setErr("");const n=file.name.toLowerCase();const read=(mode,parser)=>{const r=new FileReader();r.onload=ev=>{const p=parser(ev.target.result);if(!p){setErr(`Parse failed: ${n.split('.').pop().toUpperCase()}`);return;}setPoly(p);};mode==="text"?r.readAsText(file):r.readAsArrayBuffer(file);};if(n.endsWith(".svg"))read("text",parseSVG);else if(n.endsWith(".stl"))read("buf",parseSTL);else if(n.endsWith(".dxf"))read("text",parseDXF);else if(file.type?.startsWith("image/")){const u=URL.createObjectURL(file);const img=new Image();img.onload=()=>{const c=document.createElement("canvas"),W=Math.min(img.width,200),H=Math.min(img.height,200);c.width=W;c.height=H;c.getContext("2d").drawImage(img,0,0,W,H);const p=traceImg(c.getContext("2d").getImageData(0,0,W,H),W,H);URL.revokeObjectURL(u);if(!p){setErr("Edge trace failed.");return;}setPoly(p);};img.src=u;}else setErr("Use SVG, STL, DXF, PNG, JPG");},[]);
-  const hDrop=useCallback(e=>{e.preventDefault();handleFile(e.dataTransfer?.files?.[0]);},[handleFile]);
-  const hFileInput=useCallback(e=>handleFile(e.target.files[0]),[handleFile]);
-  const getDP=e=>{const dc=drawRef.current,r=dc.getBoundingClientRect(),cx=e.touches?e.touches[0].clientX:e.clientX,cy=e.touches?e.touches[0].clientY:e.clientY;return[(cx-r.left)*(dc.width/r.width),(cy-r.top)*(dc.height/r.height)];};
-  const startDraw=e=>{e.preventDefault();drawingRef.current=true;drawRef.current.getContext("2d").clearRect(0,0,drawRef.current.width,drawRef.current.height);dptsRef.current=[getDP(e)];};
-  const moveDraw=e=>{e.preventDefault();if(!drawingRef.current)return;const[x,y]=getDP(e);dptsRef.current.push([x,y]);const c=drawRef.current.getContext("2d");c.strokeStyle=isDark?"#aa3bff":"#7c3aed";c.lineWidth=2;c.lineCap="round";const pts=dptsRef.current;if(pts.length>1){c.beginPath();c.moveTo(pts[pts.length-2][0],pts[pts.length-2][1]);c.lineTo(x,y);c.stroke();}};
-  const endDraw=()=>{drawingRef.current=false;const pts=dptsRef.current;if(pts.length<5)return;const p=normPoly(pts);if(p){setPoly(p);setErr("");}};
-  const regime=useMemo(()=>{if(stats.re<2300)return{label:"Laminar",col:"var(--accent-green)"};if(stats.re<4000)return{label:"Trans.",col:"var(--accent-orange)"};return{label:"Turbulent",col:"var(--accent-red-stat)"};},[stats.re]);
-  const ldRatio=useMemo(()=>stats.cd>0?(stats.cl/stats.cd).toFixed(2):"—",[stats.cl,stats.cd]);
-  useEffect(()=>{const iv=setInterval(()=>setHSnap([...hRef.current]),500);return()=>clearInterval(iv);},[hRef]);
-  const exportCSV=useCallback(()=>{const d=hRef.current;if(!d.length)return;const b=new Blob(["t,cl,cd,re,maxV\n"+d.map(r=>`${r.t},${r.cl},${r.cd},${r.re},${r.maxV}`).join("\n")],{type:"text/csv"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=`aerolab-${Date.now()}.csv`;a.click();URL.revokeObjectURL(u);},[hRef]);
-  const resetAll=useCallback(()=>{setRunning(false);setVel(.12);setTurb(.15);setNu(.015);setCx(COLS*.35);setCy(ROWS/2);setSx(COLS*.25);setSy(ROWS*.45);setAoa(0);setSimplify(0);setPCount(DEFAULT_PARTICLES);setTOpacity(1);setSimSpd(1);setPreset("f1car");setPoly(genPreset("f1car"));const s=new LBM(COLS,ROWS);s.setNu(.015);solverRef.current=s;},[]);
-
-  const Sl=({l,v,min,max,step,set,u="",col="var(--accent-cyan)"})=>(<div style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:10,color:"var(--text-muted)",fontFamily:"'DM Sans',sans-serif"}}>{l}</span><span style={{fontSize:11,color:col,fontWeight:600,fontFamily:"'Space Mono',monospace"}}>{v}{u}</span></div><div style={{position:"relative",height:4,background:"var(--bg-input)",borderRadius:2}}><div style={{position:"absolute",left:0,top:0,height:"100%",width:`${((v-min)/(max-min))*100}%`,background:col,borderRadius:2,opacity:.6}}/><input type="range" min={min} max={max} step={step} value={v} onChange={e=>set(+e.target.value)} style={{position:"absolute",inset:0,opacity:0,width:"100%",cursor:"pointer",margin:0}}/></div></div>);
-  const pill=a=>({padding:"6px 11px",fontSize:9,letterSpacing:.8,fontFamily:"'Space Mono',monospace",background:a?"var(--accent-purple-glow)":"transparent",border:`1px solid ${a?"var(--accent-purple)":"var(--border-primary)"}`,color:a?"var(--accent-purple)":"var(--text-dim)",borderRadius:6,cursor:"pointer"});
-  const tPill=a=>({padding:"4px 7px",fontSize:8,fontFamily:"'Space Mono',monospace",background:a?"var(--accent-purple-glow)":"transparent",border:`1px solid ${a?"var(--accent-purple)":"var(--border-primary)"}`,color:a?"var(--accent-purple)":"var(--text-dim)",borderRadius:4,cursor:"pointer"});
-  const fileLbl={display:"flex",alignItems:"center",gap:8,padding:"10px",background:"var(--accent-purple-glow)",border:"1px dashed var(--accent-purple)",borderRadius:8,cursor:"pointer",color:"var(--text-muted)",fontSize:10,justifyContent:"center",width:"100%",fontFamily:"'DM Sans',sans-serif"};
-
-  const sidebar=(<div style={{padding:isMobile?10:12,display:"flex",flexDirection:"column",gap:8,overflowY:"auto",flex:1}}>
-    <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,background:"var(--accent-purple-glow)",border:"1px solid rgba(170,59,255,.1)"}}><F1Logo size={18}/><div><div style={{fontSize:10,fontWeight:700,color:"var(--accent-purple)",letterSpacing:2,fontFamily:"'Space Mono',monospace"}}>F1STORIES.GR</div><div style={{fontSize:7,color:"var(--text-faint)",letterSpacing:1,fontFamily:"'DM Sans',sans-serif"}}>AEROLAB CFD ENGINE</div></div></div>
-    <Section title="Shape Import" icon="◈"><div onDrop={hDrop} onDragOver={e=>e.preventDefault()}><div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:8}}>{["preset","svg","stl","dxf","draw","image"].map(id=><button key={id} onClick={()=>{setTab(id);setErr("")}} style={tPill(tab===id)}>{id.toUpperCase()}</button>)}</div>{tab==="preset"&&<div><div style={{fontSize:8,color:"var(--text-dim)",letterSpacing:1.5,marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>STANDARD</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:3}}>{["airfoil","cylinder","wedge","bluff"].map(p=><button key={p} onClick={()=>{setPreset(p);setPoly(genPreset(p))}} style={pill(preset===p)}>{p}</button>)}</div><div style={{display:"flex",alignItems:"center",gap:6,margin:"10px 0 4px"}}><F1Logo size={11}/><span style={{fontSize:8,color:"var(--accent-purple)",letterSpacing:2,fontWeight:700,fontFamily:"'Space Mono',monospace"}}>F1 PROFILES</span></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:3}}>{[["f1car","F1 Car"],["frontwing","F.Wing"],["rearwing","R.Wing"]].map(([id,l])=><button key={id} onClick={()=>{setPreset(id);setPoly(genPreset(id))}} style={pill(preset===id)}>{l}</button>)}</div></div>}{tab==="svg"&&<label style={fileLbl}>Upload .SVG<input type="file" accept=".svg" style={{display:"none"}} onChange={hFileInput}/></label>}{tab==="stl"&&<label style={fileLbl}>Upload .STL<input type="file" accept=".stl" style={{display:"none"}} onChange={hFileInput}/></label>}{tab==="dxf"&&<label style={fileLbl}>Upload .DXF<input type="file" accept=".dxf" style={{display:"none"}} onChange={hFileInput}/></label>}{tab==="draw"&&<canvas ref={drawRef} width={208} height={120} style={{background:"var(--bg-canvas)",border:"1px solid var(--border-subtle)",borderRadius:8,cursor:"crosshair",display:"block",width:"100%",touchAction:"none"}} onMouseDown={startDraw} onMouseMove={moveDraw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={moveDraw} onTouchEnd={endDraw}/>}{tab==="image"&&<label style={fileLbl}>Upload PNG/JPG<input type="file" accept="image/*" style={{display:"none"}} onChange={hFileInput}/></label>}<div style={{marginTop:6,padding:7,border:"1px dashed var(--border-subtle)",borderRadius:8,textAlign:"center",fontSize:8,color:"var(--text-faint)",fontFamily:"'DM Sans',sans-serif"}}>or drag & drop</div>{err&&<div style={{marginTop:6,fontSize:10,color:"var(--accent-red)",background:"var(--accent-red-glow)",borderRadius:8,padding:"6px 10px"}}>{err}</div>}</div></Section>
-    <Section title="Transform" icon="⊞"><Sl l="Position X" v={cx.toFixed(0)} min={10} max={COLS-10} step={1} set={setCx} col="var(--accent-cyan)"/><Sl l="Position Y" v={cy.toFixed(0)} min={4} max={ROWS-4} step={1} set={setCy} col="var(--accent-cyan)"/><Sl l="Scale X" v={sx.toFixed(0)} min={10} max={COLS*.5} step={1} set={setSx} col="var(--accent-purple)"/><Sl l="Scale Y" v={sy.toFixed(0)} min={5} max={ROWS*.7} step={1} set={setSy} col="var(--accent-purple)"/><Sl l="Angle of Attack" v={aoa} min={-25} max={35} step={1} set={setAoa} u="°" col="var(--accent-orange)"/><Sl l="Simplify" v={simplify} min={0} max={20} step={1} set={setSimplify} col="var(--text-muted)"/></Section>
-    <Section title="Flow" icon="≋"><Sl l="Inlet Velocity" v={vel.toFixed(3)} min={.02} max={.18} step={.005} set={setVel} col="var(--accent-cyan)"/><Sl l="Turbulence" v={turb.toFixed(1)} min={0} max={3} step={.1} set={setTurb} col="var(--accent-orange)"/><Sl l="Viscosity (ν)" v={nu.toFixed(3)} min={.005} max={.1} step={.001} set={setNu} col="var(--accent-purple)"/></Section>
-    <Section title="Visualization" icon="◉" defaultOpen={!isMobile}><Sl l="Particles" v={pCount} min={0} max={MAX_PARTICLES} step={10} set={setPCount} col="var(--accent-cyan)"/><Sl l="Trail Opacity" v={tOpacity.toFixed(2)} min={0} max={1} step={.05} set={setTOpacity} col="var(--accent-purple)"/><Sl l={`Speed (${simSpd}×)`} v={simSpd} min={1} max={8} step={1} set={setSimSpd} u="×" col="var(--accent-orange)"/><div style={{marginTop:6}}><button onClick={()=>setAutoRun(a=>!a)} style={{...tPill(autoRun),width:"100%",textAlign:"center",padding:"6px"}}>{autoRun?"AUTO-RUN: ON":"AUTO-RUN: OFF"}</button></div></Section>
-    <div style={{textAlign:"center",padding:"12px 0 4px",borderTop:"1px solid var(--border-primary)",marginTop:2}}><a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,color:"var(--accent-purple)",textDecoration:"none",fontSize:11,fontWeight:700,letterSpacing:2,fontFamily:"'Space Mono',monospace"}}><F1Logo size={14}/>f1stories.gr</a><div style={{fontSize:7,color:"var(--text-faint)",marginTop:3,letterSpacing:2,fontFamily:"'DM Sans',sans-serif"}}>AERODYNAMICS · MOTORSPORT · ENGINEERING</div></div>
-  </div>);
-
-  return(<div ref={wrapRef} style={{background:"var(--bg-root)",minHeight:"100vh",fontFamily:"'DM Sans','Inter',system-ui,sans-serif",color:"var(--text-primary)",display:"flex",flexDirection:"column"}}>
-    <header style={{display:"flex",alignItems:"center",gap:isMobile?8:16,padding:isMobile?"10px 14px":"10px 24px",background:"var(--bg-topbar)",borderBottom:"1px solid var(--border-primary)",position:"sticky",top:0,zIndex:100,backdropFilter:"var(--topbar-blur)",WebkitBackdropFilter:"var(--topbar-blur)"}}><div style={{display:"flex",alignItems:"center",gap:10}}><F1Logo size={isMobile?22:28}/><div><div style={{fontFamily:"'Space Mono',monospace",fontSize:isMobile?12:14,fontWeight:700,color:"var(--text-heading)",letterSpacing:3}}>AEROLAB</div>{!isMobile&&<div style={{fontSize:8,color:"var(--text-faint)",letterSpacing:2,marginTop:-1,fontFamily:"'DM Sans',sans-serif"}}>by <a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{color:"var(--accent-purple)",textDecoration:"none",fontWeight:600}}>f1stories.gr</a></div>}</div></div>{!isMobile&&<nav style={{display:"flex",gap:1,marginLeft:16}}>{[{id:"tunnel",l:"Wind Tunnel"},{id:"analysis",l:"Analysis"},{id:"about",l:"About"}].map(({id,l})=><button key={id} onClick={()=>setView(id)} style={{padding:"7px 16px",fontSize:11,fontFamily:"'DM Sans',sans-serif",fontWeight:view===id?600:400,background:view===id?"var(--accent-purple-glow)":"transparent",border:"none",color:view===id?"var(--accent-purple)":"var(--text-muted)",borderRadius:6,cursor:"pointer"}}>{l}</button>)}</nav>}<div style={{flex:1}}/><ThemeToggle/><div style={{display:"flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:16,background:running?"var(--accent-green-glow)":"rgba(255,255,255,.02)",border:`1px solid ${running?"rgba(0,230,118,.12)":"var(--border-primary)"}`}}><div style={{width:6,height:6,borderRadius:"50%",background:running?"var(--accent-green)":"var(--text-faint)",boxShadow:running?"0 0 8px var(--accent-green)":"none",animation:running?"pulse 1.5s infinite":"none"}}/><span style={{fontSize:8,letterSpacing:2,color:running?"var(--accent-green)":"var(--text-dim)",fontFamily:"'Space Mono',monospace"}}>{running?"LIVE":"IDLE"}</span></div><span style={{fontSize:8,color:"var(--text-faint)",fontFamily:"'Space Mono',monospace",fontVariantNumeric:"tabular-nums"}}>{fps}<span style={{fontSize:7,opacity:.4}}>fps</span></span></header>
-    <div style={{height:3,background:"repeating-linear-gradient(90deg, var(--accent-purple) 0px, var(--accent-purple) 6px, transparent 6px, transparent 12px)",opacity:.12}}/>
-    <div style={{display:"flex",flex:1,overflow:"hidden",flexDirection:isMobile?"column":"row"}}>
-      {!isMobile&&view==="tunnel"&&<aside style={{width:sideOpen?264:0,minWidth:sideOpen?264:0,transition:"all .3s cubic-bezier(.4,0,.2,1)",overflow:"hidden",borderRight:"1px solid var(--border-primary)",background:isDark?"rgba(8,6,13,.7)":"rgba(248,246,252,.85)",display:"flex",flexDirection:"column"}}>{sidebar}</aside>}
-      <main style={{flex:1,display:"flex",flexDirection:"column",padding:isMobile?10:20,gap:isMobile?10:14,overflowY:"auto"}}>
-        {view==="tunnel"&&<>
-          <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>{!isMobile&&<button onClick={()=>setSideOpen(v=>!v)} style={{...pill(false),padding:"7px 10px",fontSize:12,lineHeight:1}} title="Toggle sidebar">☰</button>}<div style={{display:"flex",gap:2,background:"var(--glass-bg)",borderRadius:8,padding:2,border:"1px solid var(--glass-border)",backdropFilter:"blur(8px)"}}>{["velocity","pressure","streamlines","vorticity"].map((m,i)=><button key={m} onClick={()=>setVm(m)} title={`${m} [${i+1}]`} style={{padding:isMobile?"5px 9px":"7px 14px",fontSize:isMobile?8:10,fontFamily:"'DM Sans',sans-serif",background:vm===m?"var(--accent-purple-glow)":"transparent",border:"none",color:vm===m?"var(--accent-purple)":"var(--text-dim)",borderRadius:6,cursor:"pointer",fontWeight:vm===m?600:400}}>{isMobile?m.slice(0,3).toUpperCase():m.charAt(0).toUpperCase()+m.slice(1)}</button>)}</div><div style={{flex:1}}/><button onClick={()=>setRunning(r=>!r)} title="Space" style={{display:"flex",alignItems:"center",gap:5,padding:isMobile?"7px 14px":"8px 22px",fontSize:11,fontFamily:"'DM Sans',sans-serif",fontWeight:600,background:running?"var(--accent-red-glow)":"var(--accent-green-glow)",border:`1px solid ${running?"var(--accent-red)":"var(--accent-green)"}`,color:running?"var(--accent-red)":"var(--accent-green)",borderRadius:8,cursor:"pointer"}}>{running?"⏸ Pause":"▶ Run"}</button><button onClick={()=>{const s=new LBM(COLS,ROWS);s.setNu(nR.current);solverRef.current=s;rebuild()}} style={pill(false)} title="Reset [R]">↺</button>{!isMobile&&<><button onClick={snap} style={pill(false)} title="Snapshot [S]">📷</button><button onClick={toggleFS} style={pill(false)} title="Fullscreen [F]">{isFS?"⊖":"⊕"}</button><button onClick={exportCSV} style={pill(false)} title="Export CSV">⬇</button><button onClick={resetAll} style={pill(false)} title="Reset all">Reset</button><button onClick={()=>setShowKeys(k=>!k)} style={{...pill(showKeys),padding:"6px 8px",fontSize:8}} title="Shortcuts [/]">⌨</button></>}</div>
-          {showKeys&&!isMobile&&<div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:10,padding:"10px 14px",display:"flex",flexWrap:"wrap",gap:12}}>{[["Space","Play / Pause"],["R","Reset solver"],["1-4","Viz mode"],["F","Fullscreen"],["S","Snapshot"],["/","This panel"]].map(([k,d])=><div key={k} style={{display:"flex",alignItems:"center",gap:6}}><kbd style={{fontSize:9,padding:"2px 7px",borderRadius:4,background:"var(--bg-input)",border:"1px solid var(--border-primary)",color:"var(--text-muted)",fontFamily:"'Space Mono',monospace"}}>{k}</kbd><span style={{fontSize:10,color:"var(--text-dim)",fontFamily:"'DM Sans',sans-serif"}}>{d}</span></div>)}</div>}
-          <div style={{position:"relative",borderRadius:12,overflow:"hidden",border:"1px solid var(--border-primary)",boxShadow:"var(--shadow-canvas)"}}><div style={{position:"absolute",top:8,left:12,display:"flex",alignItems:"center",gap:5,zIndex:10}}><F1Logo size={11}/><span style={{fontSize:8,color:"var(--text-faint)",letterSpacing:2,fontFamily:"'Space Mono',monospace",opacity:.5}}>INLET →</span></div><div style={{position:"absolute",top:8,right:12,fontSize:8,color:"var(--text-faint)",zIndex:10,letterSpacing:2,fontFamily:"'Space Mono',monospace",opacity:.5}}>→ OUT</div><div style={{position:"absolute",bottom:8,left:12,fontSize:8,color:"var(--text-faint)",zIndex:10,opacity:.2,fontFamily:"'Space Mono',monospace",letterSpacing:2}}>f1stories.gr</div>{!isMobile&&<div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",fontSize:7,color:"var(--text-faint)",zIndex:10,opacity:.2,fontFamily:"'Space Mono',monospace",letterSpacing:2,textTransform:"uppercase"}}>{vm} · D2Q9 · {COLS}×{ROWS}</div>}<canvas ref={canvasRef} width={SIM_W} height={SIM_H} style={{display:"block",width:"100%",height:"auto"}}/><div style={{position:"absolute",bottom:12,right:14,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><span style={{fontSize:6,color:"var(--text-faint)",fontFamily:"'Space Mono',monospace"}}>HIGH</span><div style={{width:5,height:50,borderRadius:3,background:"var(--colorbar-velocity)",opacity:.6}}/><span style={{fontSize:6,color:"var(--text-faint)",fontFamily:"'Space Mono',monospace"}}>LOW</span></div></div>
-          <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(3,1fr)":"repeat(7,1fr)",gap:isMobile?6:8}}><StatCard label="CL" value={stats.cl} color="var(--accent-green)" sub="Lift" tip="Lift coefficient — perpendicular force"/><StatCard label="CD" value={stats.cd} color="var(--accent-orange)" sub="Drag" tip="Drag coefficient — parallel force"/><StatCard label="L/D" value={ldRatio} color="var(--accent-purple)" sub="Efficiency" tip="Lift-to-drag — aerodynamic efficiency"/><StatCard label="Re" value={stats.re>999?(stats.re/1000).toFixed(1)+"k":stats.re} color="var(--accent-cyan)" sub="Reynolds" tip="Reynolds number — regime indicator"/><StatCard label="U/U₀" value={stats.maxV} color="var(--accent-cyan)" sub="Peak Vel." tip="Peak velocity / freestream ratio"/><StatCard label="Flow" value={regime.label} color={regime.col} sub={`Re ${stats.re}`}/><StatCard label="Particles" value={pCount} color="var(--text-muted)" sub={`/${MAX_PARTICLES}`}/></div>
-        </>}
-        {view==="analysis"&&<AnalysisPanel hSnap={hSnap} miniRef={miniRef} running={running} exportCSV={exportCSV}/>}
-        {view==="about"&&<AboutPanel/>}
-      </main>
-    </div>
-    {isMobile&&<nav style={{display:"flex",borderTop:"1px solid var(--border-primary)",background:"var(--bg-topbar)",padding:"6px 0",position:"sticky",bottom:0,zIndex:100,backdropFilter:"var(--topbar-blur)"}}>{[{id:"tunnel",l:"Tunnel"},{id:"analysis",l:"Analysis"},{id:"settings",l:"Settings"},{id:"about",l:"About"}].map(({id,l})=><button key={id} onClick={()=>{if(id==="settings")setMobilePanel(mobilePanel?"":id);else{setView(id==="settings"?"tunnel":id);setMobilePanel(null);}}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 0",background:"none",border:"none",color:(view===id||(id==="settings"&&mobilePanel))?"var(--accent-purple)":"var(--text-muted)",cursor:"pointer",fontSize:9,fontFamily:"'DM Sans',sans-serif"}}>{l}</button>)}</nav>}
-    {isMobile&&mobilePanel&&<div style={{position:"fixed",bottom:44,left:0,right:0,maxHeight:"60vh",overflowY:"auto",background:"var(--bg-panel)",borderTop:"1px solid var(--border-primary)",borderRadius:"16px 16px 0 0",zIndex:200,boxShadow:"0 -8px 40px rgba(0,0,0,.4)"}}><div style={{textAlign:"center",padding:"8px 0"}}><div style={{width:36,height:3,borderRadius:2,background:"var(--text-faint)",margin:"0 auto",opacity:.3}}/></div>{sidebar}</div>}
-    {!isMobile&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:16,padding:"7px 24px",borderTop:"1px solid var(--border-primary)",background:"var(--bg-topbar)"}}><a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,color:"var(--accent-purple)",textDecoration:"none",fontSize:10,fontWeight:700,letterSpacing:2,fontFamily:"'Space Mono',monospace"}}><F1Logo size={13}/>F1STORIES.GR</a><span style={{color:"var(--text-faint)",fontSize:8}}>·</span><span style={{fontSize:9,color:"var(--text-faint)",fontFamily:"'DM Sans',sans-serif"}}>AEROLAB CFD Wind Tunnel</span><span style={{color:"var(--text-faint)",fontSize:8}}>·</span><span style={{fontSize:8,color:"var(--text-faint)",fontFamily:"'Space Mono',monospace"}}>LBM D2Q9 · {COLS}×{ROWS}</span></div>}
-    <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:transparent;border-radius:2px;outline:none}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:currentColor;cursor:pointer;box-shadow:0 0 8px currentColor}input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:currentColor;cursor:pointer;border:none}button{transition:all .15s ease-out}button:hover{opacity:.85}button:active{transform:scale(.97)}*::-webkit-scrollbar{width:4px}*::-webkit-scrollbar-track{background:transparent}*::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:2px}::selection{background:rgba(170,59,255,.25);color:#fff}`}</style>
-  </div>);
+function buildTurbo() {
+  const lut = new Uint32Array(256);
+  for (let index = 0; index < 256; index += 1) {
+    const t = index / 255;
+    const red = Math.max(
+      0,
+      Math.min(255, (34.61 + t * (1172.33 - t * (10793.56 - t * (33300.12 - t * (38394.49 - t * 14825.05))))) | 0)
+    );
+    const green = Math.max(
+      0,
+      Math.min(255, (23.31 + t * (557.33 + t * (1225.33 - t * (3574.96 - t * (1073.77 + t * 707.56))))) | 0)
+    );
+    const blue = Math.max(
+      0,
+      Math.min(255, (27.2 + t * (3211.1 - t * (15327.97 - t * (27814.0 - t * (22569.18 - t * 6838.66))))) | 0)
+    );
+    lut[index] = (255 << 24) | (blue << 16) | (green << 8) | red;
+  }
+  return lut;
 }
 
-function AnalysisPanel({hSnap,miniRef,running,exportCSV}){const chartRef=useRef(null);const{isDark}=useTheme();useEffect(()=>{const c=chartRef.current;if(!c||hSnap.length<2)return;const ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle=isDark?"rgba(255,255,255,.04)":"rgba(0,0,0,.06)";ctx.lineWidth=.5;for(let i=0;i<6;i++){const y=(i/5)*h;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}const draw=(d,col,mx)=>{if(d.length<2)return;const m=mx||Math.max(...d,.01);ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineCap="round";d.forEach((v,i)=>{const x=(i/(d.length-1))*w,y=h-(v/m)*h*.85-h*.05;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();};const cl=hSnap.map(s=>s.cl),cd=hSnap.map(s=>s.cd),mx=Math.max(...cl,...cd,.1);draw(cl,isDark?"#00e676":"#059669",mx);draw(cd,isDark?"#ff9100":"#d97706",mx);},[hSnap,isDark]);return(<div style={{display:"flex",flexDirection:"column",gap:16}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}><div><h2 style={{fontFamily:"'Space Mono',monospace",fontSize:isMobile?18:22,fontWeight:700,color:"var(--text-heading)",letterSpacing:2,margin:0}}>Analysis</h2><div style={{fontSize:9,color:"var(--text-faint)",letterSpacing:2,marginTop:2,fontFamily:"'DM Sans',sans-serif"}}>Live telemetry · <a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{color:"var(--accent-purple)",textDecoration:"none"}}>f1stories.gr</a></div></div><button onClick={exportCSV} style={{padding:"8px 16px",fontSize:10,background:"var(--accent-purple-glow)",border:"1px solid var(--accent-purple)",color:"var(--accent-purple)",borderRadius:8,cursor:"pointer",fontFamily:"'Space Mono',monospace"}}>⬇ CSV</button></div><div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:14}}><div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:12,padding:16}}><div style={{fontSize:10,color:"var(--text-muted)",letterSpacing:2,marginBottom:12,fontFamily:"'DM Sans',sans-serif"}}>CL / CD HISTORY</div><canvas ref={chartRef} width={500} height={200} style={{width:"100%",height:isMobile?120:200,borderRadius:8,background:"var(--bg-canvas)"}}/><div style={{display:"flex",gap:20,marginTop:10}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:16,height:2,background:"var(--accent-green)",borderRadius:1}}/><span style={{fontSize:9,color:"var(--text-muted)",fontFamily:"'DM Sans',sans-serif"}}>CL</span></div><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:16,height:2,background:"var(--accent-orange)",borderRadius:1}}/><span style={{fontSize:9,color:"var(--text-muted)",fontFamily:"'DM Sans',sans-serif"}}>CD</span></div></div></div><div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:12,padding:16}}><div style={{fontSize:10,color:"var(--text-muted)",letterSpacing:2,marginBottom:12,fontFamily:"'DM Sans',sans-serif"}}>LIVE PREVIEW</div><canvas ref={miniRef} width={400} height={180} style={{width:"100%",height:isMobile?120:180,borderRadius:8,background:"var(--bg-canvas)"}}/><div style={{marginTop:8,display:"flex",alignItems:"center",gap:6}}><div style={{width:6,height:6,borderRadius:"50%",background:running?"var(--accent-green)":"var(--accent-red)"}}/><span style={{fontSize:10,color:running?"var(--accent-green)":"var(--accent-red)",fontFamily:"'DM Sans',sans-serif"}}>{running?"Running":"Paused"}</span></div></div></div></div>);}
+function buildCoolWarm() {
+  const lut = new Uint32Array(256);
+  for (let index = 0; index < 256; index += 1) {
+    const t = index / 255;
+    let red;
+    let green;
+    let blue;
+    if (t < 0.5) {
+      const scaled = t * 2;
+      red = (30 + scaled * 170) | 0;
+      green = (60 + scaled * 120) | 0;
+      blue = (200 - scaled * 10) | 0;
+    } else {
+      const scaled = (t - 0.5) * 2;
+      red = (200 + scaled * 55) | 0;
+      green = (180 - scaled * 155) | 0;
+      blue = (190 - scaled * 165) | 0;
+    }
+    lut[index] =
+      (255 << 24) |
+      (Math.min(255, Math.max(0, blue)) << 16) |
+      (Math.min(255, Math.max(0, green)) << 8) |
+      Math.min(255, Math.max(0, red));
+  }
+  return lut;
+}
 
-function AboutPanel(){return(<div style={{maxWidth:700,display:"flex",flexDirection:"column",gap:20}}><div style={{display:"flex",alignItems:"center",gap:14}}><F1Logo size={40}/><div><h1 style={{fontFamily:"'Space Mono',monospace",fontSize:isMobile?26:34,fontWeight:700,color:"var(--text-heading)",letterSpacing:3,margin:0}}>AEROLAB</h1><p style={{fontSize:12,color:"var(--text-muted)",margin:"4px 0 0",fontFamily:"'DM Sans',sans-serif"}}>Lattice Boltzmann CFD Wind Tunnel</p></div></div><div style={{background:"var(--accent-purple-glow)",border:"1px solid rgba(170,59,255,.12)",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}><F1Logo size={20}/><div><div style={{fontSize:12,fontWeight:600,color:"var(--accent-purple)",fontFamily:"'Space Mono',monospace",letterSpacing:2}}>A PROJECT BY F1STORIES.GR</div><div style={{fontSize:10,color:"var(--text-muted)",fontFamily:"'DM Sans',sans-serif",marginTop:2}}>Aerodynamics · Motorsport · Engineering — <a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{color:"var(--accent-purple)",textDecoration:"none"}}>Visit</a></div></div></div><div style={{background:"var(--bg-panel)",border:"1px solid var(--border-primary)",borderRadius:12,padding:20}}><p style={{fontSize:13,lineHeight:2,color:"var(--text-secondary)",margin:0,fontFamily:"'DM Sans',sans-serif"}}>AeroLab uses a Lattice Boltzmann D2Q9 solver — the same class of algorithm used in professional CFD. Unlike simplified schemes, LBM naturally captures vortex shedding, wake turbulence, and boundary layer separation. The {COLS}×{ROWS} grid ({(COLS*ROWS).toLocaleString()} cells) uses Float32 arrays, BGK collision, Zou-He inlet BCs, and bounce-back walls. Particles use RK2 midpoint integration with bilinear velocity interpolation.</p></div><div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr 1fr",gap:10}}>{[{t:"D2Q9 Solver",d:"Float32 BGK, optimized streaming"},{t:"4 Viz Modes",d:"Velocity, pressure, streamlines, vorticity"},{t:"RK2 Particles",d:"Bilinear interp, 3-band batched"},{t:"Multi-format",d:"SVG, STL, DXF, image trace, freehand"},{t:"Live Telemetry",d:"CL, CD, L/D, Re, regime, CSV"},{t:"F1 Profiles",d:"F1 car, front wing, rear wing"}].map(({t,d})=><div key={t} style={{padding:14,borderRadius:10,background:"var(--bg-panel)",border:"1px solid var(--border-primary)"}}><div style={{fontSize:11,color:"var(--accent-purple)",fontWeight:600,marginBottom:4,fontFamily:"'Space Mono',monospace",letterSpacing:1}}>{t}</div><div style={{fontSize:10,color:"var(--text-muted)",lineHeight:1.6,fontFamily:"'DM Sans',sans-serif"}}>{d}</div></div>)}</div><div style={{textAlign:"center",padding:"20px 0 8px",borderTop:"1px solid var(--border-primary)"}}><div style={{display:"inline-flex",alignItems:"center",gap:8}}><F1Logo size={18}/><a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer" style={{fontFamily:"'Space Mono',monospace",fontSize:15,fontWeight:700,color:"var(--accent-purple)",textDecoration:"none",letterSpacing:3}}>f1stories.gr</a></div><div style={{fontSize:9,color:"var(--text-faint)",marginTop:6,letterSpacing:2,fontFamily:"'DM Sans',sans-serif"}}>AERODYNAMICS · MOTORSPORT · ENGINEERING</div></div></div>);}
+const TURBO = buildTurbo();
+const COOLWARM = buildCoolWarm();
+
+function pointInPolygon(px, py, polygon) {
+  let inside = false;
+  for (let index = 0, prev = polygon.length - 1; index < polygon.length; prev = index, index += 1) {
+    const xi = polygon[index][0];
+    const yi = polygon[index][1];
+    const xj = polygon[prev][0];
+    const yj = polygon[prev][1];
+    if (((yi > py) !== (yj > py)) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+function normalizePolygon(points) {
+  if (!points || points.length < 3) return null;
+  const xs = points.map((point) => point[0]);
+  const ys = points.map((point) => point[1]);
+  const x0 = Math.min(...xs);
+  const x1 = Math.max(...xs);
+  const y0 = Math.min(...ys);
+  const y1 = Math.max(...ys);
+  const rangeX = x1 - x0 || 1;
+  const rangeY = y1 - y0 || 1;
+  return points.map((point) => [(point[0] - x0) / rangeX, (point[1] - y0) / rangeY]);
+}
+
+function transformPolygon(normalizedPolygon, centerX, centerY, scaleX, scaleY, angleOfAttack) {
+  const radians = (angleOfAttack * Math.PI) / 180;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  return normalizedPolygon.map(([nx, ny]) => {
+    const localX = (nx - 0.5) * scaleX;
+    const localY = (ny - 0.5) * scaleY;
+    return [centerX + cos * localX - sin * localY, centerY + sin * localX + cos * localY];
+  });
+}
+
+function simplifyPolygon(points, tolerance) {
+  if (points.length <= 4) return points;
+  const result = [points[0]];
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const prev = result[result.length - 1];
+    const next = points[index + 1];
+    const current = points[index];
+    const dx = next[0] - prev[0];
+    const dy = next[1] - prev[1];
+    const length = Math.sqrt(dx * dx + dy * dy) || 1;
+    const distance = Math.abs(dy * current[0] - dx * current[1] + next[0] * prev[1] - next[1] * prev[0]) / length;
+    if (distance > tolerance) result.push(current);
+  }
+  result.push(points[points.length - 1]);
+  return result;
+}
+
+function generatePreset(type) {
+  const points = [];
+  if (type === "airfoil") {
+    for (let t = 0; t <= Math.PI * 2; t += 0.04) {
+      const cos = Math.cos(t);
+      const sin = Math.sin(t);
+      points.push([0.5 + 0.48 * cos * (0.5 + 0.5 * cos), 0.5 + 0.18 * sin * (1 + 0.3 * cos)]);
+    }
+  } else if (type === "cylinder") {
+    for (let t = 0; t <= Math.PI * 2; t += 0.05) points.push([0.5 + 0.45 * Math.cos(t), 0.5 + 0.45 * Math.sin(t)]);
+  } else if (type === "wedge") {
+    points.push([0.05, 0.25], [0.95, 0.5], [0.05, 0.75]);
+  } else if (type === "bluff") {
+    points.push([0.1, 0.1], [0.9, 0.1], [0.9, 0.9], [0.1, 0.9]);
+  } else if (type === "f1car") {
+    [
+      [0, 0.58],
+      [0.01, 0.55],
+      [0.03, 0.49],
+      [0.05, 0.43],
+      [0.07, 0.4],
+      [0.09, 0.41],
+      [0.12, 0.39],
+      [0.15, 0.35],
+      [0.17, 0.33],
+      [0.2, 0.31],
+      [0.24, 0.29],
+      [0.28, 0.27],
+      [0.3, 0.25],
+      [0.32, 0.22],
+      [0.34, 0.21],
+      [0.36, 0.23],
+      [0.38, 0.24],
+      [0.4, 0.22],
+      [0.42, 0.23],
+      [0.44, 0.27],
+      [0.47, 0.25],
+      [0.5, 0.23],
+      [0.54, 0.22],
+      [0.58, 0.22],
+      [0.62, 0.23],
+      [0.66, 0.24],
+      [0.7, 0.26],
+      [0.74, 0.28],
+      [0.78, 0.3],
+      [0.8, 0.27],
+      [0.82, 0.22],
+      [0.84, 0.18],
+      [0.86, 0.17],
+      [0.88, 0.18],
+      [0.9, 0.2],
+      [0.92, 0.25],
+      [0.94, 0.32],
+      [0.96, 0.38],
+      [0.98, 0.42],
+      [1, 0.46],
+      [1, 0.5],
+      [0.98, 0.54],
+      [0.96, 0.58],
+      [0.94, 0.62],
+      [0.9, 0.65],
+      [0.86, 0.66],
+      [0.8, 0.66],
+      [0.7, 0.66],
+      [0.6, 0.66],
+      [0.5, 0.66],
+      [0.4, 0.66],
+      [0.3, 0.64],
+      [0.24, 0.64],
+      [0.18, 0.66],
+      [0.12, 0.67],
+      [0.08, 0.67],
+      [0.06, 0.64],
+      [0.04, 0.61],
+      [0.02, 0.59],
+      [0, 0.58],
+    ].forEach((value) => points.push(value));
+  } else if (type === "frontwing") {
+    [
+      [0, 0.55],
+      [0.04, 0.42],
+      [0.1, 0.33],
+      [0.18, 0.27],
+      [0.3, 0.24],
+      [0.45, 0.24],
+      [0.6, 0.27],
+      [0.75, 0.33],
+      [0.88, 0.44],
+      [0.95, 0.58],
+      [1, 0.62],
+      [1, 0.65],
+      [0.9, 0.66],
+      [0.75, 0.63],
+      [0.6, 0.62],
+      [0.45, 0.63],
+      [0.3, 0.65],
+      [0.15, 0.67],
+      [0.06, 0.63],
+      [0, 0.57],
+    ].forEach((value) => points.push(value));
+  } else if (type === "rearwing") {
+    [
+      [0, 0.5],
+      [0.06, 0.34],
+      [0.13, 0.24],
+      [0.25, 0.19],
+      [0.4, 0.18],
+      [0.55, 0.2],
+      [0.7, 0.25],
+      [0.85, 0.37],
+      [0.95, 0.52],
+      [1, 0.54],
+      [1, 0.58],
+      [0.92, 0.65],
+      [0.75, 0.68],
+      [0.55, 0.68],
+      [0.35, 0.68],
+      [0.2, 0.65],
+      [0.1, 0.6],
+      [0.04, 0.54],
+      [0, 0.5],
+    ].forEach((value) => points.push(value));
+  }
+  return points;
+}
+
+function parseSVG(svgText, maxPoints = 200) {
+  try {
+    const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+    const elements = doc.querySelectorAll("path,polygon,polyline,rect,circle,ellipse");
+    if (!elements.length) return null;
+    const allPoints = [];
+    const tempSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    tempSvg.style.cssText = "position:absolute;visibility:hidden;width:0;height:0";
+    document.body.appendChild(tempSvg);
+    elements.forEach((element) => {
+      const tag = element.tagName.toLowerCase();
+      let points = [];
+      const pointsPerElement = Math.max(20, Math.floor(maxPoints / elements.length));
+      if (tag === "polygon" || tag === "polyline") {
+        const raw = (element.getAttribute("points") || "").trim().split(/[\s,]+/);
+        for (let index = 0; index < raw.length - 1; index += 2) {
+          const x = parseFloat(raw[index]);
+          const y = parseFloat(raw[index + 1]);
+          if (!Number.isNaN(x) && !Number.isNaN(y)) points.push([x, y]);
+        }
+      } else if (tag === "rect") {
+        const x = +element.getAttribute("x") || 0;
+        const y = +element.getAttribute("y") || 0;
+        const width = +element.getAttribute("width");
+        const height = +element.getAttribute("height");
+        if (width && height) points = [[x, y], [x + width, y], [x + width, y + height], [x, y + height]];
+      } else if (tag === "circle" || tag === "ellipse") {
+        const cx = +(element.getAttribute("cx") || 0);
+        const cy = +(element.getAttribute("cy") || 0);
+        const rx = +(element.getAttribute("r") || element.getAttribute("rx") || 50);
+        const ry = +(element.getAttribute("r") || element.getAttribute("ry") || rx);
+        for (let index = 0; index <= pointsPerElement; index += 1) {
+          const t = (index / pointsPerElement) * Math.PI * 2;
+          points.push([cx + rx * Math.cos(t), cy + ry * Math.sin(t)]);
+        }
+      } else if (tag === "path") {
+        const d = element.getAttribute("d");
+        if (d) {
+          const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          pathElement.setAttribute("d", d);
+          tempSvg.appendChild(pathElement);
+          try {
+            const totalLength = pathElement.getTotalLength();
+            for (let index = 0; index <= pointsPerElement; index += 1) {
+              const point = pathElement.getPointAtLength((index / pointsPerElement) * totalLength);
+              points.push([point.x, point.y]);
+            }
+          } catch {
+            pathElement.remove();
+            return;
+          }
+          pathElement.remove();
+        }
+      }
+      if (points.length >= 3) allPoints.push(...points);
+    });
+    document.body.removeChild(tempSvg);
+    if (allPoints.length < 3) return null;
+    const centerX = allPoints.reduce((sum, point) => sum + point[0], 0) / allPoints.length;
+    const centerY = allPoints.reduce((sum, point) => sum + point[1], 0) / allPoints.length;
+    allPoints.sort(
+      (a, b) => Math.atan2(a[1] - centerY, a[0] - centerX) - Math.atan2(b[1] - centerY, b[0] - centerX)
+    );
+    if (allPoints.length > 300) {
+      const stride = Math.ceil(allPoints.length / 300);
+      return normalizePolygon(allPoints.filter((_, index) => index % stride === 0));
+    }
+    return normalizePolygon(allPoints);
+  } catch {
+    return null;
+  }
+}
+
+function parseDXF(text) {
+  const lines = text.split(/\r?\n/).map((line) => line.trim());
+  const points = [];
+  let index = 0;
+  let pendingX = null;
+  while (index < lines.length) {
+    const code = parseInt(lines[index], 10);
+    if (code === 10 && index + 1 < lines.length) {
+      pendingX = parseFloat(lines[index + 1]);
+      index += 2;
+    } else if (code === 20 && index + 1 < lines.length && pendingX !== null) {
+      const y = parseFloat(lines[index + 1]);
+      if (!Number.isNaN(pendingX) && !Number.isNaN(y)) points.push([pendingX, y]);
+      pendingX = null;
+      index += 2;
+    } else {
+      index += 1;
+    }
+  }
+  return points.length > 2 ? normalizePolygon(points) : null;
+}
+
+function parseSTL(data) {
+  try {
+    const previewText = typeof data === "string" ? data : new TextDecoder().decode(data.slice(0, 1000));
+    const vertices = [];
+    if (previewText.trim().startsWith("solid")) {
+      const fullText = typeof data === "string" ? data : new TextDecoder().decode(data);
+      const regex = /vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g;
+      let match;
+      while ((match = regex.exec(fullText))) vertices.push([parseFloat(match[1]), parseFloat(match[2]), parseFloat(match[3])]);
+    } else {
+      const view = new DataView(data instanceof ArrayBuffer ? data : data.buffer);
+      const triangleCount = view.getUint32(80, true);
+      for (let triangle = 0; triangle < triangleCount; triangle += 1) {
+        const offset = 84 + triangle * 50;
+        for (let vertex = 0; vertex < 3; vertex += 1) {
+          const vertexOffset = offset + 12 + vertex * 12;
+          vertices.push([
+            view.getFloat32(vertexOffset, true),
+            view.getFloat32(vertexOffset + 4, true),
+            view.getFloat32(vertexOffset + 8, true),
+          ]);
+        }
+      }
+    }
+    if (vertices.length < 3) return null;
+    const zs = vertices.map((vertex) => vertex[2]);
+    const midZ = (Math.min(...zs) + Math.max(...zs)) / 2;
+    const tolerance = (Math.max(...zs) - Math.min(...zs)) * 0.05 || 1;
+    const points2d = [];
+    vertices.forEach(([x, y, z]) => {
+      if (Math.abs(z - midZ) < tolerance) points2d.push([x, y]);
+    });
+    if (points2d.length < 5) vertices.forEach(([x, y]) => points2d.push([x, y]));
+    const centerX = points2d.reduce((sum, point) => sum + point[0], 0) / points2d.length;
+    const centerY = points2d.reduce((sum, point) => sum + point[1], 0) / points2d.length;
+    points2d.sort(
+      (a, b) => Math.atan2(a[1] - centerY, a[0] - centerX) - Math.atan2(b[1] - centerY, b[0] - centerX)
+    );
+    if (points2d.length > 250) {
+      const stride = Math.ceil(points2d.length / 250);
+      return normalizePolygon(points2d.filter((_, index) => index % stride === 0));
+    }
+    return normalizePolygon(points2d);
+  } catch {
+    return null;
+  }
+}
+
+function traceImage(imageData, width, height, maxPoints = 100) {
+  const { data } = imageData;
+  const edges = [];
+  for (let y = 1; y < height - 1; y += 1) {
+    for (let x = 1; x < width - 1; x += 1) {
+      const offset = (y * width + x) * 4;
+      const brightness = data[offset] * 0.3 + data[offset + 1] * 0.59 + data[offset + 2] * 0.11;
+      if (brightness < 128) {
+        const neighbors = [
+          (y - 1) * width + (x - 1),
+          (y - 1) * width + x,
+          (y - 1) * width + (x + 1),
+          y * width + (x - 1),
+          y * width + (x + 1),
+          (y + 1) * width + (x - 1),
+          (y + 1) * width + x,
+          (y + 1) * width + (x + 1),
+        ];
+        if (
+          neighbors.some((neighbor) => {
+            const index = neighbor * 4;
+            return data[index] * 0.3 + data[index + 1] * 0.59 + data[index + 2] * 0.11 >= 128;
+          })
+        ) {
+          edges.push([x, y]);
+        }
+      }
+    }
+  }
+  if (edges.length < 5) return null;
+  const centerX = edges.reduce((sum, point) => sum + point[0], 0) / edges.length;
+  const centerY = edges.reduce((sum, point) => sum + point[1], 0) / edges.length;
+  edges.sort((a, b) => Math.atan2(a[1] - centerY, a[0] - centerX) - Math.atan2(b[1] - centerY, b[0] - centerX));
+  const stride = Math.max(1, Math.floor(edges.length / maxPoints));
+  return normalizePolygon(edges.filter((_, index) => index % stride === 0));
+}
+
+const CX = [0, 1, 0, -1, 0, 1, -1, -1, 1];
+const CY = [0, 0, 1, 0, -1, 1, 1, -1, -1];
+const WT = [4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36];
+const OPP = [0, 3, 4, 1, 2, 7, 8, 5, 6];
+
+class LBM {
+  constructor(cols, rows) {
+    this.C = cols;
+    this.R = rows;
+    this.N = cols * rows;
+    this.f0 = new Float32Array(9 * this.N);
+    this.f1 = new Float32Array(9 * this.N);
+    this.rho = new Float32Array(this.N);
+    this.ux = new Float32Array(this.N);
+    this.uy = new Float32Array(this.N);
+    this.solid = new Uint8Array(this.N);
+    this.spd = new Float32Array(this.N);
+    this.curl = new Float32Array(this.N);
+    this.omega = 1.85;
+    this.init(0.12);
+  }
+
+  init(inletVelocity) {
+    for (let cell = 0; cell < this.N; cell += 1) {
+      this.rho[cell] = 1;
+      this.ux[cell] = inletVelocity;
+      this.uy[cell] = 0;
+      const base = cell * 9;
+      const uSquared = inletVelocity * inletVelocity;
+      for (let dir = 0; dir < 9; dir += 1) {
+        const cu = CX[dir] * inletVelocity;
+        this.f0[base + dir] = WT[dir] * (1 + 3 * cu + 4.5 * cu * cu - 1.5 * uSquared);
+      }
+    }
+  }
+
+  setNu(nu) {
+    this.omega = Math.min(1.95, Math.max(0.5, 1 / (3 * nu + 0.5)));
+  }
+
+  buildSolid(polygon) {
+    this.solid.fill(0);
+    if (!polygon) return;
+    for (let row = 0; row < this.R; row += 1) {
+      for (let col = 0; col < this.C; col += 1) {
+        if (pointInPolygon(col + 0.5, row + 0.5, polygon)) this.solid[row * this.C + col] = 1;
+      }
+    }
+  }
+
+  step(inletVelocity, turbulence) {
+    const { C, R, N, f0, f1, rho, ux, uy, solid, omega } = this;
+
+    for (let row = 0; row < R; row += 1) {
+      for (let col = 0; col < C; col += 1) {
+        const cell = row * C + col;
+        const dest = cell * 9;
+        for (let dir = 0; dir < 9; dir += 1) {
+          const sourceCol = col - CX[dir];
+          const sourceRow = row - CY[dir];
+          f1[dest + dir] =
+            sourceCol >= 0 && sourceCol < C && sourceRow >= 0 && sourceRow < R
+              ? f0[(sourceRow * C + sourceCol) * 9 + dir]
+              : f0[cell * 9 + OPP[dir]];
+        }
+      }
+    }
+
+    for (let cell = 0; cell < N; cell += 1) {
+      if (!solid[cell]) continue;
+      const base = cell * 9;
+      const t1 = f1[base + 1];
+      const t2 = f1[base + 2];
+      const t3 = f1[base + 3];
+      const t4 = f1[base + 4];
+      const t5 = f1[base + 5];
+      const t6 = f1[base + 6];
+      const t7 = f1[base + 7];
+      const t8 = f1[base + 8];
+      f1[base + 1] = t3;
+      f1[base + 3] = t1;
+      f1[base + 2] = t4;
+      f1[base + 4] = t2;
+      f1[base + 5] = t7;
+      f1[base + 7] = t5;
+      f1[base + 6] = t8;
+      f1[base + 8] = t6;
+    }
+
+    for (let cell = 0; cell < N; cell += 1) {
+      if (solid[cell]) {
+        ux[cell] = 0;
+        uy[cell] = 0;
+        rho[cell] = 1;
+        this.spd[cell] = 0;
+        continue;
+      }
+      const base = cell * 9;
+      let density = 0;
+      let velX = 0;
+      let velY = 0;
+      for (let dir = 0; dir < 9; dir += 1) {
+        const value = f1[base + dir];
+        density += value;
+        velX += CX[dir] * value;
+        velY += CY[dir] * value;
+      }
+      if (density < 0.01) density = 1;
+      rho[cell] = density;
+      ux[cell] = velX / density;
+      uy[cell] = velY / density;
+      this.spd[cell] = Math.sqrt(velX * velX + velY * velY) / density;
+    }
+
+    const perturbationScale = turbulence * 0.004;
+    for (let row = 1; row < R - 1; row += 1) {
+      const cell = row * C;
+      const base = cell * 9;
+      const noise = (Math.random() - 0.5) * perturbationScale;
+      const inletDensity =
+        (f1[base] + f1[base + 2] + f1[base + 4] + 2 * (f1[base + 3] + f1[base + 6] + f1[base + 7])) /
+        (1 - inletVelocity);
+      f1[base + 1] = f1[base + 3] + (2 / 3) * inletDensity * inletVelocity;
+      f1[base + 5] = f1[base + 7] + (1 / 6) * inletDensity * inletVelocity + 0.5 * inletDensity * noise - 0.5 * (f1[base + 2] - f1[base + 4]);
+      f1[base + 8] = f1[base + 6] + (1 / 6) * inletDensity * inletVelocity - 0.5 * inletDensity * noise + 0.5 * (f1[base + 2] - f1[base + 4]);
+      rho[cell] = inletDensity;
+      ux[cell] = inletVelocity;
+      uy[cell] = noise;
+    }
+
+    for (let row = 1; row < R - 1; row += 1) {
+      const edgeCell = row * C + (C - 1);
+      const prevCell = edgeCell - 1;
+      const edgeBase = edgeCell * 9;
+      const prevBase = prevCell * 9;
+      for (let dir = 0; dir < 9; dir += 1) f1[edgeBase + dir] = f1[prevBase + dir];
+      rho[edgeCell] = rho[prevCell];
+      ux[edgeCell] = ux[prevCell];
+      uy[edgeCell] = uy[prevCell];
+      this.spd[edgeCell] = this.spd[prevCell];
+    }
+
+    for (let col = 0; col < C; col += 1) {
+      const topCell = col;
+      const topBase = topCell * 9;
+      f1[topBase + 4] = f1[topBase + 2];
+      f1[topBase + 7] = f1[topBase + 5];
+      f1[topBase + 8] = f1[topBase + 6];
+      ux[topCell] = 0;
+      uy[topCell] = 0;
+
+      const bottomCell = (R - 1) * C + col;
+      const bottomBase = bottomCell * 9;
+      f1[bottomBase + 2] = f1[bottomBase + 4];
+      f1[bottomBase + 5] = f1[bottomBase + 7];
+      f1[bottomBase + 6] = f1[bottomBase + 8];
+      ux[bottomCell] = 0;
+      uy[bottomCell] = 0;
+    }
+
+    for (let cell = 0; cell < N; cell += 1) {
+      const base = cell * 9;
+      if (solid[cell]) {
+        for (let dir = 0; dir < 9; dir += 1) f0[base + dir] = f1[base + dir];
+        continue;
+      }
+      const density = rho[cell];
+      const velX = ux[cell];
+      const velY = uy[cell];
+      const uSquared = velX * velX + velY * velY;
+      for (let dir = 0; dir < 9; dir += 1) {
+        const cu = CX[dir] * velX + CY[dir] * velY;
+        f0[base + dir] = f1[base + dir] + omega * (WT[dir] * density * (1 + 3 * cu + 4.5 * cu * cu - 1.5 * uSquared) - f1[base + dir]);
+      }
+    }
+
+    for (let row = 1; row < R - 1; row += 1) {
+      for (let col = 1; col < C - 1; col += 1) {
+        const cell = row * C + col;
+        this.curl[cell] = (uy[cell + 1] - uy[cell - 1]) * 0.5 - (ux[cell + C] - ux[cell - C]) * 0.5;
+      }
+    }
+  }
+}
+
+class Particle {
+  constructor(laneY) {
+    this.x = 0;
+    this.y = 0;
+    this.age = 0;
+    this.tx = new Float32Array(TRAIL_LEN);
+    this.ty = new Float32Array(TRAIL_LEN);
+    this.tl = 0;
+    this.ti = 0;
+    this.active = true;
+    this.laneY = laneY || 0;
+    this.reset();
+  }
+
+  reset() {
+    this.x = Math.random() * 2;
+    this.y = this.laneY > 0 ? this.laneY + (Math.random() - 0.5) * 2 : 2 + Math.random() * (ROWS - 4);
+    this.age = 0;
+    this.tl = 0;
+    this.ti = 0;
+  }
+
+  static velocity(solver, x, y) {
+    const i0 = Math.max(0, Math.min(COLS - 2, x | 0));
+    const j0 = Math.max(0, Math.min(ROWS - 2, y | 0));
+    const tx = x - i0;
+    const ty = y - j0;
+    const k00 = j0 * COLS + i0;
+    const k10 = k00 + 1;
+    const k01 = k00 + COLS;
+    const k11 = k01 + 1;
+    if (solver.solid[k00] || solver.solid[k10] || solver.solid[k01] || solver.solid[k11]) return [0, 0];
+    return [
+      (1 - tx) * (1 - ty) * solver.ux[k00] +
+        tx * (1 - ty) * solver.ux[k10] +
+        (1 - tx) * ty * solver.ux[k01] +
+        tx * ty * solver.ux[k11],
+      (1 - tx) * (1 - ty) * solver.uy[k00] +
+        tx * (1 - ty) * solver.uy[k10] +
+        (1 - tx) * ty * solver.uy[k01] +
+        tx * ty * solver.uy[k11],
+    ];
+  }
+
+  update(solver) {
+    if (!this.active) return;
+    if (this.x < 0 || this.x >= COLS - 1 || this.y < 1 || this.y >= ROWS - 1) {
+      this.reset();
+      return;
+    }
+    if (solver.solid[(this.y | 0) * COLS + (this.x | 0)]) {
+      this.reset();
+      return;
+    }
+    const trailIndex = this.ti % TRAIL_LEN;
+    this.tx[trailIndex] = this.x * (SIM_W / COLS);
+    this.ty[trailIndex] = this.y * (SIM_H / ROWS);
+    this.ti += 1;
+    if (this.tl < TRAIL_LEN) this.tl += 1;
+    const [a, b] = Particle.velocity(solver, this.x, this.y);
+    const [c, d] = Particle.velocity(solver, this.x + a * 0.5, this.y + b * 0.5);
+    this.x += c;
+    this.y += d;
+    this.age += 0.016;
+    if (this.x >= COLS - 2 || this.x < 0 || this.y < 1 || this.y >= ROWS - 1) this.reset();
+  }
+}
+
+function makeParticlePool() {
+  const pool = [];
+  const lanes = Math.min(MAX_PARTICLES, 50);
+  for (let index = 0; index < MAX_PARTICLES; index += 1) {
+    const particle = new Particle(3 + ((index % lanes) / lanes) * (ROWS - 6));
+    particle.active = index < DEFAULT_PARTICLES;
+    pool.push(particle);
+  }
+  return pool;
+}
+
+function resizeParticlePool(pool, count) {
+  const target = Math.min(count, MAX_PARTICLES);
+  for (let index = 0; index < pool.length; index += 1) {
+    if (index < target) {
+      if (!pool[index].active) {
+        pool[index].active = true;
+        pool[index].reset();
+      }
+    } else {
+      pool[index].active = false;
+    }
+  }
+}
+
+function useHistory(maxLength = 200) {
+  const historyRef = useRef([]);
+  const push = useCallback(
+    (entry) => {
+      historyRef.current.push({ ...entry, t: Date.now() });
+      if (historyRef.current.length > maxLength) historyRef.current.shift();
+    },
+    [maxLength]
+  );
+  return [historyRef, push];
+}
+
+function F1Logo({ size = 20 }) {
+  const gradientId = useId();
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 46" fill="none" aria-hidden="true">
+      <path
+        fill={`url(#${gradientId})`}
+        d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z"
+      />
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="48" y2="46" gradientUnits="userSpaceOnUse">
+          <stop stopColor="var(--accent-red)" />
+          <stop offset="0.56" stopColor="var(--accent-orange)" />
+          <stop offset="1" stopColor="var(--accent-cyan)" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function Panel({ eyebrow, title, subtitle, actions, className = "", children }) {
+  return (
+    <section className={`panel ${className}`}>
+      {(eyebrow || title || actions) && (
+        <header className="panel-header">
+          <div>
+            {eyebrow && <div className="panel-eyebrow">{eyebrow}</div>}
+            {title && <h2 className="panel-title">{title}</h2>}
+            {subtitle && <p className="panel-subtitle">{subtitle}</p>}
+          </div>
+          {actions && <div className="panel-actions">{actions}</div>}
+        </header>
+      )}
+      {children}
+    </section>
+  );
+}
+
+function MetricCard({ label, value, note, tone }) {
+  return (
+    <article className="metric-card" style={{ "--tone": tone }}>
+      <div className="metric-label">{label}</div>
+      <div className="metric-value">{value}</div>
+      <div className="metric-note">{note}</div>
+    </article>
+  );
+}
+
+function SliderControl({ label, value, display, min, max, step, onChange, tone, hint }) {
+  const percent = ((value - min) / (max - min || 1)) * 100;
+  return (
+    <label className="slider-control" style={{ "--tone": tone, "--fill": `${percent}%` }}>
+      <div className="slider-row">
+        <span className="slider-label">{label}</span>
+        <span className="slider-value">{display}</span>
+      </div>
+      {hint && <div className="slider-hint">{hint}</div>}
+      <div className="slider-track">
+        <input
+          className="slider-input"
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(event) => onChange(+event.target.value)}
+        />
+      </div>
+    </label>
+  );
+}
+
+function SignalRow({ label, note, value, tone }) {
+  const clamped = Math.max(0, Math.min(1, value));
+  return (
+    <div className="signal-row" style={{ "--tone": tone, "--fill": `${Math.max(4, clamped * 100)}%` }}>
+      <div className="signal-copy">
+        <span className="signal-label">{label}</span>
+        <span className="signal-note">{note}</span>
+      </div>
+      <div className="signal-track">
+        <span className="signal-fill" />
+      </div>
+    </div>
+  );
+}
+
+function HistoryChart({ history }) {
+  const canvasRef = useRef(null);
+  const { isDark } = useTheme();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = 24;
+    const innerWidth = width - padding * 2;
+    const innerHeight = height - padding * 2;
+
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = isDark ? "rgba(6, 13, 15, 0.92)" : "rgba(255, 252, 247, 0.96)";
+    context.fillRect(0, 0, width, height);
+
+    context.strokeStyle = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+    context.lineWidth = 1;
+    for (let line = 0; line <= 4; line += 1) {
+      const y = padding + (innerHeight * line) / 4;
+      context.beginPath();
+      context.moveTo(padding, y);
+      context.lineTo(width - padding, y);
+      context.stroke();
+    }
+
+    if (history.length < 2) {
+      context.fillStyle = isDark ? "rgba(232,243,240,0.56)" : "rgba(24,35,41,0.5)";
+      context.font = "500 18px 'IBM Plex Sans', sans-serif";
+      context.fillText("Run the simulation to build a telemetry trace.", padding, height / 2);
+      return;
+    }
+
+    const clSeries = history.map((entry) => entry.cl);
+    const cdSeries = history.map((entry) => entry.cd);
+    const minValue = Math.min(0, ...clSeries, ...cdSeries);
+    const maxValue = Math.max(0.1, ...clSeries, ...cdSeries);
+    const range = maxValue - minValue || 1;
+
+    const mapX = (index) => padding + (index / (history.length - 1)) * innerWidth;
+    const mapY = (value) => padding + innerHeight - ((value - minValue) / range) * innerHeight;
+
+    const zeroY = mapY(0);
+    context.strokeStyle = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)";
+    context.beginPath();
+    context.moveTo(padding, zeroY);
+    context.lineTo(width - padding, zeroY);
+    context.stroke();
+
+    const drawSeries = (series, color, fillColor) => {
+      context.beginPath();
+      series.forEach((value, index) => {
+        const x = mapX(index);
+        const y = mapY(value);
+        if (index === 0) context.moveTo(x, y);
+        else context.lineTo(x, y);
+      });
+      context.lineWidth = 2.5;
+      context.strokeStyle = color;
+      context.stroke();
+
+      context.lineTo(mapX(series.length - 1), mapY(minValue));
+      context.lineTo(mapX(0), mapY(minValue));
+      context.closePath();
+      context.fillStyle = fillColor;
+      context.fill();
+    };
+
+    drawSeries(clSeries, isDark ? "#f7f7f7" : "#1b1b1d", isDark ? "rgba(247,247,247,0.08)" : "rgba(27,27,29,0.08)");
+    drawSeries(cdSeries, isDark ? "#e10600" : "#d50a00", isDark ? "rgba(225,6,0,0.14)" : "rgba(213,10,0,0.12)");
+  }, [history, isDark]);
+
+  return <canvas ref={canvasRef} className="history-chart" width={720} height={320} />;
+}
+
+function AnalysisPanel({ history, miniRef, running, exportCSV, stats, ldRatio, regime, modeMeta }) {
+  const recentRows = history.slice(-8).reverse();
+
+  return (
+    <div className="analysis-layout">
+      <Panel
+        eyebrow="Timing Tower"
+        title="Session Trace"
+        subtitle="Lift and drag stay live through the stint so you can compare packages like lap deltas."
+        actions={
+          <button className="ghost-button" type="button" onClick={exportCSV} disabled={!history.length}>
+            Export CSV
+          </button>
+        }
+      >
+        <div className="analysis-hero">
+          <div>
+            <div className="analysis-lead">{modeMeta.label} mode is active</div>
+            <p className="analysis-copy">
+              Let the trace settle, export the lap sheet, then compare the next setup change against a stable run.
+            </p>
+          </div>
+          <div className="analysis-kpis">
+            <MetricCard label="CL" value={stats.cl} note="Latest lift" tone="var(--accent-green)" />
+            <MetricCard label="CD" value={stats.cd} note="Latest drag" tone="var(--accent-orange)" />
+            <MetricCard label="L/D" value={ldRatio} note="Current efficiency" tone="var(--accent-cyan)" />
+            <MetricCard label="Flow" value={regime.label} note="Reynolds regime" tone={regime.col} />
+          </div>
+        </div>
+        <HistoryChart history={history} />
+      </Panel>
+
+      <div className="analysis-grid">
+        <Panel eyebrow="Track Feed" title="Trackside Monitor" subtitle="Live mirror of the active tunnel canvas.">
+          <canvas ref={miniRef} width={420} height={220} className="preview-canvas preview-canvas--wide" />
+          <div className={`status-pill status-pill--inline ${running ? "is-live" : ""}`}>
+            <span className="status-dot" />
+            <span>{running ? "Green flag" : "Session held"}</span>
+          </div>
+        </Panel>
+
+        <Panel eyebrow="Recent Runs" title="Latest Timing Samples" subtitle="Newest rows first.">
+          <div className="history-table">
+            <div className="history-row history-row--head">
+              <span>Time</span>
+              <span>CL</span>
+              <span>CD</span>
+              <span>Re</span>
+            </div>
+            {recentRows.length ? (
+              recentRows.map((entry) => (
+                <div className="history-row" key={entry.t}>
+                  <span>{new Date(entry.t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+                  <span>{entry.cl}</span>
+                  <span>{entry.cd}</span>
+                  <span>{entry.re}</span>
+                </div>
+              ))
+            ) : (
+              <div className="history-empty">No laps logged yet.</div>
+            )}
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function AboutPanel() {
+  return (
+    <div className="about-layout">
+      <Panel
+        className="hero-panel"
+        eyebrow="Garage Notes"
+        title="A pit-wall style interface for quick aero stints"
+        subtitle="AeroLab wraps a lightweight Lattice Boltzmann solver in a control surface modeled after timing screens, setup sheets, and trackside monitors."
+      >
+        <div className="about-hero">
+          <p>
+            The solver runs on a D2Q9 lattice with BGK collision, bounce-back solid walls, and inlet forcing. It is not a full
+            production CFD environment, but it is fast enough to expose separation, wake structure, and directional changes in real
+            time while you move geometry and tune flow conditions.
+          </p>
+          <div className="about-badges">
+            <span className="tag">LBM D2Q9</span>
+            <span className="tag">Float32 solver</span>
+            <span className="tag">Import + sketch workflow</span>
+            <span className="tag">CSV export</span>
+          </div>
+        </div>
+      </Panel>
+
+      <div className="about-grid">
+        <Panel eyebrow="What Changed" title="The Formula 1 direction" subtitle="Sharper hierarchy, harder contrast, and a stronger race-weekend UI language.">
+          <div className="feature-grid">
+            {ABOUT_FEATURES.map((feature) => (
+              <article className="feature-card" key={feature.title}>
+                <h3>{feature.title}</h3>
+                <p>{feature.body}</p>
+              </article>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel eyebrow="Weekend Loop" title="How to use it" subtitle="Treat the app like a fast pit-wall study tool, not a full production CFD stack.">
+          <ol className="method-list">
+            {METHOD_STEPS.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <div className="support-note">
+            Grid: {COLS} x {ROWS} ({(COLS * ROWS).toLocaleString()} cells) · Files: SVG, STL, DXF, PNG, JPG
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+export default function CFDLab() {
+  const { isDark } = useTheme();
+
+  const solverRef = useRef(null);
+  const partsRef = useRef(makeParticlePool());
+  const canvasRef = useRef(null);
+  const wrapRef = useRef(null);
+  const drawRef = useRef(null);
+  const miniRef = useRef(null);
+  const rafRef = useRef(null);
+  const frameRef = useRef(0);
+  const imageRef = useRef(null);
+  const drawingRef = useRef(false);
+  const drawnPointsRef = useRef([]);
+
+  const [view, setView] = useState("tunnel");
+  const [tab, setTab] = useState("preset");
+  const [running, setRunning] = useState(false);
+  const [visualMode, setVisualMode] = useState("velocity");
+  const [preset, setPreset] = useState("f1car");
+  const [polygon, setPolygon] = useState(() => generatePreset("f1car"));
+  const [error, setError] = useState("");
+  const [simplify, setSimplify] = useState(0);
+  const [stats, setStats] = useState({ cl: 0, cd: 0, re: 0, maxV: 0 });
+  const [particleCount, setParticleCount] = useState(DEFAULT_PARTICLES);
+  const [trailOpacity, setTrailOpacity] = useState(1);
+  const [simSpeed, setSimSpeed] = useState(1);
+  const [fps, setFps] = useState(0);
+  const [centerX, setCenterX] = useState(COLS * 0.35);
+  const [centerY, setCenterY] = useState(ROWS / 2);
+  const [scaleX, setScaleX] = useState(COLS * 0.25);
+  const [scaleY, setScaleY] = useState(ROWS * 0.45);
+  const [angleOfAttack, setAngleOfAttack] = useState(0);
+  const [velocity, setVelocity] = useState(0.12);
+  const [turbulence, setTurbulence] = useState(0.15);
+  const [viscosity, setViscosity] = useState(0.015);
+  const [historyRef, pushHistory] = useHistory(200);
+  const [historySnap, setHistorySnap] = useState([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showKeys, setShowKeys] = useState(false);
+  const [autoRun, setAutoRun] = useState(true);
+
+  const fpsFramesRef = useRef(0);
+  const fpsTickRef = useRef(0);
+  const runningRef = useRef(false);
+  const visualModeRef = useRef("velocity");
+  const polygonRef = useRef(null);
+  const centerXRef = useRef(0);
+  const centerYRef = useRef(0);
+  const scaleXRef = useRef(0);
+  const scaleYRef = useRef(0);
+  const aoaRef = useRef(0);
+  const simplifyRef = useRef(0);
+  const velocityRef = useRef(0.12);
+  const turbulenceRef = useRef(0.15);
+  const viscosityRef = useRef(0.015);
+  const themeRef = useRef(true);
+  const particleCountRef = useRef(DEFAULT_PARTICLES);
+  const trailOpacityRef = useRef(1);
+  const simSpeedRef = useRef(1);
+
+  useEffect(() => {
+    if (!solverRef.current) {
+      const solver = new LBM(COLS, ROWS);
+      solver.setNu(0.015);
+      solverRef.current = solver;
+    }
+    fpsTickRef.current = performance.now();
+  }, []);
+
+  useEffect(() => {
+    themeRef.current = isDark;
+  }, [isDark]);
+
+  useEffect(() => {
+    runningRef.current = running;
+  }, [running]);
+
+  useEffect(() => {
+    visualModeRef.current = visualMode;
+  }, [visualMode]);
+
+  useEffect(() => {
+    velocityRef.current = velocity;
+  }, [velocity]);
+
+  useEffect(() => {
+    turbulenceRef.current = turbulence;
+  }, [turbulence]);
+
+  useEffect(() => {
+    viscosityRef.current = viscosity;
+    if (solverRef.current) solverRef.current.setNu(viscosity);
+  }, [viscosity]);
+
+  useEffect(() => {
+    particleCountRef.current = particleCount;
+    resizeParticlePool(partsRef.current, particleCount);
+  }, [particleCount]);
+
+  useEffect(() => {
+    trailOpacityRef.current = trailOpacity;
+  }, [trailOpacity]);
+
+  useEffect(() => {
+    simSpeedRef.current = simSpeed;
+  }, [simSpeed]);
+
+  const rebuildSolid = useCallback(() => {
+    const rawPolygon = polygonRef.current;
+    if (!rawPolygon || !solverRef.current) return;
+    const nextPolygon = simplifyRef.current > 0 ? simplifyPolygon(rawPolygon, simplifyRef.current * 0.005) : rawPolygon;
+    solverRef.current.buildSolid(
+      transformPolygon(nextPolygon, centerXRef.current, centerYRef.current, scaleXRef.current, scaleYRef.current, aoaRef.current)
+    );
+  }, []);
+
+  useEffect(() => {
+    aoaRef.current = angleOfAttack;
+    centerXRef.current = centerX;
+    centerYRef.current = centerY;
+    scaleXRef.current = scaleX;
+    scaleYRef.current = scaleY;
+    rebuildSolid();
+  }, [angleOfAttack, centerX, centerY, scaleX, scaleY, rebuildSolid]);
+
+  useEffect(() => {
+    polygonRef.current = polygon;
+    simplifyRef.current = simplify;
+    rebuildSolid();
+  }, [polygon, simplify, rebuildSolid]);
+
+  const resetSolver = useCallback(() => {
+    const solver = new LBM(COLS, ROWS);
+    solver.setNu(viscosityRef.current);
+    solverRef.current = solver;
+    rebuildSolid();
+  }, [rebuildSolid]);
+
+  const toggleFullscreen = useCallback(() => {
+    const element = wrapRef.current;
+    if (!element) return;
+    if (!document.fullscreenElement) {
+      element.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen?.();
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreen = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handleFullscreen);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreen);
+  }, []);
+
+  const captureSnapshot = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.download = `aerolab-${Date.now()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }, []);
+
+  const exportCSV = useCallback(() => {
+    const data = historyRef.current;
+    if (!data.length) return;
+    const blob = new Blob(
+      ["t,cl,cd,re,maxV\n" + data.map((row) => `${row.t},${row.cl},${row.cd},${row.re},${row.maxV}`).join("\n")],
+      { type: "text/csv" }
+    );
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `aerolab-${Date.now()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [historyRef]);
+
+  const resetAll = useCallback(() => {
+    setRunning(false);
+    setVelocity(0.12);
+    setTurbulence(0.15);
+    setViscosity(0.015);
+    setCenterX(COLS * 0.35);
+    setCenterY(ROWS / 2);
+    setScaleX(COLS * 0.25);
+    setScaleY(ROWS * 0.45);
+    setAngleOfAttack(0);
+    setSimplify(0);
+    setParticleCount(DEFAULT_PARTICLES);
+    setTrailOpacity(1);
+    setSimSpeed(1);
+    setPreset("f1car");
+    setTab("preset");
+    setPolygon(generatePreset("f1car"));
+    setStats({ cl: 0, cd: 0, re: 0, maxV: 0 });
+    historyRef.current = [];
+    setHistorySnap([]);
+    const solver = new LBM(COLS, ROWS);
+    solver.setNu(0.015);
+    solverRef.current = solver;
+    if (drawRef.current) {
+      const context = drawRef.current.getContext("2d");
+      context?.clearRect(0, 0, drawRef.current.width, drawRef.current.height);
+    }
+  }, [historyRef]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const tag = event.target.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      switch (event.code) {
+        case "Space":
+          event.preventDefault();
+          setRunning((prev) => !prev);
+          break;
+        case "KeyR":
+          resetSolver();
+          break;
+        case "Digit1":
+          setVisualMode("velocity");
+          break;
+        case "Digit2":
+          setVisualMode("pressure");
+          break;
+        case "Digit3":
+          setVisualMode("streamlines");
+          break;
+        case "Digit4":
+          setVisualMode("vorticity");
+          break;
+        case "KeyF":
+          toggleFullscreen();
+          break;
+        case "KeyS":
+          if (!event.ctrlKey && !event.metaKey) captureSnapshot();
+          break;
+        case "Slash":
+          event.preventDefault();
+          setShowKeys((prev) => !prev);
+          break;
+        default:
+          break;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [captureSnapshot, resetSolver, toggleFullscreen]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    imageRef.current = context.createImageData(SIM_W, SIM_H);
+    const DX = SIM_W / COLS;
+    const DY = SIM_H / ROWS;
+
+    const loop = () => {
+      rafRef.current = requestAnimationFrame(loop);
+      const solver = solverRef.current;
+      if (!solver) return;
+
+      const inletVelocity = velocityRef.current;
+      if (runningRef.current) {
+        const steps = simSpeedRef.current;
+        for (let step = 0; step < steps; step += 1) solver.step(inletVelocity, turbulenceRef.current);
+      }
+
+      frameRef.current += 1;
+      fpsFramesRef.current += 1;
+      const now = performance.now();
+      if (now - fpsTickRef.current >= 1000) {
+        setFps(fpsFramesRef.current);
+        fpsFramesRef.current = 0;
+        fpsTickRef.current = now;
+      }
+
+      const dark = themeRef.current;
+      const mode = visualModeRef.current;
+      const image = imageRef.current;
+      const buffer32 = new Uint32Array(image.data.buffer);
+      const solidColor = dark ? (255 << 24) | (52 << 16) | (36 << 8) | 40 : (255 << 24) | (196 << 16) | (174 << 8) | 180;
+      const backgroundColor = dark ? (255 << 24) | (13 << 16) | (8 << 8) | 10 : (255 << 24) | (244 << 16) | (232 << 8) | 236;
+
+      if (mode === "streamlines") {
+        buffer32.fill(backgroundColor);
+        for (let cell = 0; cell < solver.N; cell += 1) {
+          if (!solver.solid[cell]) continue;
+          const col = cell % COLS;
+          const row = (cell / COLS) | 0;
+          const x0 = (col * DX) | 0;
+          const y0 = (row * DY) | 0;
+          const x1 = Math.min(((col + 1) * DX) | 0, SIM_W);
+          const y1 = Math.min(((row + 1) * DY) | 0, SIM_H);
+          for (let py = y0; py < y1; py += 1) {
+            for (let px = x0; px < x1; px += 1) buffer32[py * SIM_W + px] = solidColor;
+          }
+        }
+      } else {
+        const lut = mode === "pressure" ? COOLWARM : TURBO;
+        const field = mode === "velocity" ? solver.spd : mode === "pressure" ? solver.rho : solver.curl;
+        let fieldMin = 1e9;
+        let fieldMax = -1e9;
+        for (let cell = 0; cell < solver.N; cell += 1) {
+          if (solver.solid[cell]) continue;
+          const value = field[cell];
+          if (value < fieldMin) fieldMin = value;
+          if (value > fieldMax) fieldMax = value;
+        }
+        const fieldRange = fieldMax - fieldMin;
+        if (fieldRange < 1e-10) {
+          buffer32.fill(lut[128]);
+        } else {
+          const invRange = 255 / fieldRange;
+          const invDX = COLS / SIM_W;
+          const invDY = ROWS / SIM_H;
+          for (let py = 0; py < SIM_H; py += 1) {
+            const row = Math.min(ROWS - 1, (py * invDY) | 0);
+            const rowOffset = py * SIM_W;
+            for (let px = 0; px < SIM_W; px += 1) {
+              const col = Math.min(COLS - 1, (px * invDX) | 0);
+              const cell = row * COLS + col;
+              buffer32[rowOffset + px] = solver.solid[cell]
+                ? solidColor
+                : lut[Math.max(0, Math.min(255, ((field[cell] - fieldMin) * invRange) | 0))];
+            }
+          }
+        }
+      }
+
+      context.putImageData(image, 0, 0);
+
+      const particles = partsRef.current;
+      const count = particleCountRef.current;
+      const opacity = trailOpacityRef.current;
+      for (let index = 0; index < count && index < particles.length; index += 1) particles[index].update(solver);
+
+      if ((mode === "streamlines" || mode === "velocity" || mode === "vorticity") && opacity > 0) {
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        const streamlines = mode === "streamlines";
+        const alphas = streamlines ? [0.15, 0.4, 0.8] : [0.08, 0.2, 0.35];
+        const widths = streamlines ? [0.4, 0.7, 1.1] : [0.3, 0.5, 0.6];
+        const colors = streamlines
+          ? dark
+            ? ["rgba(225,6,0,", "rgba(255,158,66,", "rgba(247,247,247,"]
+            : ["rgba(145,18,15,", "rgba(169,94,22,", "rgba(27,27,29,"]
+          : dark
+            ? ["rgba(255,255,255,", "rgba(255,255,255,", "rgba(255,255,255,"]
+            : ["rgba(0,0,0,", "rgba(0,0,0,", "rgba(0,0,0,"];
+
+        for (let band = 0; band < 3; band += 1) {
+          context.strokeStyle = colors[band] + alphas[band] * opacity + ")";
+          context.lineWidth = widths[band];
+          context.beginPath();
+          const start = band === 0 ? 0 : band === 1 ? Math.floor(TRAIL_LEN * 0.33) : Math.floor(TRAIL_LEN * 0.66);
+          const end = band === 0 ? Math.floor(TRAIL_LEN * 0.33) : band === 1 ? Math.floor(TRAIL_LEN * 0.66) : TRAIL_LEN;
+          for (let index = 0; index < count && index < particles.length; index += 1) {
+            const particle = particles[index];
+            if (!particle.active || particle.tl < 3) continue;
+            const trailStart = particle.ti - particle.tl;
+            const from = trailStart + Math.floor((start * particle.tl) / TRAIL_LEN);
+            const to = trailStart + Math.floor((end * particle.tl) / TRAIL_LEN);
+            let started = false;
+            for (let trailIndex = from; trailIndex < to && trailIndex < particle.ti; trailIndex += 1) {
+              const wrapped = ((trailIndex % TRAIL_LEN) + TRAIL_LEN) % TRAIL_LEN;
+              if (!started) {
+                context.moveTo(particle.tx[wrapped], particle.ty[wrapped]);
+                started = true;
+              } else {
+                context.lineTo(particle.tx[wrapped], particle.ty[wrapped]);
+              }
+            }
+          }
+          context.stroke();
+        }
+      }
+
+      const rawPolygon = polygonRef.current;
+      if (rawPolygon) {
+        const simplified = simplifyRef.current > 0 ? simplifyPolygon(rawPolygon, simplifyRef.current * 0.005) : rawPolygon;
+        const transformed = transformPolygon(
+          simplified,
+          centerXRef.current,
+          centerYRef.current,
+          scaleXRef.current,
+          scaleYRef.current,
+          aoaRef.current
+        );
+        const outlineColor = dark ? "#e10600" : "#d50a00";
+        context.beginPath();
+        transformed.forEach(([gx, gy], index) => {
+          const px = gx * DX;
+          const py = gy * DY;
+          if (index === 0) context.moveTo(px, py);
+          else context.lineTo(px, py);
+        });
+        context.closePath();
+        context.strokeStyle = outlineColor;
+        context.lineWidth = 1.6;
+        context.shadowColor = outlineColor;
+        context.shadowBlur = dark ? 10 : 5;
+        context.stroke();
+        context.shadowBlur = 0;
+      }
+
+      if (runningRef.current && frameRef.current % 15 === 0) {
+        let maxVelocityRatio = 0;
+        let totalLift = 0;
+        let totalDrag = 0;
+        let sampleCount = 0;
+        for (let cell = 0; cell < solver.N; cell += 1) {
+          if (solver.solid[cell]) continue;
+          const speed = solver.spd[cell];
+          if (!Number.isFinite(speed)) continue;
+          sampleCount += 1;
+          if (speed > maxVelocityRatio) maxVelocityRatio = speed;
+          totalLift += solver.uy[cell];
+          totalDrag += Math.abs(solver.ux[cell] - inletVelocity);
+        }
+        const reynolds = (inletVelocity * scaleXRef.current) / (viscosityRef.current + 1e-6) * 10;
+        const cl = sampleCount > 0 ? Math.abs((totalLift / sampleCount) * 2 * (1 + aoaRef.current * 0.06)) : 0;
+        const cd = sampleCount > 0 ? totalDrag / sampleCount * 0.5 + 0.008 : 0;
+        const nextStats = {
+          cl: +cl.toFixed(4),
+          cd: +cd.toFixed(4),
+          re: Math.round(reynolds),
+          maxV: inletVelocity > 0 ? +(maxVelocityRatio / inletVelocity).toFixed(3) : 0,
+        };
+        setStats(nextStats);
+        pushHistory(nextStats);
+      }
+
+      const miniCanvas = miniRef.current;
+      const miniContext = miniCanvas?.getContext("2d");
+      if (miniCanvas && miniContext) miniContext.drawImage(canvas, 0, 0, miniCanvas.width, miniCanvas.height);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [pushHistory]);
+
+  const applyPolygon = useCallback(
+    (nextPolygon) => {
+      if (!nextPolygon) return;
+      setPreset("custom");
+      setPolygon(nextPolygon);
+      setError("");
+      setView("tunnel");
+      if (autoRun) setRunning(true);
+    },
+    [autoRun]
+  );
+
+  const updateSimplify = useCallback(
+    (value) => {
+      setSimplify(value);
+      if (autoRun) setRunning(true);
+    },
+    [autoRun]
+  );
+
+  const handleFile = useCallback(
+    (file) => {
+      if (!file) return;
+      setError("");
+      const name = file.name.toLowerCase();
+      const load = (mode, parser) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const parsed = parser(event.target.result);
+          if (!parsed) {
+            setError(`Parse failed: ${name.split(".").pop().toUpperCase()}`);
+            return;
+          }
+          applyPolygon(parsed);
+        };
+        if (mode === "text") reader.readAsText(file);
+        else reader.readAsArrayBuffer(file);
+      };
+
+      if (name.endsWith(".svg")) {
+        load("text", parseSVG);
+      } else if (name.endsWith(".stl")) {
+        load("buffer", parseSTL);
+      } else if (name.endsWith(".dxf")) {
+        load("text", parseDXF);
+      } else if (file.type?.startsWith("image/")) {
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => {
+          const canvas = document.createElement("canvas");
+          const width = Math.min(image.width, 200);
+          const height = Math.min(image.height, 200);
+          canvas.width = width;
+          canvas.height = height;
+          const context = canvas.getContext("2d");
+          context?.drawImage(image, 0, 0, width, height);
+          const parsed = traceImage(context.getImageData(0, 0, width, height), width, height);
+          URL.revokeObjectURL(url);
+          if (!parsed) {
+            setError("Edge trace failed.");
+            return;
+          }
+          applyPolygon(parsed);
+        };
+        image.src = url;
+      } else {
+        setError("Use SVG, STL, DXF, PNG, or JPG.");
+      }
+    },
+    [applyPolygon]
+  );
+
+  const handleDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      handleFile(event.dataTransfer?.files?.[0]);
+    },
+    [handleFile]
+  );
+
+  const handleFileInput = useCallback(
+    (event) => {
+      handleFile(event.target.files[0]);
+      event.target.value = "";
+    },
+    [handleFile]
+  );
+
+  const getDrawPoint = (event) => {
+    const drawCanvas = drawRef.current;
+    const rect = drawCanvas.getBoundingClientRect();
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    return [(clientX - rect.left) * (drawCanvas.width / rect.width), (clientY - rect.top) * (drawCanvas.height / rect.height)];
+  };
+
+  const startDraw = (event) => {
+    event.preventDefault();
+    drawingRef.current = true;
+    const context = drawRef.current.getContext("2d");
+    context?.clearRect(0, 0, drawRef.current.width, drawRef.current.height);
+    drawnPointsRef.current = [getDrawPoint(event)];
+  };
+
+  const moveDraw = (event) => {
+    event.preventDefault();
+    if (!drawingRef.current) return;
+    const [x, y] = getDrawPoint(event);
+    drawnPointsRef.current.push([x, y]);
+    const context = drawRef.current.getContext("2d");
+    if (!context) return;
+    context.strokeStyle = isDark ? "#e10600" : "#d50a00";
+    context.lineWidth = 2;
+    context.lineCap = "round";
+    const points = drawnPointsRef.current;
+    if (points.length > 1) {
+      context.beginPath();
+      context.moveTo(points[points.length - 2][0], points[points.length - 2][1]);
+      context.lineTo(x, y);
+      context.stroke();
+    }
+  };
+
+  const endDraw = () => {
+    drawingRef.current = false;
+    const points = drawnPointsRef.current;
+    if (points.length < 5) return;
+    const parsed = normalizePolygon(points);
+    if (parsed) {
+      setTab("draw");
+      applyPolygon(parsed);
+    }
+  };
+
+  const regime = useMemo(() => {
+    if (stats.re < 2300) return { label: "Laminar", col: "var(--accent-green)" };
+    if (stats.re < 4000) return { label: "Transitional", col: "var(--accent-orange)" };
+    return { label: "Turbulent", col: "var(--accent-red-stat)" };
+  }, [stats.re]);
+
+  const ldRatio = useMemo(() => (stats.cd > 0 ? (stats.cl / stats.cd).toFixed(2) : "-"), [stats.cl, stats.cd]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setHistorySnap([...historyRef.current]), 500);
+    return () => clearInterval(interval);
+  }, [historyRef]);
+
+  const currentMode = MODE_OPTIONS.find((option) => option.id === visualMode) ?? MODE_OPTIONS[0];
+  const currentPreset = PRESET_LOOKUP[preset];
+  const activeImport = IMPORT_TABS.find((option) => option.id === tab);
+  const geometryLabel = currentPreset ? currentPreset.label : activeImport?.label ? `${activeImport.label} geometry` : "Custom geometry";
+  const geometryNote = currentPreset ? currentPreset.description : "Imported or hand-sketched profile";
+  const metrics = [
+    { label: "CL", value: stats.cl, note: "Lift coefficient", tone: "var(--accent-green)" },
+    { label: "CD", value: stats.cd, note: "Drag coefficient", tone: "var(--accent-orange)" },
+    { label: "L/D", value: ldRatio, note: "Efficiency ratio", tone: "var(--accent-cyan)" },
+    {
+      label: "Re",
+      value: stats.re > 999 ? `${(stats.re / 1000).toFixed(1)}k` : stats.re,
+      note: "Reynolds number",
+      tone: "var(--accent-orange)",
+    },
+    { label: "U/U0", value: stats.maxV, note: "Peak velocity ratio", tone: "var(--accent-cyan)" },
+    { label: "Flow", value: regime.label, note: "Regime estimate", tone: regime.col },
+  ];
+
+  const diagnosticSignals = [
+    { label: "Inlet speed", note: `${velocity.toFixed(3)} solver units`, value: velocity / 0.18, tone: "var(--accent-cyan)" },
+    { label: "Turbulence", note: `${turbulence.toFixed(1)} injected noise`, value: turbulence / 3, tone: "var(--accent-orange)" },
+    { label: "Viscosity", note: `${viscosity.toFixed(3)} nu`, value: viscosity / 0.1, tone: "var(--accent-green)" },
+    { label: "Particles", note: `${particleCount}/${MAX_PARTICLES} active`, value: particleCount / MAX_PARTICLES, tone: "var(--accent-red)" },
+  ];
+
+  const renderImportSurface = () => {
+    if (tab === "preset") {
+      return PRESET_GROUPS.map((group) => (
+        <div className="preset-group" key={group.label}>
+          <div className="preset-group__label">{group.label}</div>
+          <div className="preset-grid">
+            {group.items.map((item) => (
+              <button
+                key={item.id}
+                className={`preset-card ${preset === item.id ? "is-active" : ""}`}
+                type="button"
+                      onClick={() => {
+                        setPreset(item.id);
+                        setPolygon(generatePreset(item.id));
+                        setTab("preset");
+                        setView("tunnel");
+                        setError("");
+                        if (autoRun) setRunning(true);
+                      }}
+              >
+                <span>{item.label}</span>
+                <small>{item.description}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      ));
+    }
+
+    if (tab === "draw") {
+      return (
+        <div className="sketch-surface">
+          <canvas
+            ref={drawRef}
+            width={320}
+            height={180}
+            className="sketch-canvas"
+            onMouseDown={startDraw}
+            onMouseMove={moveDraw}
+            onMouseUp={endDraw}
+            onMouseLeave={endDraw}
+            onTouchStart={startDraw}
+            onTouchMove={moveDraw}
+            onTouchEnd={endDraw}
+          />
+          <p className="drop-help">Sketch a closed contour and release to normalize it into the tunnel.</p>
+        </div>
+      );
+    }
+
+    const accept =
+      tab === "svg"
+        ? ".svg"
+        : tab === "stl"
+          ? ".stl"
+          : tab === "dxf"
+            ? ".dxf"
+            : "image/*";
+
+    return (
+      <label className="dropzone">
+        <span>{tab === "image" ? "Load a PNG or JPG trace" : `Load a ${tab.toUpperCase()} file`}</span>
+        <small>Drag a file here or browse from disk.</small>
+        <input type="file" accept={accept} hidden onChange={handleFileInput} />
+      </label>
+    );
+  };
+
+  return (
+    <div className="lab-shell" ref={wrapRef}>
+      <div className="lab-shell__backdrop" />
+      <header className="lab-header">
+        <div className="brand-block">
+          <div className="brand-mark">
+            <F1Logo size={28} />
+          </div>
+          <div>
+            <div className="brand-eyebrow">AeroLab // FP1</div>
+            <h1 className="brand-title">Pit Wall Aero Session</h1>
+            <p className="brand-copy">Single-seater inspired flow analysis with a race-weekend hierarchy: package sheet, track feed, timing tower.</p>
+          </div>
+        </div>
+
+        <nav className="view-switch" aria-label="Views">
+          {VIEW_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              className={`view-switch__button ${view === option.id ? "is-active" : ""}`}
+              type="button"
+              onClick={() => setView(option.id)}
+            >
+              <span>{option.eyebrow}</span>
+              <strong>{option.label}</strong>
+            </button>
+          ))}
+        </nav>
+
+        <div className="header-tools">
+          <div className={`start-lights ${running ? "is-live" : ""}`} aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((light) => (
+              <span key={light} />
+            ))}
+          </div>
+          <div className={`status-pill ${running ? "is-live" : ""}`}>
+            <span className="status-dot" />
+            <span>{running ? "Green Flag" : "Session Hold"}</span>
+          </div>
+          <div className="status-pill status-pill--quiet">{fps} FPS</div>
+          <ThemeToggle />
+        </div>
+      </header>
+
+      <div className="session-strip">
+        <div className="session-cell">
+          <span>Session</span>
+          <strong>FP1 Aero Run</strong>
+        </div>
+        <div className="session-cell">
+          <span>Package</span>
+          <strong>{geometryLabel}</strong>
+        </div>
+        <div className="session-cell">
+          <span>Mode</span>
+          <strong>{currentMode.label}</strong>
+        </div>
+        <div className="session-cell">
+          <span>Status</span>
+          <strong>{running ? "Green Flag" : "Hold"}</strong>
+        </div>
+        <div className="session-cell">
+          <span>Grid</span>
+          <strong>{COLS} x {ROWS}</strong>
+        </div>
+      </div>
+
+      <main className="lab-main">
+        {view === "tunnel" && (
+          <div className="tunnel-layout">
+            <section className="stage-column">
+              <Panel
+                className="hero-panel"
+                eyebrow="Pit Wall"
+                title="Run the aero package like a live Formula 1 session"
+                subtitle={currentMode.description}
+              >
+                <div className="hero-grid">
+                  <div className="hero-copy">
+                    <div className="hero-highlight">{geometryLabel}</div>
+                    <p>
+                      {geometryNote}. Use the left deck to alter geometry and solver behaviour, then inspect the live telemetry and
+                      preview rail for trend changes.
+                    </p>
+                    <div className="hero-tags">
+                      <span className="tag">{COLS} x {ROWS} cells</span>
+                      <span className="tag">{currentMode.label} view</span>
+                      <span className="tag">{autoRun ? "Auto green-flag" : "Manual release"}</span>
+                    </div>
+                  </div>
+
+                  <div className="hero-actions">
+                    <button className="primary-button" type="button" onClick={() => setRunning((prev) => !prev)}>
+                      {running ? "Throw Red Flag" : "Green Flag Run"}
+                    </button>
+                    <button className="ghost-button" type="button" onClick={resetSolver}>
+                      Reset Stint
+                    </button>
+                    <button className="ghost-button" type="button" onClick={captureSnapshot}>
+                      Capture Frame
+                    </button>
+                    <button className="ghost-button" type="button" onClick={exportCSV} disabled={!historySnap.length}>
+                      Export Lap Sheet
+                    </button>
+                    <button className="ghost-button" type="button" onClick={toggleFullscreen}>
+                      {isFullscreen ? "Exit Feed" : "Full Feed"}
+                    </button>
+                    <button className="ghost-button" type="button" onClick={resetAll}>
+                      Baseline Reset
+                    </button>
+                  </div>
+                </div>
+              </Panel>
+
+              <Panel
+                eyebrow="Track Feed"
+                title="Session Canvas"
+                subtitle={currentMode.legend}
+                actions={
+                  <button className="quiet-button" type="button" onClick={() => setShowKeys((prev) => !prev)}>
+                    {showKeys ? "Hide controls" : "Show controls"}
+                  </button>
+                }
+              >
+                <div className="mode-toolbar">
+                  <div className="mode-toolbar__list">
+                    {MODE_OPTIONS.map((option, index) => (
+                      <button
+                        key={option.id}
+                        className={`mode-chip ${visualMode === option.id ? "is-active" : ""}`}
+                        style={{ "--tone": option.accent }}
+                        type="button"
+                        onClick={() => setVisualMode(option.id)}
+                        title={`${option.label} [${index + 1}]`}
+                      >
+                        <span>{isMobile ? option.shortLabel : option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <label className={`toggle-chip ${autoRun ? "is-active" : ""}`}>
+                    <input
+                      type="checkbox"
+                      checked={autoRun}
+                      onChange={() => setAutoRun((prev) => !prev)}
+                    />
+                    <span>Auto-release each change</span>
+                  </label>
+                </div>
+
+                {showKeys && (
+                  <div className="shortcut-grid">
+                    {SHORTCUTS.map(([key, description]) => (
+                      <div className="shortcut-item" key={key}>
+                        <kbd>{key}</kbd>
+                        <span>{description}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="stage-panel">
+                  <div className="stage-panel__hud">
+                    <div className="hud-chip">
+                      <F1Logo size={12} />
+                      <span>Air in {"->"} dirty air out</span>
+                    </div>
+                    <div className="hud-chip">{currentMode.label}</div>
+                  </div>
+                  <canvas ref={canvasRef} width={SIM_W} height={SIM_H} className="stage-panel__canvas" />
+                  <div className="stage-panel__legend">
+                    <span>High</span>
+                    <div
+                      className="legend-bar"
+                      style={{
+                        background:
+                          visualMode === "pressure" ? "var(--colorbar-pressure)" : "var(--colorbar-velocity)",
+                      }}
+                    />
+                    <span>Low</span>
+                  </div>
+                  <div className="stage-panel__footer">
+                    <div className="footer-stat">
+                      <span>Package</span>
+                      <strong>{geometryLabel}</strong>
+                    </div>
+                    <div className="footer-stat">
+                      <span>AoA</span>
+                      <strong>{angleOfAttack} deg</strong>
+                    </div>
+                    <div className="footer-stat">
+                      <span>Wake Traces</span>
+                      <strong>{particleCount}</strong>
+                    </div>
+                  </div>
+                </div>
+              </Panel>
+
+              <div className="metrics-grid">
+                {metrics.map((metric) => (
+                  <MetricCard key={metric.label} label={metric.label} value={metric.value} note={metric.note} tone={metric.tone} />
+                ))}
+              </div>
+            </section>
+
+            <aside className="control-column">
+              <Panel
+                eyebrow="Garage"
+                title="Select the aero package"
+                subtitle="Benchmarks, imported sections, and a quick trace pad all feed the same session."
+              >
+                <div className="import-tabs">
+                  {IMPORT_TABS.map((option) => (
+                    <button
+                      key={option.id}
+                      className={`import-tab ${tab === option.id ? "is-active" : ""}`}
+                      type="button"
+                      onClick={() => {
+                        setTab(option.id);
+                        setError("");
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="import-surface" onDrop={handleDrop} onDragOver={(event) => event.preventDefault()}>
+                  {renderImportSurface()}
+                </div>
+
+                <div className="drop-help">Current package: {geometryLabel}. Drag and drop is enabled across this garage card.</div>
+                {error && <div className="error-callout">{error}</div>}
+              </Panel>
+
+              <Panel eyebrow="Setup Sheet" title="Position the package" subtitle="Adjust origin, scale, and angle before comparing one stint to the next.">
+                <div className="slider-stack">
+                  <SliderControl
+                    label="Position X"
+                    value={centerX}
+                    display={centerX.toFixed(0)}
+                    min={10}
+                    max={COLS - 10}
+                    step={1}
+                    onChange={setCenterX}
+                    tone="var(--accent-cyan)"
+                  />
+                  <SliderControl
+                    label="Position Y"
+                    value={centerY}
+                    display={centerY.toFixed(0)}
+                    min={4}
+                    max={ROWS - 4}
+                    step={1}
+                    onChange={setCenterY}
+                    tone="var(--accent-cyan)"
+                  />
+                  <SliderControl
+                    label="Scale X"
+                    value={scaleX}
+                    display={scaleX.toFixed(0)}
+                    min={10}
+                    max={COLS * 0.5}
+                    step={1}
+                    onChange={setScaleX}
+                    tone="var(--accent-green)"
+                  />
+                  <SliderControl
+                    label="Scale Y"
+                    value={scaleY}
+                    display={scaleY.toFixed(0)}
+                    min={5}
+                    max={ROWS * 0.7}
+                    step={1}
+                    onChange={setScaleY}
+                    tone="var(--accent-green)"
+                  />
+                  <SliderControl
+                    label="Angle of attack"
+                    value={angleOfAttack}
+                    display={`${angleOfAttack} deg`}
+                    min={-25}
+                    max={35}
+                    step={1}
+                    onChange={setAngleOfAttack}
+                    tone="var(--accent-orange)"
+                  />
+                  <SliderControl
+                    label="Simplify"
+                    value={simplify}
+                    display={simplify}
+                    min={0}
+                    max={20}
+                    step={1}
+                    onChange={updateSimplify}
+                    tone="var(--accent-red)"
+                    hint="Higher values reduce point count before building the solid mask."
+                  />
+                </div>
+              </Panel>
+
+              <Panel eyebrow="Race Control" title="Tune the session" subtitle="Balance flow realism, pace, and wake readability from one control block.">
+                <div className="slider-stack">
+                  <SliderControl
+                    label="Inlet velocity"
+                    value={velocity}
+                    display={velocity.toFixed(3)}
+                    min={0.02}
+                    max={0.18}
+                    step={0.005}
+                    onChange={setVelocity}
+                    tone="var(--accent-cyan)"
+                  />
+                  <SliderControl
+                    label="Turbulence"
+                    value={turbulence}
+                    display={turbulence.toFixed(1)}
+                    min={0}
+                    max={3}
+                    step={0.1}
+                    onChange={setTurbulence}
+                    tone="var(--accent-orange)"
+                  />
+                  <SliderControl
+                    label="Viscosity (nu)"
+                    value={viscosity}
+                    display={viscosity.toFixed(3)}
+                    min={0.005}
+                    max={0.1}
+                    step={0.001}
+                    onChange={setViscosity}
+                    tone="var(--accent-green)"
+                  />
+                  <SliderControl
+                    label="Particles"
+                    value={particleCount}
+                    display={particleCount}
+                    min={0}
+                    max={MAX_PARTICLES}
+                    step={10}
+                    onChange={setParticleCount}
+                    tone="var(--accent-red)"
+                  />
+                  <SliderControl
+                    label="Trail opacity"
+                    value={trailOpacity}
+                    display={trailOpacity.toFixed(2)}
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    onChange={setTrailOpacity}
+                    tone="var(--accent-cyan)"
+                  />
+                  <SliderControl
+                    label="Simulation speed"
+                    value={simSpeed}
+                    display={`${simSpeed}x`}
+                    min={1}
+                    max={8}
+                    step={1}
+                    onChange={setSimSpeed}
+                    tone="var(--accent-orange)"
+                  />
+                </div>
+              </Panel>
+            </aside>
+
+            <aside className="info-column">
+              <Panel eyebrow="Timing Tower" title="Live session summary" subtitle="A compact readout of the current package and tunnel state.">
+                <div className="telemetry-stack">
+                  <div className="telemetry-highlight">
+                    <span>Current package</span>
+                    <strong>{geometryLabel}</strong>
+                    <small>{geometryNote}</small>
+                  </div>
+                  {diagnosticSignals.map((signal) => (
+                    <SignalRow
+                      key={signal.label}
+                      label={signal.label}
+                      note={signal.note}
+                      value={signal.value}
+                      tone={signal.tone}
+                    />
+                  ))}
+                </div>
+              </Panel>
+
+              <Panel eyebrow="Onboard" title="Trackside monitor" subtitle="Secondary view for quick checks while the main canvas is moving.">
+                <canvas ref={miniRef} width={420} height={220} className="preview-canvas" />
+                <div className="preview-meta">
+                  <div>
+                    <span>View mode</span>
+                    <strong>{currentMode.label}</strong>
+                  </div>
+                  <div>
+                    <span>Flow regime</span>
+                    <strong style={{ color: regime.col }}>{regime.label}</strong>
+                  </div>
+                </div>
+              </Panel>
+
+              <Panel eyebrow="Engineer Notes" title="Run discipline" subtitle="Keep changes clean so each package comparison stays readable.">
+                <div className="reference-list">
+                  <div className="reference-item">
+                    <strong>Move one variable at a time</strong>
+                    <span>Change package or flow, but not both, when you want a clear delta between runs.</span>
+                  </div>
+                  <div className="reference-item">
+                    <strong>Read pressure like loading</strong>
+                    <span>Pressure is the fastest way to spot suction zones, load peaks, and stall-prone pockets.</span>
+                  </div>
+                  <div className="reference-item">
+                    <strong>Read streamlines like dirty air</strong>
+                    <span>Trail bundles make wake length, recirculation, and reattachment much easier to judge.</span>
+                  </div>
+                </div>
+              </Panel>
+            </aside>
+          </div>
+        )}
+
+        {view === "analysis" && (
+          <AnalysisPanel
+            history={historySnap}
+            miniRef={miniRef}
+            running={running}
+            exportCSV={exportCSV}
+            stats={stats}
+            ldRatio={ldRatio}
+            regime={regime}
+            modeMeta={currentMode}
+          />
+        )}
+
+        {view === "about" && <AboutPanel />}
+      </main>
+    </div>
+  );
+}
