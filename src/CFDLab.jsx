@@ -53,12 +53,12 @@ function useHistory(maxLen = 1000) {
 function SidebarSection({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={`sidebar-section ${open ? "is-open" : ""}`}>
-      <button className="sidebar-section__header" onClick={() => setOpen(o => !o)}>
-        <span className="sidebar-section__title">{title}</span>
-        <span className="sidebar-section__toggle">▶</span>
+    <div className={`control-section ${open ? "is-open" : ""}`}>
+      <button className="control-section__header" onClick={() => setOpen(o => !o)}>
+        <span className="control-section__title">{title}</span>
+        <span className="control-section__toggle">▶</span>
       </button>
-      <div className="sidebar-section__body">{children}</div>
+      <div className="control-section__body">{children}</div>
     </div>
   );
 }
@@ -142,7 +142,9 @@ export default function CFDLab() {
   const [autoRun,   setAutoRun]   = useState(true);
   const [sessionName, setSessionName] = useState("FP1 AERO RUN");
   const [editingName, setEditingName] = useState(false);
-  const [mobileDrawer, setMobileDrawer] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(!IS_MOBILE);
+  const [activeSection, setActiveSection] = useState("shape");
+  const [metricsOpen, setMetricsOpen] = useState(!IS_MOBILE);
 
   /* ── Consolidated params ref ── */
   const P = useRef({
@@ -495,7 +497,7 @@ export default function CFDLab() {
     { label:"FLOW", value:hasRun?regime.label:"—", note:"Regime",   tone:hasRun?regime.col:"var(--f1-dim)" },
   ];
 
-  const sidebarContent = (
+  const controlPanelContent = (
     <>
       <SidebarSection title="GARAGE — SELECT PACKAGE" defaultOpen={true}>
         <div className="import-tabs">
@@ -545,29 +547,63 @@ export default function CFDLab() {
     </>
   );
 
+  const controlSections = [
+    { id:"shape", label:"Shape", icon:"⊙" },
+    { id:"flow", label:"Flow", icon:"⚙" },
+    { id:"visual", label:"Visual", icon:"◈" },
+    { id:"transform", label:"Transform", icon:"↗" },
+  ];
+  const activeControlTitle = controlSections.find(s => s.id === activeSection)?.label || "Controls";
+  const openControlPanel = section => {
+    setActiveSection(section);
+    setView("tunnel");
+    setPanelOpen(true);
+  };
+
   return (
     <div className="lab-shell" ref={wrapRef}>
       <div className="lab-shell__scanline" />
 
-      <header className="lab-header">
-        <div className="brand-block">
-          <div className="brand-logo-mark"><F1Logo size={18} /></div>
+      <header className="command-bar">
+        <div className="command-bar__left">
+          <button
+            className="command-menu-button"
+            aria-label={panelOpen ? "Close control panel" : "Open control panel"}
+            onClick={() => {
+              setView("tunnel");
+              setPanelOpen(open => !open);
+            }}
+          >
+            {panelOpen ? "×" : "≡"}
+          </button>
+          <div className="brand-logo-mark"><F1Logo size={16} /></div>
           <div className="brand-text">
             <div className="brand-name">AeroLab</div>
-            <div className="brand-sub">f1stories.gr · CFD Terminal</div>
+            <div className="brand-sub">CFD Terminal</div>
           </div>
         </div>
-        {!IS_MOBILE && (
-          <nav className="header-nav">
-            {[{id:"tunnel",num:"01",label:"Wind Tunnel"},{id:"analysis",num:"02",label:"Analysis"},{id:"about",num:"03",label:"About"}].map(v => (
-              <button key={v.id} className={`nav-btn ${view===v.id?"is-active":""}`} onClick={() => setView(v.id)}>
-                <span className="nav-btn__num">{v.num}</span>
-                <strong className="nav-btn__label">{v.label}</strong>
+
+        <div className="command-bar__center" aria-label="Session telemetry">
+          <div className="command-chip">
+            <span className="command-chip__key">Session</span>
+            {editingName ? (
+              <input className="session-name-input" autoFocus value={sessionName}
+                onChange={e => setSessionName(e.target.value)}
+                onBlur={() => setEditingName(false)}
+                onKeyDown={e => { if (e.key==="Enter") setEditingName(false); }} />
+            ) : (
+              <button className="command-chip__value session-name-editable" onClick={() => setEditingName(true)} title="Click to rename">
+                {sessionName}
               </button>
-            ))}
-          </nav>
-        )}
-        <div className="header-status">
+            )}
+          </div>
+          <div className="command-chip"><span className="command-chip__key">Pkg</span><span className="command-chip__value">{currentPreset?.label||"CUSTOM"}</span></div>
+          <div className="command-chip"><span className="command-chip__key">AoA</span><span className="command-chip__value">{aoa}°</span></div>
+          <div className="command-chip"><span className="command-chip__key">Re</span><span className="command-chip__value">{hasRun?(stats.re>999?`${(stats.re/1000).toFixed(1)}K`:stats.re||"—"):"—"}</span></div>
+        </div>
+
+        <div className="command-bar__right">
+          <button className="command-icon-button" aria-label="Toggle live metrics column" onClick={() => setMetricsOpen(open => !open)}>◧</button>
           <div className={`status-pill ${running?"is-live":"is-hold"}`}>
             <span className={`status-dot ${running?"is-live":"is-red"}`} />
             {running?"GREEN FLAG":"SESSION HOLD"}
@@ -577,170 +613,188 @@ export default function CFDLab() {
         </div>
       </header>
 
-      <div className="session-strip-wrap">
-        <div className="session-strip">
-          <div className="session-cell">
-            <span className="session-cell__key">Session</span>
-            {editingName ? (
-              <input className="session-name-input" autoFocus value={sessionName}
-                onChange={e => setSessionName(e.target.value)}
-                onBlur={() => setEditingName(false)}
-                onKeyDown={e => { if (e.key==="Enter") setEditingName(false); }} />
-            ) : (
-              <span className="session-cell__val session-name-editable" onClick={() => setEditingName(true)} title="Click to rename">{sessionName}</span>
-            )}
+      <div className="lab-body">
+        <nav className="icon-rail" aria-label="AeroLab rail navigation">
+          <div className="icon-rail__group">
+            {controlSections.map(section => (
+              <button
+                key={section.id}
+                className={`rail-btn ${view==="tunnel" && panelOpen && activeSection===section.id ? "is-active" : ""}`}
+                aria-label={`Open ${section.label} controls`}
+                data-tooltip={section.label}
+                onClick={() => openControlPanel(section.id)}
+              >
+                <span>{section.icon}</span>
+              </button>
+            ))}
           </div>
-          <div className="session-cell"><span className="session-cell__key">Package</span><span className="session-cell__val is-red">{currentPreset?.label||"CUSTOM"}</span></div>
-          <div className="session-cell"><span className="session-cell__key">Mode</span><span className="session-cell__val" style={{color:currentMode.color}}>{currentMode.label}</span></div>
-          <div className="session-cell"><span className="session-cell__key">AoA</span><span className="session-cell__val">{aoa}°</span></div>
-          <div className="session-cell"><span className="session-cell__key">Re</span><span className="session-cell__val is-amber">{hasRun?(stats.re>999?`${(stats.re/1000).toFixed(1)}K`:stats.re||"—"):"—"}</span></div>
-          <div className="session-cell"><span className="session-cell__key">Grid</span><span className="session-cell__val">{COLS}×{ROWS}</span></div>
-          <div className="session-cell"><span className="session-cell__key">CL</span><span className="session-cell__val is-green">{hasRun?stats.cl||"—":"—"}</span></div>
-          <div className="session-cell"><span className="session-cell__key">CD</span><span className="session-cell__val is-red">{hasRun?stats.cd||"—":"—"}</span></div>
-        </div>
-      </div>
+          <div className="icon-rail__separator" />
+          <div className="icon-rail__group">
+            <button
+              className={`rail-btn ${view==="analysis"?"is-active":""}`}
+              aria-label="Open analysis view"
+              data-tooltip="Analysis"
+              onClick={() => { setView("analysis"); setPanelOpen(false); }}
+            >
+              <span>▦</span>
+            </button>
+            <button
+              className={`rail-btn ${view==="about"?"is-active":""}`}
+              aria-label="Open about view"
+              data-tooltip="About"
+              onClick={() => { setView("about"); setPanelOpen(false); }}
+            >
+              <span>i</span>
+            </button>
+          </div>
+          <div className="icon-rail__actions">
+            <button
+              className={`rail-action rail-action--run ${running?"is-running":"is-paused"}`}
+              aria-label={running ? "Hold simulation" : "Run simulation"}
+              onClick={() => setRunning(r => !r)}
+            >
+              <span>{running ? "Ⅱ" : "▶"}</span>
+            </button>
+            <button className="rail-btn" aria-label="Reset solver" data-tooltip="Reset" onClick={resetSolver}>
+              <span>↺</span>
+            </button>
+          </div>
+        </nav>
 
-      <div className="lab-main">
-        {!IS_MOBILE && view==="tunnel" && <aside className="lab-sidebar">{sidebarContent}</aside>}
-
-        <div className="lab-content">
-          {view==="tunnel" && (
-            <div className="tunnel-view">
-              <div className="mode-bar">
-                {MODES.map((m,i) => (
-                  <button key={m.id} className={`mode-chip ${mode===m.id?"is-active":""}`}
-                    style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => setMode(m.id)}>
-                    <span className="mode-chip__dot" style={{background:m.color}} />
-                    {IS_MOBILE?m.short:m.label}
-                  </button>
-                ))}
-                <div className="mode-bar-actions">
-                  <button className={`btn-primary ${running?"":"is-paused"}`} onClick={() => setRunning(r => !r)}>
-                    {running?"⏸ HOLD":"▶ RUN"}
-                  </button>
-                  <button className="btn-ghost" onClick={resetSolver} title="Reset [R]">↺</button>
-                  {!IS_MOBILE && <>
-                    <button className="btn-ghost" onClick={snap} title="Snapshot [S]">📷</button>
-                    <button className="btn-ghost" onClick={toggleFS} title="Fullscreen [F]">{isFS?"⊖":"⊕"}</button>
-                    <button className="btn-ghost" onClick={exportCSV} disabled={!histSnap.length}>CSV ↓</button>
-                    {prevPoly && <button className="btn-ghost" onClick={undoShape} title="Undo shape [Z]">↩ Undo</button>}
-                    <button className="btn-ghost" onClick={resetAll}>RESET</button>
-                    <button className="btn-ghost" onClick={() => setShowKeys(k => !k)} title="[/]">⌨</button>
-                  </>}
-                </div>
-              </div>
-
-              {showKeys && !IS_MOBILE && (
-                <div className="shortcut-overlay">
-                  <div className="shortcut-grid">
-                    {SHORTCUTS.map(([k,d]) => (
-                      <div className="shortcut-item" key={k}><kbd>{k}</kbd><span>{d}</span></div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="canvas-wrapper">
-                <canvas ref={canvasRef} width={SIM_W} height={SIM_H} className="stage-canvas"
-                  style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
-                {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} />}
-                <div className="canvas-hud">
-                  <div className="hud-corner hud-corner--tl" /><div className="hud-corner hud-corner--tr" />
-                  <div className="hud-corner hud-corner--bl" /><div className="hud-corner hud-corner--br" />
-                  <div className="hud-top-bar">
-                    <div className="hud-label"><F1Logo size={10} /> AIR IN →</div>
-                    <div className="hud-label" style={{color:currentMode.color}}>{currentMode.label.toUpperCase()} · LBM D2Q9 · {COLS}×{ROWS}</div>
-                    <div className="hud-label">→ OUT</div>
-                  </div>
-                  <div className="hud-bottom-bar">
-                    <div className="hud-label" style={{opacity:.4,fontSize:8}}>f1stories.gr</div>
-                    <div className="colorbar">
-                      <span className="colorbar__label">HI</span>
-                      <div className="colorbar__bar" style={{background:mode==="pressure"?"linear-gradient(to bottom,#ff9500,#555,#00b4ff)":"linear-gradient(to bottom,#ff2200,#ffff00,#00ff88,#0088ff)"}} />
-                      <span className="colorbar__label">LO</span>
-                    </div>
-                  </div>
-                  {!hasRun && !running && (
-                    <div className="hud-waiting"><span>▶ Press RUN or Space to start simulation</span></div>
-                  )}
-                </div>
-              </div>
-
-              <div className={`metrics-bar ${!hasRun?"is-waiting":""}`}>
-                {metrics.map(m => (
-                  <div className="metric-card" style={{"--tone":m.tone}} key={m.label}>
-                    <div className="metric-label">{m.label}</div>
-                    <div className="metric-value">{m.value}</div>
-                    <div className="metric-note">{m.note}</div>
-                  </div>
-                ))}
-              </div>
+        {view==="tunnel" && (
+          <aside className={`control-panel ${panelOpen?"is-open":""}`} aria-hidden={!panelOpen}>
+            <div className="control-panel__header">
+              <span>{activeControlTitle}</span>
+              <button aria-label="Close control panel" onClick={() => setPanelOpen(false)}>×</button>
             </div>
-          )}
-          {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} />}
-          {view==="about" && <AboutPanel />}
-        </div>
-
-        {view==="tunnel" && !IS_MOBILE && (
-          <aside className="lab-info">
-            <div className="info-section">
-              <div className="info-section__title">ONBOARD</div>
-              <canvas ref={miniRef} width={200} height={110} className="mini-canvas" />
-              <div style={{marginTop:8}}>
-                {[
-                  {label:"Inlet velocity",note:`${vel.toFixed(3)}`,value:vel/.18,tone:"var(--f1-blue)"},
-                  {label:"Turbulence",note:`${turb.toFixed(1)}`,value:turb/3,tone:"var(--f1-amber)"},
-                  {label:"Viscosity ν",note:`${nu.toFixed(3)}`,value:nu/.1,tone:"var(--f1-green)"},
-                  {label:"Particles",note:`${pCount}/${MAX_PARTICLES}`,value:pCount/MAX_PARTICLES,tone:"var(--f1-red)"},
-                ].map(s => <SigRow key={s.label} {...s} />)}
-              </div>
-            </div>
-            <div className="info-section">
-              <div className="info-section__title">PACKAGE</div>
-              <div className="tele-highlight">
-                <div className="tele-highlight__key">Profile</div>
-                <div className="tele-highlight__val">{currentPreset?.label||"CUSTOM"}</div>
-                <div className="tele-highlight__note">{currentPreset?.desc||"Imported / sketched"}</div>
-              </div>
-              <div className="tele-highlight">
-                <div className="tele-highlight__key">Flow Regime</div>
-                <div className="tele-highlight__val" style={{color:hasRun?regime.col:"var(--f1-dim)"}}>{hasRun?regime.label:"—"}</div>
-                <div className="tele-highlight__note">Re = {hasRun?stats.re||"—":"—"}</div>
-              </div>
-            </div>
-            <div className="info-section">
-              <div className="info-section__title">ENGINEER NOTES</div>
-              {[
-                {title:"One variable at a time",body:"Isolate package from flow changes between runs for clean deltas."},
-                {title:"Pressure = loading",body:"Fastest read for suction zones, load peaks, stall pockets."},
-                {title:"Streamlines = dirty air",body:"Trail bundles show wake length, recirculation, reattachment."},
-              ].map(r => (
-                <div className="ref-item" key={r.title}><strong>{r.title}</strong><span>{r.body}</span></div>
-              ))}
+            <div className="control-panel__body">
+              {controlPanelContent}
             </div>
           </aside>
         )}
+
+        <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
+          {view==="tunnel" && (
+            <>
+              <section className="canvas-area" aria-label="Simulation canvas area">
+                <div className="canvas-toolbar">
+                  <div className="canvas-mode-list" aria-label="Visualization modes">
+                    {MODES.map((m,i) => (
+                      <button key={m.id} className={`mode-chip ${mode===m.id?"is-active":""}`}
+                        style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => setMode(m.id)}>
+                        <span className="mode-chip__dot" style={{background:m.color}} />
+                        {IS_MOBILE?m.short:m.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="canvas-toolbar-actions">
+                    <button className={`btn-primary ${running?"":"is-paused"}`} onClick={() => setRunning(r => !r)}>
+                      {running?"⏸ HOLD":"▶ RUN"}
+                    </button>
+                    <button className="btn-ghost" onClick={resetSolver} title="Reset [R]">↺</button>
+                    {!IS_MOBILE && <>
+                      <button className="btn-ghost" onClick={snap} title="Snapshot [S]">📷</button>
+                      <button className="btn-ghost" onClick={toggleFS} title="Fullscreen [F]">{isFS?"⊖":"⊕"}</button>
+                      <button className="btn-ghost" onClick={exportCSV} disabled={!histSnap.length}>CSV ↓</button>
+                      {prevPoly && <button className="btn-ghost" onClick={undoShape} title="Undo shape [Z]">↩ Undo</button>}
+                      <button className="btn-ghost" onClick={resetAll}>RESET</button>
+                      <button className="btn-ghost" onClick={() => setShowKeys(k => !k)} title="[/]">⌨</button>
+                    </>}
+                  </div>
+                </div>
+
+                {showKeys && !IS_MOBILE && (
+                  <div className="shortcut-overlay">
+                    <div className="shortcut-grid">
+                      {SHORTCUTS.map(([k,d]) => (
+                        <div className="shortcut-item" key={k}><kbd>{k}</kbd><span>{d}</span></div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="canvas-wrapper">
+                  <canvas ref={canvasRef} width={SIM_W} height={SIM_H} className="stage-canvas"
+                    style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
+                  {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} />}
+                  <div className="canvas-hud">
+                    <div className="hud-corner hud-corner--tl" /><div className="hud-corner hud-corner--tr" />
+                    <div className="hud-corner hud-corner--bl" /><div className="hud-corner hud-corner--br" />
+                    <div className="hud-top-bar">
+                      <div className="hud-label"><F1Logo size={10} /> AIR IN →</div>
+                      <div className="hud-label" style={{color:currentMode.color}}>{currentMode.label.toUpperCase()} · LBM D2Q9 · {COLS}×{ROWS}</div>
+                      <div className="hud-label">→ OUT</div>
+                    </div>
+                    <div className="hud-bottom-bar">
+                      <div className="hud-label" style={{opacity:.4,fontSize:8}}>f1stories.gr</div>
+                      <div className="colorbar">
+                        <span className="colorbar__label">HI</span>
+                        <div className="colorbar__bar" style={{background:mode==="pressure"?"linear-gradient(to bottom,#ff9500,#555,#00b4ff)":"linear-gradient(to bottom,#ff2200,#ffff00,#00ff88,#0088ff)"}} />
+                        <span className="colorbar__label">LO</span>
+                      </div>
+                    </div>
+                    {!hasRun && !running && (
+                      <div className="hud-waiting"><span>▶ Press RUN or Space to start simulation</span></div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {!IS_MOBILE && (
+                <aside className={`live-metrics-col ${metricsOpen?"is-open":""}`}>
+                  <div className="live-section">
+                    <div className="live-section__title">ONBOARD</div>
+                    <canvas ref={miniRef} width={200} height={110} className="mini-canvas" />
+                    <div style={{marginTop:8}}>
+                      {[
+                        {label:"Inlet velocity",note:`${vel.toFixed(3)}`,value:vel/.18,tone:"var(--f1-blue)"},
+                        {label:"Turbulence",note:`${turb.toFixed(1)}`,value:turb/3,tone:"var(--f1-amber)"},
+                        {label:"Viscosity ν",note:`${nu.toFixed(3)}`,value:nu/.1,tone:"var(--f1-green)"},
+                        {label:"Particles",note:`${pCount}/${MAX_PARTICLES}`,value:pCount/MAX_PARTICLES,tone:"var(--f1-red)"},
+                      ].map(s => <SigRow key={s.label} {...s} />)}
+                    </div>
+                  </div>
+                  <div className="live-section">
+                    <div className="live-section__title">PACKAGE</div>
+                    <div className="tele-highlight">
+                      <div className="tele-highlight__key">Profile</div>
+                      <div className="tele-highlight__val">{currentPreset?.label||"CUSTOM"}</div>
+                      <div className="tele-highlight__note">{currentPreset?.desc||"Imported / sketched"}</div>
+                    </div>
+                    <div className="tele-highlight">
+                      <div className="tele-highlight__key">Flow Regime</div>
+                      <div className="tele-highlight__val" style={{color:hasRun?regime.col:"var(--f1-dim)"}}>{hasRun?regime.label:"—"}</div>
+                      <div className="tele-highlight__note">Re = {hasRun?stats.re||"—":"—"}</div>
+                    </div>
+                  </div>
+                  <div className="live-section">
+                    <div className="live-section__title">ENGINEER NOTES</div>
+                    {[
+                      {title:"One variable at a time",body:"Isolate package from flow changes between runs for clean deltas."},
+                      {title:"Pressure = loading",body:"Fastest read for suction zones, load peaks, stall pockets."},
+                      {title:"Streamlines = dirty air",body:"Trail bundles show wake length, recirculation, reattachment."},
+                    ].map(r => (
+                      <div className="ref-item" key={r.title}><strong>{r.title}</strong><span>{r.body}</span></div>
+                    ))}
+                  </div>
+                </aside>
+              )}
+            </>
+          )}
+          {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} />}
+          {view==="about" && <AboutPanel />}
+        </main>
       </div>
 
-      {IS_MOBILE && (
-        <nav className="mobile-nav">
-          {[{id:"tunnel",label:"Tunnel"},{id:"analysis",label:"Analysis"},{id:"settings",label:"Settings"},{id:"about",label:"About"}].map(item => (
-            <button key={item.id}
-              className={`mobile-nav__btn ${(view===item.id||(item.id==="settings"&&mobileDrawer))?"is-active":""}`}
-              onClick={() => {
-                if (item.id==="settings") setMobileDrawer(d => !d);
-                else { setView(item.id); setMobileDrawer(false); }
-              }}>{item.label}</button>
+      {view==="tunnel" && (
+        <div className={`metrics-ribbon ${!hasRun?"is-waiting":""}`}>
+          {metrics.map(m => (
+            <div className="metric-card" style={{"--tone":m.tone}} key={m.label}>
+              <div className="metric-label">{m.label}</div>
+              <div className="metric-value">{m.value}</div>
+              <div className="metric-note">{m.note}</div>
+            </div>
           ))}
-        </nav>
-      )}
-
-      {IS_MOBILE && mobileDrawer && (
-        <div className="mobile-drawer-backdrop" onClick={() => setMobileDrawer(false)}>
-          <div className="mobile-drawer" onClick={e => e.stopPropagation()}>
-            <div className="mobile-drawer__handle" />
-            {sidebarContent}
-          </div>
         </div>
       )}
     </div>
