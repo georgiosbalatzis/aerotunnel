@@ -156,16 +156,30 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 }
 .control-panel__header button { border: 0; background: transparent; color: var(--f1-dim); cursor: pointer; font-size: 16px; }
 .control-panel__header button:hover { color: var(--f1-white); }
-.control-panel__body { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-.control-section { border-bottom: 1px solid var(--f1-edge); }
-.control-section__header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; cursor: pointer; user-select: none; background: transparent; border: none; width: 100%; text-align: left; transition: background .12s; }
-.control-section__header:hover { background: rgba(255,255,255,.04); }
-.control-section__title { font-family: var(--font-mono); font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--f1-dim); }
-.control-section__toggle { width: 14px; height: 14px; display: grid; place-items: center; border: 1px solid var(--f1-edge); color: var(--f1-dim); font-size: 10px; transition: transform .2s; flex-shrink: 0; background: transparent; }
-.control-section.is-open .control-section__toggle { transform: rotate(90deg); }
-.control-section__body { padding: 0 14px 0; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .2s ease; }
-.control-section.is-open .control-section__body { max-height: 800px; padding: 4px 14px 12px; }
-
+.control-panel__body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.control-tabs {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: 34px; flex-shrink: 0; border-bottom: 1px solid var(--f1-edge);
+}
+.control-tab {
+  position: relative; border: 0; border-right: 1px solid var(--f1-edge); background: transparent;
+  color: var(--f1-dim); cursor: pointer; font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: .16em; text-transform: uppercase;
+}
+.control-tab:last-child { border-right: 0; }
+.control-tab:hover { color: var(--f1-silver); background: rgba(255,255,255,.04); }
+.control-tab.is-active { color: var(--f1-white); }
+.control-tab.is-active::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; background: var(--f1-red); }
+.control-panel__content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 14px 14px; }
+.control-tab-panel { animation: panel-tab-fade .12s ease-out; }
+.control-panel__footer {
+  flex-shrink: 0; padding: 10px 14px; border-top: 1px solid var(--f1-edge);
+  display: flex; align-items: center; gap: 8px;
+}
+.control-panel__footer a {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .18em;
+  color: var(--f1-red); text-decoration: none; text-transform: uppercase;
+}
 /* Presets */
 .preset-group-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: .2em; text-transform: uppercase; color: var(--f1-red); padding: 6px 0 3px; }
 .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
@@ -195,14 +209,37 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 .error-callout { padding: 8px 10px; background: var(--f1-red-dim); border: 1px solid var(--f1-red); color: var(--f1-red); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; margin-top: 6px; }
 
 /* ── SLIDERS ── */
-.slider-stack { display: grid; gap: 8px; }
-.slider-control { display: grid; gap: 5px; }
+.slider-stack { display: grid; gap: 12px; }
+.slider-control { display: grid; gap: 6px; }
 .slider-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .slider-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--f1-silver); }
-.slider-value { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: var(--tone, var(--f1-red)); }
-.slider-track { position: relative; height: 3px; background: var(--f1-ghost); overflow: visible; }
+.slider-value { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--tone, var(--f1-red)); }
+.slider-track { position: relative; height: 4px; background: var(--f1-ghost); overflow: visible; }
 .slider-track::before { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--fill); background: var(--tone, var(--f1-red)); opacity: .8; }
-.slider-input { position: absolute; inset: -6px 0; width: 100%; opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; }
+.slider-input {
+  position: absolute; inset: -8px 0; width: 100%; height: 20px; margin: 0;
+  cursor: pointer; -webkit-appearance: none; appearance: none; background: transparent;
+}
+.slider-input::-webkit-slider-runnable-track { height: 20px; background: transparent; border: 0; }
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 12px; height: 12px; margin-top: 4px;
+  border-radius: 50%; background: #fff; border: 2px solid var(--tone, var(--f1-red));
+}
+.slider-input::-moz-range-track { height: 20px; background: transparent; border: 0; }
+.slider-input::-moz-range-thumb {
+  width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--tone, var(--f1-red));
+}
+.slider-input:active::-webkit-slider-thumb { transform: scale(1.3); }
+.slider-input:active::-moz-range-thumb { transform: scale(1.3); }
+.slider-hints {
+  display: flex; justify-content: space-between; opacity: 0;
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em; color: var(--f1-ghost);
+}
+.slider-control:focus-within .slider-hints { opacity: 1; }
+.slider-ticks {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 8px; color: var(--f1-dim); margin-top: -2px;
+}
 
 /* ── CANVAS ZONE ── */
 .lab-canvas-zone { flex: 1; min-width: 0; min-height: 0; display: flex; overflow: hidden; position: relative; background: var(--f1-void); }
@@ -378,6 +415,7 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 
 /* ── ANIMATIONS ── */
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes panel-tab-fade { from{opacity:0} to{opacity:1} }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {

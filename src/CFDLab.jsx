@@ -5,6 +5,7 @@ import View3D from "./components/View3D";
 import AnalysisPanel from "./components/AnalysisPanel";
 import AboutPanel from "./components/AboutPanel";
 import CommandBar from "./components/CommandBar";
+import ControlPanel from "./components/ControlPanel";
 import IconRail from "./components/IconRail";
 import { CONTROL_SECTIONS } from "./components/iconRailConfig";
 import "./cfdlab.css";
@@ -13,8 +14,7 @@ import {
   SIM_W, SIM_H, COLS, ROWS,
   DEFAULT_PARTICLES, MAX_PARTICLES, TRAIL_LEN, IS_MOBILE,
   LBM, createPool, resizePool,
-  normPoly, xformPoly, simplPoly, genPreset, PRESET_GROUPS,
-  parseSVG, parseDXF, parseSTL, traceImg,
+  xformPoly, simplPoly, genPreset, PRESET_GROUPS,
   TURBO, COOLWARM,
 } from "./engine/index.js";
 
@@ -25,15 +25,6 @@ const MODES = [
   { id:"streamlines", label:"Streamlines", short:"STR", color:"#00d46a", tone:"var(--f1-green)" },
   { id:"vorticity",   label:"Vorticity",   short:"VRT", color:"#e8000d", tone:"var(--f1-red)"   },
   { id:"3d",          label:"3D View",     short:"3D",  color:"#ff9500", tone:"var(--f1-amber)" },
-];
-
-const IMPORT_TABS = [
-  { id:"preset", label:"Presets" },
-  { id:"svg",    label:"SVG" },
-  { id:"stl",    label:"STL" },
-  { id:"dxf",    label:"DXF" },
-  { id:"draw",   label:"Sketch" },
-  { id:"image",  label:"Image" },
 ];
 
 const SHORTCUTS = [
@@ -50,37 +41,6 @@ function useHistory(maxLen = 1000) {
   }, [maxLen]);
   const clear = useCallback(() => { buf.current = []; }, []);
   return [buf, push, clear];
-}
-
-/* ── Sidebar section ── */
-function SidebarSection({ title, defaultOpen = true, children }) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className={`control-section ${open ? "is-open" : ""}`}>
-      <button className="control-section__header" onClick={() => setOpen(o => !o)}>
-        <span className="control-section__title">{title}</span>
-        <span className="control-section__toggle">▶</span>
-      </button>
-      <div className="control-section__body">{children}</div>
-    </div>
-  );
-}
-
-/* ── Slider ── */
-function Sl({ label, value, display, min, max, step, onChange, tone }) {
-  const pct = ((value - min) / (max - min || 1)) * 100;
-  return (
-    <label className="slider-control" style={{ "--tone": tone, "--fill": `${pct}%` }}>
-      <div className="slider-row">
-        <span className="slider-label">{label}</span>
-        <span className="slider-value">{display}</span>
-      </div>
-      <div className="slider-track">
-        <input className="slider-input" type="range" min={min} max={max} step={step} value={value}
-          onChange={e => onChange(+e.target.value)} />
-      </div>
-    </label>
-  );
 }
 
 /* ── Signal bar ── */
@@ -106,24 +66,19 @@ export default function CFDLab() {
   const partsRef   = useRef(createPool());
   const canvasRef  = useRef(null);
   const wrapRef    = useRef(null);
-  const drawRef    = useRef(null);
   const miniRef    = useRef(null);
   const rafRef     = useRef(null);
   const frameRef   = useRef(0);
   const imgRef     = useRef(null);
   const buf32Ref   = useRef(null);
-  const drawingRef = useRef(false);
-  const dptsRef    = useRef([]);
 
   /* ── State ── */
   const [view,      setView]      = useState("tunnel");
-  const [tab,       setTab]       = useState("preset");
   const [running,   setRunning]   = useState(false);
   const [mode,      setMode]      = useState("velocity");
   const [preset,    setPreset]    = useState("f1car");
   const [poly,      setPoly]      = useState(() => genPreset("f1car"));
   const [prevPoly,  setPrevPoly]  = useState(null);
-  const [error,     setError]     = useState("");
   const [simplify,  setSimplify]  = useState(0);
   const [stats,     setStats]     = useState({ cl: 0, cd: 0, re: 0, maxV: 0 });
   const [hasRun,    setHasRun]    = useState(false);
@@ -238,14 +193,13 @@ export default function CFDLab() {
     if (!p) return;
     setPrevPoly(poly);
     setPoly(p);
-    setError("");
   }, [poly]);
 
   const resetAll = useCallback(() => {
     setRunning(false); setVel(0.12); setTurb(0.15); setNu(0.015);
     setCx(COLS*0.35); setCy(ROWS/2); setSx(COLS*0.25); setSy(ROWS*0.45);
     setAoa(0); setSimplify(0); setPCount(DEFAULT_PARTICLES); setTrailOp(1);
-    setSimSpd(1); setPreset("f1car"); setTab("preset");
+    setSimSpd(1); setPreset("f1car");
     setPoly(genPreset("f1car")); setPrevPoly(null);
     setStats({ cl:0, cd:0, re:0, maxV:0 }); setHasRun(false);
     clearHist(); setHistSnap([]);
@@ -403,49 +357,6 @@ export default function CFDLab() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [pushHist]);
 
-  /* ── File handling ── */
-  const handleFile = useCallback((file) => {
-    if (!file) return; setError("");
-    const n = file.name.toLowerCase();
-    const load = (readMode, parser) => {
-      const r = new FileReader();
-      r.onload = ev => { const p = parser(ev.target.result); if (!p) { setError(`Parse failed: ${n.split(".").pop().toUpperCase()}`); return; } applyPoly(p); };
-      readMode === "text" ? r.readAsText(file) : r.readAsArrayBuffer(file);
-    };
-    if (n.endsWith(".svg")) load("text", parseSVG);
-    else if (n.endsWith(".stl")) load("buf", parseSTL);
-    else if (n.endsWith(".dxf")) load("text", parseDXF);
-    else if (file.type?.startsWith("image/")) {
-      const u = URL.createObjectURL(file); const img = new Image();
-      img.onload = () => {
-        const c = document.createElement("canvas"); const W = Math.min(img.width,200), H = Math.min(img.height,200);
-        c.width = W; c.height = H; c.getContext("2d").drawImage(img,0,0,W,H);
-        const p = traceImg(c.getContext("2d").getImageData(0,0,W,H), W, H);
-        URL.revokeObjectURL(u); if (!p) { setError("Edge trace failed."); return; } applyPoly(p);
-      };
-      img.src = u;
-    } else setError("Use SVG, STL, DXF, PNG, JPG");
-  }, [applyPoly]);
-
-  const hDrop = useCallback(e => { e.preventDefault(); handleFile(e.dataTransfer?.files?.[0]); }, [handleFile]);
-  const hFile = useCallback(e => { handleFile(e.target.files[0]); e.target.value = ""; }, [handleFile]);
-
-  const getDP = e => {
-    const dc = drawRef.current, r = dc.getBoundingClientRect();
-    const cx2 = e.touches?e.touches[0].clientX:e.clientX;
-    const cy2 = e.touches?e.touches[0].clientY:e.clientY;
-    return [(cx2-r.left)*(dc.width/r.width), (cy2-r.top)*(dc.height/r.height)];
-  };
-  const startDraw = e => { e.preventDefault(); drawingRef.current = true; drawRef.current.getContext("2d").clearRect(0,0,drawRef.current.width,drawRef.current.height); dptsRef.current = [getDP(e)]; };
-  const moveDraw = e => {
-    e.preventDefault(); if (!drawingRef.current) return;
-    const [x,y] = getDP(e); dptsRef.current.push([x,y]);
-    const c = drawRef.current.getContext("2d"); c.strokeStyle="#e8000d"; c.lineWidth=2; c.lineCap="round";
-    const pts = dptsRef.current;
-    if (pts.length > 1) { c.beginPath(); c.moveTo(pts[pts.length-2][0],pts[pts.length-2][1]); c.lineTo(x,y); c.stroke(); }
-  };
-  const endDraw = () => { drawingRef.current = false; const pts = dptsRef.current; if (pts.length < 5) return; const p = normPoly(pts); if (p) applyPoly(p); };
-
   const regime = useMemo(() => {
     if (stats.re < 2300) return { label:"LAMINAR", col:"var(--f1-green)" };
     if (stats.re < 4000) return { label:"TRANS.", col:"var(--f1-amber)" };
@@ -458,39 +369,6 @@ export default function CFDLab() {
 
   useEffect(() => { const iv = setInterval(() => setHistSnap([...histRef.current]), 500); return () => clearInterval(iv); }, [histRef]);
 
-  const renderImport = () => {
-    if (tab === "preset") return PRESET_GROUPS.map(g => (
-      <div className="preset-group" key={g.label}>
-        <div className="preset-group-label">{g.label}</div>
-        <div className="preset-grid">
-          {g.items.map(item => (
-            <button key={item.id} className={`preset-btn ${preset===item.id?"is-active":""}`}
-              onClick={() => { setPreset(item.id); applyPoly(genPreset(item.id)); }}>
-              <span className="preset-btn__name">{item.label}</span>
-              <small className="preset-btn__desc">{item.desc}</small>
-            </button>
-          ))}
-        </div>
-      </div>
-    ));
-    if (tab === "draw") return (
-      <div>
-        <canvas ref={drawRef} width={232} height={130} className="sketch-canvas"
-          onMouseDown={startDraw} onMouseMove={moveDraw} onMouseUp={endDraw} onMouseLeave={endDraw}
-          onTouchStart={startDraw} onTouchMove={moveDraw} onTouchEnd={endDraw} />
-        <div className="sketch-hint">SKETCH CONTOUR → RELEASE TO BUILD</div>
-      </div>
-    );
-    const accept = tab==="svg"?".svg":tab==="stl"?".stl":tab==="dxf"?".dxf":"image/*";
-    return (
-      <label className="dropzone">
-        <span>{tab==="image"?"Load PNG / JPG":`Load ${tab.toUpperCase()} file`}</span>
-        <small>Drag & drop or browse</small>
-        <input type="file" accept={accept} hidden onChange={hFile} />
-      </label>
-    );
-  };
-
   const metrics = [
     { label:"CL",   value:hasRun?stats.cl:"—",  note:"Lift",       tone:"var(--f1-green)" },
     { label:"CD",   value:hasRun?stats.cd:"—",  note:"Drag",       tone:"var(--f1-red)" },
@@ -500,57 +378,6 @@ export default function CFDLab() {
     { label:"FLOW", value:hasRun?regime.label:"—", note:"Regime",   tone:hasRun?regime.col:"var(--f1-dim)" },
   ];
 
-  const controlPanelContent = (
-    <>
-      <SidebarSection title="GARAGE — SELECT PACKAGE" defaultOpen={true}>
-        <div className="import-tabs">
-          {IMPORT_TABS.map(t => (
-            <button key={t.id} className={`import-tab ${tab===t.id?"is-active":""}`}
-              onClick={() => { setTab(t.id); setError(""); }}>{t.label}</button>
-          ))}
-        </div>
-        <div onDrop={hDrop} onDragOver={e => e.preventDefault()}>{renderImport()}</div>
-        {error && <div className="error-callout">{error}</div>}
-      </SidebarSection>
-      <SidebarSection title="SETUP SHEET — TRANSFORM" defaultOpen={true}>
-        <div className="slider-stack">
-          <Sl label="Position X" value={cx} display={cx.toFixed(0)} min={10} max={COLS-10} step={1} onChange={setCx} tone="var(--f1-blue)" />
-          <Sl label="Position Y" value={cy} display={cy.toFixed(0)} min={4} max={ROWS-4} step={1} onChange={setCy} tone="var(--f1-blue)" />
-          <Sl label="Scale X" value={sx} display={sx.toFixed(0)} min={10} max={COLS*.5} step={1} onChange={setSx} tone="var(--f1-green)" />
-          <Sl label="Scale Y" value={sy} display={sy.toFixed(0)} min={5} max={ROWS*.7} step={1} onChange={setSy} tone="var(--f1-green)" />
-          <Sl label="Angle of Attack" value={aoa} display={`${aoa}°`} min={-25} max={35} step={1} onChange={setAoa} tone="var(--f1-amber)" />
-          <Sl label="Simplify" value={simplify} display={simplify} min={0} max={20} step={1} onChange={setSimplify} tone="var(--f1-dim)" />
-        </div>
-      </SidebarSection>
-      <SidebarSection title="RACE CONTROL — FLOW" defaultOpen={true}>
-        <div className="slider-stack">
-          <Sl label="Inlet Velocity" value={vel} display={vel.toFixed(3)} min={.02} max={.18} step={.005} onChange={setVel} tone="var(--f1-blue)" />
-          <Sl label="Turbulence" value={turb} display={turb.toFixed(1)} min={0} max={3} step={.1} onChange={setTurb} tone="var(--f1-amber)" />
-          <Sl label="Viscosity ν" value={nu} display={nu.toFixed(3)} min={.005} max={.1} step={.001} onChange={setNu} tone="var(--f1-green)" />
-        </div>
-      </SidebarSection>
-      <SidebarSection title="VISUALIZATION" defaultOpen={false}>
-        <div className="slider-stack">
-          <Sl label="Particles" value={pCount} display={pCount} min={0} max={MAX_PARTICLES} step={10} onChange={setPCount} tone="var(--f1-blue)" />
-          <Sl label="Trail Opacity" value={trailOp} display={trailOp.toFixed(2)} min={0} max={1} step={.05} onChange={setTrailOp} tone="var(--f1-amber)" />
-          <Sl label="Sim Speed" value={simSpd} display={`${simSpd}×`} min={1} max={8} step={1} onChange={setSimSpd} tone="var(--f1-red)" />
-        </div>
-        <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4}}>
-          <label className={`toggle-chip ${autoRun?"is-active":""}`}>
-            <input type="checkbox" checked={autoRun} onChange={() => setAutoRun(a => !a)} />
-            AUTO GREEN-FLAG
-          </label>
-        </div>
-      </SidebarSection>
-      <div style={{marginTop:"auto",padding:"12px 14px",borderTop:"1px solid var(--f1-border)",display:"flex",alignItems:"center",gap:8}}>
-        <F1Logo size={14} />
-        <a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer"
-          style={{fontFamily:"var(--font-mono)",fontSize:9,letterSpacing:"0.18em",color:"var(--f1-red)",textDecoration:"none",textTransform:"uppercase"}}>f1stories.gr</a>
-      </div>
-    </>
-  );
-
-  const activeControlTitle = CONTROL_SECTIONS.find(s => s.id === activeSection)?.label || "Controls";
   const openControlPanel = useCallback(section => {
     setActiveSection(section);
     setView("tunnel");
@@ -601,15 +428,42 @@ export default function CFDLab() {
         />
 
         {view==="tunnel" && (
-          <aside className={`control-panel ${panelOpen?"is-open":""}`} aria-hidden={!panelOpen}>
-            <div className="control-panel__header">
-              <span>{activeControlTitle}</span>
-              <button aria-label="Close control panel" onClick={() => setPanelOpen(false)}>×</button>
-            </div>
-            <div className="control-panel__body">
-              {controlPanelContent}
-            </div>
-          </aside>
+          <ControlPanel
+            key={activeSection}
+            isOpen={panelOpen}
+            section={activeSection}
+            onSectionChange={setActiveSection}
+            onClose={() => setPanelOpen(false)}
+            preset={preset}
+            onPresetSelect={(nextPreset, nextPoly) => { setPreset(nextPreset); applyPoly(nextPoly); }}
+            onShapeImport={applyPoly}
+            cx={cx}
+            setCx={setCx}
+            cy={cy}
+            setCy={setCy}
+            sx={sx}
+            setSx={setSx}
+            sy={sy}
+            setSy={setSy}
+            aoa={aoa}
+            setAoa={setAoa}
+            simplify={simplify}
+            setSimplify={setSimplify}
+            vel={vel}
+            setVel={setVel}
+            turb={turb}
+            setTurb={setTurb}
+            nu={nu}
+            setNu={setNu}
+            pCount={pCount}
+            setPCount={setPCount}
+            trailOp={trailOp}
+            setTrailOp={setTrailOp}
+            simSpd={simSpd}
+            setSimSpd={setSimSpd}
+            autoRun={autoRun}
+            setAutoRun={setAutoRun}
+          />
         )}
 
         <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
