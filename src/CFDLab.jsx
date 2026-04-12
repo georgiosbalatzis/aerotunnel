@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTheme } from "./ThemeContext";
 import ThemeToggle from "./components/ThemeToggle";
 import F1Logo from "./components/F1Logo";
 import View3D from "./components/View3D";
@@ -99,7 +98,6 @@ function SigRow({ label, note, value, tone }) {
    MAIN COMPONENT
    ═══════════════════════════════════════ */
 export default function CFDLab() {
-  const { isDark } = useTheme();
   const solverRef  = useRef(null);
   const partsRef   = useRef(createPool());
   const canvasRef  = useRef(null);
@@ -184,8 +182,16 @@ export default function CFDLab() {
   }, []);
 
   useEffect(() => { rebuild(); }, [cx, cy, sx, sy, aoa, simplify, poly, rebuild]);
-  useEffect(() => { if (poly && autoRun) setRunning(true); }, [poly, autoRun]);
-  useEffect(() => { if (running && !hasRun) setHasRun(true); }, [running, hasRun]);
+  useEffect(() => {
+    if (!poly || !autoRun) return;
+    const frame = requestAnimationFrame(() => setRunning(true));
+    return () => cancelAnimationFrame(frame);
+  }, [poly, autoRun]);
+  useEffect(() => {
+    if (!running || hasRun) return;
+    const frame = requestAnimationFrame(() => setHasRun(true));
+    return () => cancelAnimationFrame(frame);
+  }, [running, hasRun]);
 
   const resetSolver = useCallback(() => {
     const s = new LBM(COLS, ROWS); s.setNu(P.current.nu); solverRef.current = s; rebuild();
@@ -262,7 +268,7 @@ export default function CFDLab() {
     return () => window.removeEventListener("keydown", h);
   }, [resetSolver, toggleFS, snap, undoShape]);
 
-  const fpsF = useRef(0), fpsT = useRef(performance.now());
+  const fpsF = useRef(0), fpsT = useRef(0);
 
   /* ── RENDER LOOP ── */
   useEffect(() => {
@@ -273,6 +279,7 @@ export default function CFDLab() {
     const buf32 = new Uint32Array(imgData.data.buffer);
     buf32Ref.current = buf32;
     const DX = SIM_W / COLS, DY = SIM_H / ROWS;
+    fpsT.current = performance.now();
 
     const loop = () => {
       rafRef.current = requestAnimationFrame(loop);
