@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ThemeToggle from "./components/ThemeToggle";
+import { useTheme } from "./ThemeContext";
 import F1Logo from "./components/F1Logo";
 import View3D from "./components/View3D";
 import AnalysisPanel from "./components/AnalysisPanel";
 import AboutPanel from "./components/AboutPanel";
+import CommandBar from "./components/CommandBar";
+import IconRail from "./components/IconRail";
+import { CONTROL_SECTIONS } from "./components/iconRailConfig";
 import "./cfdlab.css";
 
 import {
@@ -98,6 +101,7 @@ function SigRow({ label, note, value, tone }) {
    MAIN COMPONENT
    ═══════════════════════════════════════ */
 export default function CFDLab() {
+  const { toggle: onThemeToggle } = useTheme();
   const solverRef  = useRef(null);
   const partsRef   = useRef(createPool());
   const canvasRef  = useRef(null);
@@ -141,7 +145,6 @@ export default function CFDLab() {
   const [showKeys,  setShowKeys]  = useState(false);
   const [autoRun,   setAutoRun]   = useState(true);
   const [sessionName, setSessionName] = useState("FP1 AERO RUN");
-  const [editingName, setEditingName] = useState(false);
   const [panelOpen, setPanelOpen] = useState(!IS_MOBILE);
   const [activeSection, setActiveSection] = useState("shape");
   const [metricsOpen, setMetricsOpen] = useState(!IS_MOBILE);
@@ -547,119 +550,55 @@ export default function CFDLab() {
     </>
   );
 
-  const controlSections = [
-    { id:"shape", label:"Shape", icon:"⊙" },
-    { id:"flow", label:"Flow", icon:"⚙" },
-    { id:"visual", label:"Visual", icon:"◈" },
-    { id:"transform", label:"Transform", icon:"↗" },
-  ];
-  const activeControlTitle = controlSections.find(s => s.id === activeSection)?.label || "Controls";
-  const openControlPanel = section => {
+  const activeControlTitle = CONTROL_SECTIONS.find(s => s.id === activeSection)?.label || "Controls";
+  const openControlPanel = useCallback(section => {
     setActiveSection(section);
     setView("tunnel");
     setPanelOpen(true);
-  };
+  }, []);
+  const changeRailView = useCallback(nextView => {
+    setView(nextView);
+    setPanelOpen(false);
+  }, []);
+  const toggleControlPanel = useCallback(() => {
+    setView("tunnel");
+    setPanelOpen(open => !open);
+  }, []);
+  const toggleLiveMetrics = useCallback(() => setMetricsOpen(open => !open), []);
+  const toggleRunning = useCallback(() => setRunning(r => !r), []);
 
   return (
     <div className="lab-shell" ref={wrapRef}>
       <div className="lab-shell__scanline" />
 
-      <header className="command-bar">
-        <div className="command-bar__left">
-          <button
-            className="command-menu-button"
-            aria-label={panelOpen ? "Close control panel" : "Open control panel"}
-            onClick={() => {
-              setView("tunnel");
-              setPanelOpen(open => !open);
-            }}
-          >
-            {panelOpen ? "×" : "≡"}
-          </button>
-          <div className="brand-logo-mark"><F1Logo size={16} /></div>
-          <div className="brand-text">
-            <div className="brand-name">AeroLab</div>
-            <div className="brand-sub">CFD Terminal</div>
-          </div>
-        </div>
-
-        <div className="command-bar__center" aria-label="Session telemetry">
-          <div className="command-chip">
-            <span className="command-chip__key">Session</span>
-            {editingName ? (
-              <input className="session-name-input" autoFocus value={sessionName}
-                onChange={e => setSessionName(e.target.value)}
-                onBlur={() => setEditingName(false)}
-                onKeyDown={e => { if (e.key==="Enter") setEditingName(false); }} />
-            ) : (
-              <button className="command-chip__value session-name-editable" onClick={() => setEditingName(true)} title="Click to rename">
-                {sessionName}
-              </button>
-            )}
-          </div>
-          <div className="command-chip"><span className="command-chip__key">Pkg</span><span className="command-chip__value">{currentPreset?.label||"CUSTOM"}</span></div>
-          <div className="command-chip"><span className="command-chip__key">AoA</span><span className="command-chip__value">{aoa}°</span></div>
-          <div className="command-chip"><span className="command-chip__key">Re</span><span className="command-chip__value">{hasRun?(stats.re>999?`${(stats.re/1000).toFixed(1)}K`:stats.re||"—"):"—"}</span></div>
-        </div>
-
-        <div className="command-bar__right">
-          <button className="command-icon-button" aria-label="Toggle live metrics column" onClick={() => setMetricsOpen(open => !open)}>◧</button>
-          <div className={`status-pill ${running?"is-live":"is-hold"}`}>
-            <span className={`status-dot ${running?"is-live":"is-red"}`} />
-            {running?"GREEN FLAG":"SESSION HOLD"}
-          </div>
-          <span className="fps-readout">{fps}<span style={{opacity:.4,fontSize:9}}> FPS</span></span>
-          <ThemeToggle />
-        </div>
-      </header>
+      <CommandBar
+        running={running}
+        fps={fps}
+        sessionName={sessionName}
+        onNameChange={setSessionName}
+        currentPreset={currentPreset}
+        currentMode={currentMode}
+        aoa={aoa}
+        stats={stats}
+        hasRun={hasRun}
+        panelOpen={panelOpen}
+        onPanelToggle={toggleControlPanel}
+        metricsOpen={metricsOpen}
+        onMetricsToggle={toggleLiveMetrics}
+        onThemeToggle={onThemeToggle}
+      />
 
       <div className="lab-body">
-        <nav className="icon-rail" aria-label="AeroLab rail navigation">
-          <div className="icon-rail__group">
-            {controlSections.map(section => (
-              <button
-                key={section.id}
-                className={`rail-btn ${view==="tunnel" && panelOpen && activeSection===section.id ? "is-active" : ""}`}
-                aria-label={`Open ${section.label} controls`}
-                data-tooltip={section.label}
-                onClick={() => openControlPanel(section.id)}
-              >
-                <span>{section.icon}</span>
-              </button>
-            ))}
-          </div>
-          <div className="icon-rail__separator" />
-          <div className="icon-rail__group">
-            <button
-              className={`rail-btn ${view==="analysis"?"is-active":""}`}
-              aria-label="Open analysis view"
-              data-tooltip="Analysis"
-              onClick={() => { setView("analysis"); setPanelOpen(false); }}
-            >
-              <span>▦</span>
-            </button>
-            <button
-              className={`rail-btn ${view==="about"?"is-active":""}`}
-              aria-label="Open about view"
-              data-tooltip="About"
-              onClick={() => { setView("about"); setPanelOpen(false); }}
-            >
-              <span>i</span>
-            </button>
-          </div>
-          <div className="icon-rail__actions">
-            <button
-              className={`rail-action rail-action--run ${running?"is-running":"is-paused"}`}
-              aria-label={running ? "Hold simulation" : "Run simulation"}
-              onClick={() => setRunning(r => !r)}
-            >
-              <span>{running ? "Ⅱ" : "▶"}</span>
-            </button>
-            <button className="rail-btn" aria-label="Reset solver" data-tooltip="Reset" onClick={resetSolver}>
-              <span>↺</span>
-            </button>
-          </div>
-        </nav>
+        <IconRail
+          activeSection={activeSection}
+          onSectionChange={openControlPanel}
+          running={running}
+          onRunToggle={toggleRunning}
+          onReset={resetSolver}
+          currentView={view}
+          panelOpen={panelOpen}
+          onViewChange={changeRailView}
+        />
 
         {view==="tunnel" && (
           <aside className={`control-panel ${panelOpen?"is-open":""}`} aria-hidden={!panelOpen}>

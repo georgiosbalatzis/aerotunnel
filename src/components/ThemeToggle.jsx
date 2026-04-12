@@ -1,10 +1,10 @@
 import { useTheme } from "../ThemeContext";
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ onToggle }) {
   const { toggle, isDark } = useTheme();
   return (
     <button
-      onClick={toggle}
+      onClick={onToggle || toggle}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
       style={{
         position: "relative",
