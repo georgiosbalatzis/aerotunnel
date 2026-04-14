@@ -95,6 +95,26 @@ function buildBackgroundTexture(THREE) {
   return texture;
 }
 
+function buildMetalEnvMap(THREE) {
+  const faces = Array.from({ length: 6 }, (_, faceIndex) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    const gradient = ctx.createLinearGradient(0, 0, 64, 64);
+    gradient.addColorStop(0, faceIndex % 2 ? "#222a36" : "#101621");
+    gradient.addColorStop(0.5, faceIndex < 3 ? "#4b5f72" : "#1b2532");
+    gradient.addColorStop(1, "#05070b");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+    return canvas;
+  });
+
+  const texture = new THREE.CubeTexture(faces);
+  texture.needsUpdate = true;
+  return texture;
+}
+
 /* ── Compute local velocity magnitude at a world-space streamline point ──
    Uses analytical approximation based on profile proximity & wake effects.
    When solver data is available, samples from the LBM grid. */
@@ -115,20 +135,34 @@ function localVelocity(x, y, z, profileBounds, solver) {
   vel -= noseProx * 0.4;                      // slow down at nose
   vel += surfaceAccel * 0.45;                  // speed up over body
   vel -= wakeDecel * 0.25 * (1 / (1 + distFromCenter * 0.8)); // slow in wake core
+  if (solver?.ux?.length) {
+    const centerFlow = Math.abs(solver.ux[(solver.ux.length / 2) | 0] || 0);
+    vel += clamp((centerFlow - 0.12) * 1.8, -0.08, 0.12);
+  }
 
   return clamp(vel, 0.0, 1.0);
 }
 
-export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
+function pressureCoefficient(x, y, bounds) {
+  const xT = clamp((x + bounds.width * 0.5) / bounds.width, 0, 1);
+  const yT = clamp((y + bounds.height * 0.5) / bounds.height, 0, 1);
+  const nose = Math.exp(-((xT - 0.08) * (xT - 0.08)) / 0.012);
+  const upperAccel = smoothstep(0.5, 0.92, yT) * (1 - smoothstep(0.62, 0.96, xT));
+  const lowerLoad = (1 - smoothstep(0.12, 0.5, yT)) * (1 - smoothstep(0.35, 0.88, xT));
+  const wake = smoothstep(0.58, 0.96, xT);
+  return clamp(0.38 + nose * 0.52 + lowerLoad * 0.18 - upperAccel * 0.28 - wake * 0.18, 0, 1);
+}
+
+export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3d" }) {
   const mountRef = useRef(null);
   const threeRef = useRef(null);
-  const latestConfigRef = useRef({ poly, cx, cy, sx, sy, aoa });
+  const latestConfigRef = useRef({ poly, cx, cy, sx, sy, aoa, mode });
 
   useEffect(() => {
-    latestConfigRef.current = { poly, cx, cy, sx, sy, aoa };
+    latestConfigRef.current = { poly, cx, cy, sx, sy, aoa, mode };
     const t = threeRef.current;
     if (t?.buildProfile) t.buildProfile(latestConfigRef.current);
-  }, [poly, cx, cy, sx, sy, aoa]);
+  }, [poly, cx, cy, sx, sy, aoa, mode]);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -171,6 +205,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
 
       const scene = new THREE.Scene();
       const backgroundTexture = buildBackgroundTexture(THREE);
+      const metalEnvMap = buildMetalEnvMap(THREE);
       scene.background = backgroundTexture;
       scene.fog = new THREE.Fog(0x0c0e14, 8, 16);
 
@@ -209,11 +244,55 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
       );
       tunnelGroup.add(centerGuide);
 
+      const groundPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(12, 8),
+        new THREE.MeshBasicMaterial({
+          color: 0x0a0c14,
+          transparent: true,
+          opacity: 0.4,
+          depthWrite: false,
+        })
+      );
+      groundPlane.position.set(0.25, -1.6, 0);
+      groundPlane.rotation.x = -Math.PI / 2;
+      scene.add(groundPlane);
+
+      const gridPositions = [];
+      const gridColors = [];
+      const pushGridVertex = (x, z) => {
+        const fade = clamp(1 - Math.sqrt((x / 6) ** 2 + (z / 4) ** 2), 0, 1);
+        const intensity = 0.04 * fade;
+        gridPositions.push(x + 0.25, -1.598, z);
+        gridColors.push(intensity, intensity, intensity);
+      };
+      for (let x = -6; x <= 6.001; x += 0.5) {
+        pushGridVertex(x, -4);
+        pushGridVertex(x, 4);
+      }
+      for (let z = -4; z <= 4.001; z += 0.5) {
+        pushGridVertex(-6, z);
+        pushGridVertex(6, z);
+      }
+      const gridGeometry = new THREE.BufferGeometry();
+      gridGeometry.setAttribute("position", new THREE.Float32BufferAttribute(gridPositions, 3));
+      gridGeometry.setAttribute("color", new THREE.Float32BufferAttribute(gridColors, 3));
+      const groundGrid = new THREE.LineSegments(
+        gridGeometry,
+        new THREE.LineBasicMaterial({
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.85,
+          depthWrite: false,
+        })
+      );
+      scene.add(groundGrid);
+
       const profileGroup = new THREE.Group();
       scene.add(profileGroup);
 
       let profileMesh = null;
-      let profileGlow = null;
+      let pressureShellMesh = null;
+      let edgeMesh = null;
       let profileBounds = { width: 2.4, height: 0.9, depth: 0.86 };
 
       function normalizeProfile(rawPoly, config) {
@@ -244,24 +323,6 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         });
       }
 
-      function surfaceColorAt(THREE, x, y, bounds) {
-        const xT = clamp((x + bounds.width * 0.5) / bounds.width, 0, 1);
-        const yT = clamp((y + bounds.height * 0.5) / bounds.height, 0, 1);
-        const nose = 1 - smoothstep(0.05, 0.24, xT);
-        const upper = smoothstep(0.5, 0.9, yT);
-        const underside = 1 - smoothstep(0.22, 0.5, yT);
-        const wake = smoothstep(0.58, 0.95, xT);
-        const crown = upper * (1 - smoothstep(0.68, 0.98, xT));
-
-        const color = new THREE.Color(0x08bce8);
-        color.lerp(new THREE.Color(0x00d46a), clamp((1 - underside) * 0.3 + nose * 0.18, 0, 0.45));
-        color.lerp(new THREE.Color(0xd4ec18), clamp(nose * 0.72 + crown * 0.18, 0, 0.82));
-        color.lerp(new THREE.Color(0xff9500), clamp(crown * 0.72 + nose * 0.22, 0, 0.78));
-        color.lerp(new THREE.Color(0xe8000d), clamp(crown * 0.42, 0, 0.48));
-        color.lerp(new THREE.Color(0x0d61ff), clamp(underside * 0.5 + wake * 0.44, 0, 0.62));
-        return color;
-      }
-
       function buildProfile(config) {
         if (profileMesh) {
           profileGroup.remove(profileMesh);
@@ -269,11 +330,17 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
           disposeMaterial(profileMesh.material);
           profileMesh = null;
         }
-        if (profileGlow) {
-          profileGroup.remove(profileGlow);
-          profileGlow.geometry.dispose();
-          disposeMaterial(profileGlow.material);
-          profileGlow = null;
+        if (pressureShellMesh) {
+          profileGroup.remove(pressureShellMesh);
+          pressureShellMesh.geometry.dispose();
+          disposeMaterial(pressureShellMesh.material);
+          pressureShellMesh = null;
+        }
+        if (edgeMesh) {
+          profileGroup.remove(edgeMesh);
+          edgeMesh.geometry.dispose();
+          disposeMaterial(edgeMesh.material);
+          edgeMesh = null;
         }
 
         const pts = normalizeProfile(config.poly, config);
@@ -308,38 +375,69 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         geometry.center();
         geometry.computeVertexNormals();
 
-        const position = geometry.attributes.position;
-        const colors = [];
-        for (let i = 0; i < position.count; i++) {
-          const color = surfaceColorAt(THREE, position.getX(i), position.getY(i), bounds);
-          colors.push(color.r, color.g, color.b);
-        }
-        geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-
-        const material = new THREE.MeshPhongMaterial({
-          vertexColors: true,
-          shininess: 24,
-          specular: new THREE.Color(0x1d2933),
-          emissive: new THREE.Color(0x151d20),
+        const material = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(0x1a1e28),
+          metalness: 0.72,
+          roughness: 0.35,
+          envMap: metalEnvMap,
+          envMapIntensity: 0.6,
+          clearcoat: 0.4,
+          clearcoatRoughness: 0.2,
           side: THREE.DoubleSide,
         });
         profileMesh = new THREE.Mesh(geometry, material);
         profileMesh.position.set(0.05, 0, 0.02);
         profileGroup.add(profileMesh);
 
-        profileGlow = new THREE.Mesh(
-          geometry.clone(),
+        const shellGeometry = geometry.clone();
+        const shellPositions = shellGeometry.attributes.position;
+        const shellNormals = shellGeometry.attributes.normal;
+        const shellColors = new Float32Array(shellPositions.count * 3);
+        for (let i = 0; i < shellPositions.count; i++) {
+          const nx = shellNormals.getX(i);
+          const ny = shellNormals.getY(i);
+          const nz = shellNormals.getZ(i);
+          shellPositions.setXYZ(
+            i,
+            shellPositions.getX(i) + nx * 0.005,
+            shellPositions.getY(i) + ny * 0.005,
+            shellPositions.getZ(i) + nz * 0.005
+          );
+          const cp = pressureCoefficient(shellPositions.getX(i), shellPositions.getY(i), bounds);
+          const [r, g, b] = jetColormap(cp);
+          shellColors[i * 3] = r;
+          shellColors[i * 3 + 1] = g;
+          shellColors[i * 3 + 2] = b;
+        }
+        shellGeometry.setAttribute("color", new THREE.Float32BufferAttribute(shellColors, 3));
+        shellPositions.needsUpdate = true;
+
+        pressureShellMesh = new THREE.Mesh(
+          shellGeometry,
           new THREE.MeshBasicMaterial({
-            color: 0x18d8ff,
+            vertexColors: true,
             transparent: true,
-            opacity: 0.045,
-            side: THREE.BackSide,
+            opacity: 0.35,
+            depthWrite: false,
+            side: THREE.FrontSide,
+            blending: THREE.NormalBlending,
+          })
+        );
+        pressureShellMesh.position.copy(profileMesh.position);
+        pressureShellMesh.visible = config.mode === "pressure" || config.mode === "3d";
+        profileGroup.add(pressureShellMesh);
+
+        edgeMesh = new THREE.LineSegments(
+          new THREE.EdgesGeometry(geometry, 15),
+          new THREE.LineBasicMaterial({
+            color: 0x00e5ff,
+            transparent: true,
+            opacity: 0.5,
             depthWrite: false,
           })
         );
-        profileGlow.scale.set(1.055, 1.065, 1.08);
-        profileGlow.position.copy(profileMesh.position);
-        profileGroup.add(profileGlow);
+        edgeMesh.position.copy(profileMesh.position);
+        profileGroup.add(edgeMesh);
       }
 
       /* ════════════════════════════════════════════════════════════════
@@ -734,6 +832,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         renderer,
         scene,
         backgroundTexture,
+        metalEnvMap,
         ro,
         get animId() { return animId; },
         cleanupControls: () => {
@@ -757,6 +856,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         t.ro?.disconnect();
         disposeObject(t.scene);
         t.backgroundTexture?.dispose();
+        t.metalEnvMap?.dispose();
         t.renderer?.dispose();
         if (el.contains(t.renderer?.domElement)) el.removeChild(t.renderer.domElement);
         threeRef.current = null;
