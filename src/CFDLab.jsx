@@ -24,7 +24,15 @@ const MODES = [
   { id:"3d",          label:"3D View",     short:"3D",  color:"#ff9500", tone:"var(--f1-amber)" },
 ];
 
-const COLORBAR_TICKS = [0.2, 0.4, 0.6, 0.8];
+const COLORBAR_TICKS = [0, 0.25, 0.5, 0.75, 1];
+const CFD_JET_GRADIENT = "linear-gradient(to top,#001fff 0%,#00e5ff 32%,#2cff65 50%,#fff33d 68%,#ff7a00 84%,#e8000d 100%)";
+const FIELD_LEGENDS = {
+  velocity: "VELOCITY\nm/s",
+  pressure: "PRESSURE\nrho",
+  streamlines: "VELOCITY\nm/s",
+  vorticity: "VORTICITY\n1/s",
+  "3d": "VELOCITY\nm/s",
+};
 
 function formatFieldValue(value) {
   if (!Number.isFinite(value)) return "0";
@@ -55,7 +63,6 @@ export default function CFDLab() {
   const canvasRef  = useRef(null);
   const wrapRef    = useRef(null);
   const miniRef    = useRef(null);
-  const waveRef    = useRef(null);
   const rafRef     = useRef(null);
   const frameRef   = useRef(0);
   const imgRef     = useRef(null);
@@ -141,32 +148,6 @@ export default function CFDLab() {
     const frame = requestAnimationFrame(() => setHasRun(true));
     return () => cancelAnimationFrame(frame);
   }, [running, hasRun]);
-
-
-  useEffect(() => {
-    const canvas = waveRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let phase = 0;
-    const drawWave = () => {
-      const { width, height } = canvas;
-      const mid = height / 2;
-      const amp = running ? Math.max(2, Math.min(10, turb * 3.2)) : 0;
-      ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = running ? "#ff9500" : "rgba(240,240,248,.35)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      for (let x = 0; x < width; x++) {
-        const y = mid + Math.sin((x * 0.34) + phase) * amp + Math.sin((x * 0.12) - phase) * amp * 0.35;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      phase += 0.7;
-    };
-    drawWave();
-    const interval = setInterval(drawWave, 200);
-    return () => clearInterval(interval);
-  }, [running, turb]);
 
   const resetSolver = useCallback(() => {
     const s = new LBM(COLS, ROWS); s.setNu(P.current.nu); solverRef.current = s; rebuild();
@@ -393,9 +374,7 @@ export default function CFDLab() {
   }, [stats.re]);
   const ldRatio = useMemo(() => stats.cd > 0 ? (stats.cl/stats.cd).toFixed(2) : "—", [stats.cl, stats.cd]);
   const is3D = mode === "3d";
-  const colorbarGradient = mode === "pressure"
-    ? "linear-gradient(to bottom,#ff9500,#555,#00b4ff)"
-    : "linear-gradient(to bottom,#ff2200,#ffff00,#00ff88,#0088ff)";
+  const fieldLegendTitle = FIELD_LEGENDS[mode] || FIELD_LEGENDS.velocity;
   const colorbarTicks = useMemo(() => {
     const min = Number.isFinite(fieldRange.min) ? fieldRange.min : 0;
     const max = Number.isFinite(fieldRange.max) ? fieldRange.max : 1;
@@ -483,6 +462,32 @@ export default function CFDLab() {
         </div>
       )}
 
+      {view==="tunnel" && (
+        <>
+          <aside className="cfd-colorbar" aria-label={`${fieldLegendTitle} field legend`}>
+            <div className="cfd-colorbar__scale">
+              <div className="cfd-colorbar__bar" style={{background: CFD_JET_GRADIENT}} />
+              <div className="cfd-colorbar__ticks">
+                {colorbarTicks.map(tick => (
+                  <span className="cfd-colorbar__tick" style={{"--tick": tick.position}} key={tick.position}>
+                    <b>{tick.value}</b><i />
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="cfd-colorbar__title">{fieldLegendTitle}</div>
+          </aside>
+
+          <aside className="wind-indicator" aria-label={`Freestream angle of attack ${aoa.toFixed(1)} degrees`}>
+            <svg className="wind-indicator__arrow" viewBox="0 0 48 16" aria-hidden style={{"--aoa": `${-aoa}deg`}}>
+              <path d="M4 8h34" />
+              <path d="m33 3 7 5-7 5" />
+            </svg>
+            <span>AoA: {aoa.toFixed(1)}&deg;</span>
+          </aside>
+        </>
+      )}
+
       {/* Main canvas area — full viewport */}
       <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
         {view==="tunnel" && (
@@ -498,24 +503,6 @@ export default function CFDLab() {
                 style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
               {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} mode={mode} />}
               <div className="canvas-hud">
-                <div className="hud-colorbar" aria-label="Field range">
-                  <div className="hud-colorbar__cap">MAX</div>
-                  <div className="hud-colorbar__body">
-                    <div className="hud-colorbar__bar" style={{background:colorbarGradient}} />
-                    <div className="hud-colorbar__ticks">
-                      {colorbarTicks.map(tick => (
-                        <span className="hud-colorbar__tick" style={{"--tick": tick.position}} key={tick.position}>
-                          <i /><b>{tick.value}</b>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="hud-colorbar__cap">MIN</div>
-                </div>
-                <div className="hud-turbulence">
-                  <canvas ref={waveRef} width={40} height={24} className="hud-turbulence__canvas" aria-hidden />
-                  <span>TURB {turb.toFixed(1)}</span>
-                </div>
                 {!hasRun && !running && (
                   <div className="hud-waiting"><span>&#9654; PRESS RUN &middot; SPACE</span></div>
                 )}

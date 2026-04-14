@@ -115,6 +115,30 @@ function buildMetalEnvMap(THREE) {
   return texture;
 }
 
+function buildAxisLabel(THREE, text, color) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "700 28px Share Tech Mono, monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = color;
+  ctx.fillText(text, 32, 32);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  }));
+  sprite.scale.set(0.28, 0.28, 1);
+  return sprite;
+}
+
 /* ── Compute local velocity magnitude at a world-space streamline point ──
    Uses analytical approximation based on profile proximity & wake effects.
    When solver data is available, samples from the LBM grid. */
@@ -213,6 +237,33 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       const camera = new THREE.PerspectiveCamera(isCompact ? 42 : 34, width / height, 0.1, 100);
       const orbit = { phi: 1.45, theta: 0.12, radius: isCompact ? 8.9 : 7.35 };
       const focus = new THREE.Vector3(0.25, 0, 0);
+
+      const gizmoRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      gizmoRenderer.setSize(64, 64);
+      gizmoRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      gizmoRenderer.setClearColor(0x000000, 0);
+      gizmoRenderer.domElement.className = "view-3d-axis-gizmo";
+      gizmoRenderer.domElement.setAttribute("aria-hidden", "true");
+      el.appendChild(gizmoRenderer.domElement);
+
+      const gizmoScene = new THREE.Scene();
+      const gizmoCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 10);
+      gizmoCamera.position.set(0, 0, 3);
+      const gizmoGroup = new THREE.Group();
+      gizmoScene.add(gizmoGroup);
+
+      const addGizmoAxis = (label, endpoint, color, textColor) => {
+        const axis = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), endpoint]),
+          new THREE.LineBasicMaterial({ color, depthTest: false, depthWrite: false })
+        );
+        const axisLabel = buildAxisLabel(THREE, label, textColor);
+        axisLabel.position.copy(endpoint).multiplyScalar(1.15);
+        gizmoGroup.add(axis, axisLabel);
+      };
+      addGizmoAxis("X", new THREE.Vector3(0.82, 0, 0), 0xff3344, "#ff3344");
+      addGizmoAxis("Y", new THREE.Vector3(0, 0.82, 0), 0x33ff44, "#33ff44");
+      addGizmoAxis("Z", new THREE.Vector3(0, 0, 0.82), 0x3344ff, "#3344ff");
 
       scene.add(new THREE.HemisphereLight(0xffffff, 0x8cc8ff, 0.58));
       const keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
@@ -812,6 +863,8 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         warmLight.intensity = 0.36 + Math.sin(elapsed * 1.7) * 0.08;
         updateStreamlines(elapsed, solverRef?.current);
         renderer.render(scene, camera);
+        gizmoGroup.quaternion.copy(camera.quaternion).invert();
+        gizmoRenderer.render(gizmoScene, gizmoCamera);
       }
 
       buildProfile(latestConfigRef.current);
@@ -831,6 +884,8 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         buildProfile,
         renderer,
         scene,
+        gizmoRenderer,
+        gizmoScene,
         backgroundTexture,
         metalEnvMap,
         ro,
@@ -855,10 +910,13 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         t.cleanupControls?.();
         t.ro?.disconnect();
         disposeObject(t.scene);
+        disposeObject(t.gizmoScene);
         t.backgroundTexture?.dispose();
         t.metalEnvMap?.dispose();
         t.renderer?.dispose();
+        t.gizmoRenderer?.dispose();
         if (el.contains(t.renderer?.domElement)) el.removeChild(t.renderer.domElement);
+        if (el.contains(t.gizmoRenderer?.domElement)) el.removeChild(t.gizmoRenderer.domElement);
         threeRef.current = null;
       }
 
