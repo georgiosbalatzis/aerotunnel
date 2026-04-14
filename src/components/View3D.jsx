@@ -643,17 +643,20 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           heroGroup.add(hero.mesh);
 
           // 12.4 — Glow shell for hero tubes (additive blend)
-          const glowGeo = tubeGeo.clone();
-          const glowMat = new THREE.MeshBasicMaterial({
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.10,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-          });
-          hero.glowMesh = new THREE.Mesh(glowGeo, glowMat);
-          hero.glowMesh.scale.set(2.2, 2.2, 1.0);
-          heroGroup.add(hero.glowMesh);
+          // 19.3 — Glow pass disabled on mobile for performance
+          if (!isCompact) {
+            const glowGeo = tubeGeo.clone();
+            const glowMat = new THREE.MeshBasicMaterial({
+              vertexColors: true,
+              transparent: true,
+              opacity: 0.10,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending,
+            });
+            hero.glowMesh = new THREE.Mesh(glowGeo, glowMat);
+            hero.glowMesh.scale.set(2.2, 2.2, 1.0);
+            heroGroup.add(hero.glowMesh);
+          }
         });
       }
 
