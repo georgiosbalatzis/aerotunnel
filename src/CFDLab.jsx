@@ -6,6 +6,7 @@ import AboutPanel from "./components/AboutPanel";
 import CommandBar from "./components/CommandBar";
 import ControlPanel from "./components/ControlPanel";
 import IconRail from "./components/IconRail";
+import LiveMetricsColumn from "./components/LiveMetricsColumn";
 import MetricCard from "./components/MetricCard";
 import { CONTROL_SECTIONS } from "./components/iconRailConfig";
 import "./cfdlab.css";
@@ -44,6 +45,10 @@ function formatFieldValue(value) {
   return value.toFixed(3);
 }
 
+function isWideMetricsViewport() {
+  return typeof window !== "undefined" && window.innerWidth >= 1440;
+}
+
 /* ── Hooks ── */
 function useHistory(maxLen = 1000) {
   const buf = useRef([]);
@@ -53,20 +58,6 @@ function useHistory(maxLen = 1000) {
   }, [maxLen]);
   const clear = useCallback(() => { buf.current = []; }, []);
   return [buf, push, clear];
-}
-
-/* ── Signal bar ── */
-function SigRow({ label, note, value, tone }) {
-  const clamped = Math.max(0, Math.min(1, value));
-  return (
-    <div className="signal-row" style={{ "--tone": tone, "--fill": `${Math.max(4, clamped * 100)}%` }}>
-      <div className="signal-copy">
-        <span className="signal-label">{label}</span>
-        <span className="signal-note">{note}</span>
-      </div>
-      <div className="signal-track"><span className="signal-fill" /></div>
-    </div>
-  );
 }
 
 /* ═══════════════════════════════════════
@@ -117,7 +108,7 @@ export default function CFDLab() {
   const [sessionName, setSessionName] = useState("FP1 AERO RUN");
   const [panelOpen, setPanelOpen] = useState(!IS_MOBILE);
   const [activeSection, setActiveSection] = useState("shape");
-  const [metricsOpen, setMetricsOpen] = useState(!IS_MOBILE);
+  const [metricsOpen, setMetricsOpen] = useState(() => isWideMetricsViewport());
 
   /* ── Consolidated params ref ── */
   const P = useRef({
@@ -167,6 +158,23 @@ export default function CFDLab() {
     const frame = requestAnimationFrame(() => setHasRun(true));
     return () => cancelAnimationFrame(frame);
   }, [running, hasRun]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+
+    const query = window.matchMedia("(min-width: 1440px)");
+    const handleChange = event => {
+      if (event.matches) setMetricsOpen(true);
+    };
+
+    if (query.addEventListener) {
+      query.addEventListener("change", handleChange);
+      return () => query.removeEventListener("change", handleChange);
+    }
+
+    query.addListener(handleChange);
+    return () => query.removeListener(handleChange);
+  }, []);
 
   useEffect(() => {
     const canvas = waveRef.current;
@@ -247,6 +255,14 @@ export default function CFDLab() {
     const s = new LBM(COLS, ROWS); s.setNu(0.015); solverRef.current = s;
   }, [clearHist]);
 
+  const toggleShortcutHelp = useCallback(() => {
+    setShowKeys(open => {
+      const nextOpen = !open;
+      if (nextOpen) setMetricsOpen(true);
+      return nextOpen;
+    });
+  }, []);
+
   useEffect(() => {
     const h = e => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
@@ -261,12 +277,12 @@ export default function CFDLab() {
         case "KeyF": toggleFS(); break;
         case "KeyS": if (!e.ctrlKey && !e.metaKey) snap(); break;
         case "KeyZ": if (!e.ctrlKey && !e.metaKey) undoShape(); break;
-        case "Slash": e.preventDefault(); setShowKeys(k => !k); break;
+        case "Slash": e.preventDefault(); toggleShortcutHelp(); break;
       }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [resetSolver, toggleFS, snap, undoShape]);
+  }, [resetSolver, toggleFS, snap, undoShape, toggleShortcutHelp]);
 
   const fpsF = useRef(0), fpsT = useRef(0);
 
@@ -547,16 +563,6 @@ export default function CFDLab() {
           {view==="tunnel" && (
               <>
                 <section className="canvas-area" aria-label="Simulation canvas area">
-                  {showKeys && !IS_MOBILE && (
-                    <div className="shortcut-overlay">
-                      <div className="shortcut-grid">
-                      {SHORTCUTS.map(([k,d]) => (
-                        <div className="shortcut-item" key={k}><kbd>{k}</kbd><span>{d}</span></div>
-                      ))}
-                    </div>
-                    </div>
-                  )}
-
                   <div className={`canvas-wrapper ${running ? "is-live" : ""}`}>
                     <canvas ref={canvasRef} width={SIM_W} height={SIM_H} className="stage-canvas"
                       style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
@@ -602,7 +608,7 @@ export default function CFDLab() {
                           <button className="hud-tool-btn" onClick={exportCSV} disabled={!histSnap.length}>CSV</button>
                           {prevPoly && <button className="hud-tool-btn" onClick={undoShape} title="Undo shape [Z]">UNDO</button>}
                           <button className="hud-tool-btn" onClick={resetAll}>RESET</button>
-                          <button className="hud-tool-btn" onClick={() => setShowKeys(k => !k)} title="[/]">KEYS</button>
+                          <button className="hud-tool-btn" onClick={toggleShortcutHelp} title="[/]">KEYS</button>
                         </div>
                       )}
                       <div className="hud-mode-indicator" style={{"--tone":currentMode.tone}}>
@@ -635,43 +641,20 @@ export default function CFDLab() {
               </section>
 
               {!IS_MOBILE && (
-                <aside className={`live-metrics-col ${metricsOpen?"is-open":""}`}>
-                  <div className="live-section">
-                    <div className="live-section__title">ONBOARD</div>
-                    <canvas ref={miniRef} width={200} height={110} className="mini-canvas" />
-                    <div style={{marginTop:8}}>
-                      {[
-                        {label:"Inlet velocity",note:`${vel.toFixed(3)}`,value:vel/.18,tone:"var(--f1-blue)"},
-                        {label:"Turbulence",note:`${turb.toFixed(1)}`,value:turb/3,tone:"var(--f1-amber)"},
-                        {label:"Viscosity ν",note:`${nu.toFixed(3)}`,value:nu/.1,tone:"var(--f1-green)"},
-                        {label:"Particles",note:`${pCount}/${MAX_PARTICLES}`,value:pCount/MAX_PARTICLES,tone:"var(--f1-red)"},
-                      ].map(s => <SigRow key={s.label} {...s} />)}
-                    </div>
-                  </div>
-                  <div className="live-section">
-                    <div className="live-section__title">PACKAGE</div>
-                    <div className="tele-highlight">
-                      <div className="tele-highlight__key">Profile</div>
-                      <div className="tele-highlight__val">{currentPreset?.label||"CUSTOM"}</div>
-                      <div className="tele-highlight__note">{currentPreset?.desc||"Imported / sketched"}</div>
-                    </div>
-                    <div className="tele-highlight">
-                      <div className="tele-highlight__key">Flow Regime</div>
-                      <div className="tele-highlight__val" style={{color:hasRun?regime.col:"var(--f1-dim)"}}>{hasRun?regime.label:"—"}</div>
-                      <div className="tele-highlight__note">Re = {hasRun?stats.re||"—":"—"}</div>
-                    </div>
-                  </div>
-                  <div className="live-section">
-                    <div className="live-section__title">ENGINEER NOTES</div>
-                    {[
-                      {title:"One variable at a time",body:"Isolate package from flow changes between runs for clean deltas."},
-                      {title:"Pressure = loading",body:"Fastest read for suction zones, load peaks, stall pockets."},
-                      {title:"Streamlines = dirty air",body:"Trail bundles show wake length, recirculation, reattachment."},
-                    ].map(r => (
-                      <div className="ref-item" key={r.title}><strong>{r.title}</strong><span>{r.body}</span></div>
-                    ))}
-                  </div>
-                </aside>
+                <LiveMetricsColumn
+                  isOpen={metricsOpen}
+                  miniRef={miniRef}
+                  vel={vel}
+                  turb={turb}
+                  nu={nu}
+                  pCount={pCount}
+                  maxParticles={MAX_PARTICLES}
+                  currentPreset={currentPreset}
+                  hasRun={hasRun}
+                  stats={stats}
+                  showKeys={showKeys}
+                  shortcuts={SHORTCUTS}
+                />
               )}
             </>
           )}
