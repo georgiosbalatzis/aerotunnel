@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { CONTROL_SECTIONS } from "./iconRailConfig";
 
+const FLOATING_CONTROL_IDS = new Set(["shape", "flow", "visual"]);
+
 function RailIcon({ icon }) {
   if (icon === "shape") {
     return (
@@ -45,15 +47,6 @@ function RailIcon({ icon }) {
       </svg>
     );
   }
-  if (icon === "about") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden>
-        <circle cx="12" cy="12" r="8" />
-        <path d="M12 11v5" />
-        <path d="M12 8h.01" />
-      </svg>
-    );
-  }
   if (icon === "pause") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden>
@@ -87,10 +80,10 @@ export default function IconRail({
   panelOpen = false,
   onViewChange,
 }) {
-  const controlItems = CONTROL_SECTIONS.map(section => ({
+  const controlItems = CONTROL_SECTIONS.filter(section => FLOATING_CONTROL_IDS.has(section.id)).map(section => ({
     id: `control-${section.id}`,
-    className: `rail-btn ${currentView === "tunnel" && panelOpen && activeSection === section.id ? "is-active" : ""}`,
-    ariaLabel: `Open ${section.label} controls`,
+    className: `floating-rail-btn ${currentView === "tunnel" && panelOpen && activeSection === section.id ? "is-active" : ""}`,
+    ariaLabel: `Toggle ${section.label} controls`,
     tooltip: section.label,
     icon: section.icon,
     isActive: currentView === "tunnel" && panelOpen && activeSection === section.id,
@@ -99,34 +92,25 @@ export default function IconRail({
   const viewItems = [
     {
       id: "analysis",
-      className: `rail-btn ${currentView === "analysis" ? "is-active" : ""}`,
+      className: `floating-rail-btn ${currentView === "analysis" ? "is-active" : ""}`,
       ariaLabel: "Open analysis view",
       tooltip: "Analysis",
       icon: "analysis",
       isActive: currentView === "analysis",
       onClick: () => onViewChange("analysis"),
     },
-    {
-      id: "about",
-      className: `rail-btn ${currentView === "about" ? "is-active" : ""}`,
-      ariaLabel: "Open about view",
-      tooltip: "About",
-      icon: "about",
-      isActive: currentView === "about",
-      onClick: () => onViewChange("about"),
-    },
   ];
   const actionItems = [
     {
       id: "run",
-      className: `rail-action rail-action--run ${running ? "is-running" : "is-paused"}`,
+      className: `floating-rail-action ${running ? "is-running" : "is-paused"}`,
       ariaLabel: running ? "Hold simulation" : "Run simulation",
       icon: running ? "pause" : "play",
       onClick: onRunToggle,
     },
     {
       id: "reset",
-      className: "rail-btn",
+      className: "floating-rail-btn",
       ariaLabel: "Reset solver",
       tooltip: "Reset",
       icon: "reset",
@@ -177,15 +161,15 @@ export default function IconRail({
   };
 
   return (
-    <nav className="icon-rail" aria-label="AeroLab rail navigation" onKeyDown={handleRailKeyDown}>
-      <div className="icon-rail__group">
+    <nav className="floating-rail" aria-label="AeroLab rail navigation" onKeyDown={handleRailKeyDown}>
+      <div className="floating-rail__group">
         {controlItems.map(renderRailButton)}
       </div>
-      <div className="icon-rail__separator" />
-      <div className="icon-rail__group">
+      <div className="floating-rail__separator" />
+      <div className="floating-rail__group">
         {viewItems.map(renderRailButton)}
       </div>
-      <div className="icon-rail__actions">
+      <div className="floating-rail__actions">
         {actionItems.map(renderRailButton)}
       </div>
     </nav>
