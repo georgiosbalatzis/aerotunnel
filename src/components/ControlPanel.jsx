@@ -204,9 +204,21 @@ export default function ControlPanel({
           ))}
           {importTab === "draw" && (
             <div>
-              <canvas ref={drawRef} width={232} height={130} className="sketch-canvas"
-                onMouseDown={startDraw} onMouseMove={moveDraw} onMouseUp={endDraw} onMouseLeave={endDraw}
-                onTouchStart={startDraw} onTouchMove={moveDraw} onTouchEnd={endDraw} />
+              <canvas
+                ref={drawRef}
+                width={232}
+                height={130}
+                className="sketch-canvas"
+                role="img"
+                aria-label="Sketch aerodynamic profile"
+                onMouseDown={startDraw}
+                onMouseMove={moveDraw}
+                onMouseUp={endDraw}
+                onMouseLeave={endDraw}
+                onTouchStart={startDraw}
+                onTouchMove={moveDraw}
+                onTouchEnd={endDraw}
+              />
               <div className="sketch-hint">SKETCH CONTOUR &rarr; RELEASE TO BUILD</div>
             </div>
           )}

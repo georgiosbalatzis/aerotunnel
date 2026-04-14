@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { CONTROL_SECTIONS } from "./iconRailConfig";
 
 function RailIcon({ icon }) {
@@ -86,51 +87,106 @@ export default function IconRail({
   panelOpen = false,
   onViewChange,
 }) {
+  const controlItems = CONTROL_SECTIONS.map(section => ({
+    id: `control-${section.id}`,
+    className: `rail-btn ${currentView === "tunnel" && panelOpen && activeSection === section.id ? "is-active" : ""}`,
+    ariaLabel: `Open ${section.label} controls`,
+    tooltip: section.label,
+    icon: section.icon,
+    isActive: currentView === "tunnel" && panelOpen && activeSection === section.id,
+    onClick: () => onSectionChange(section.id),
+  }));
+  const viewItems = [
+    {
+      id: "analysis",
+      className: `rail-btn ${currentView === "analysis" ? "is-active" : ""}`,
+      ariaLabel: "Open analysis view",
+      tooltip: "Analysis",
+      icon: "analysis",
+      isActive: currentView === "analysis",
+      onClick: () => onViewChange("analysis"),
+    },
+    {
+      id: "about",
+      className: `rail-btn ${currentView === "about" ? "is-active" : ""}`,
+      ariaLabel: "Open about view",
+      tooltip: "About",
+      icon: "about",
+      isActive: currentView === "about",
+      onClick: () => onViewChange("about"),
+    },
+  ];
+  const actionItems = [
+    {
+      id: "run",
+      className: `rail-action rail-action--run ${running ? "is-running" : "is-paused"}`,
+      ariaLabel: running ? "Hold simulation" : "Run simulation",
+      icon: running ? "pause" : "play",
+      onClick: onRunToggle,
+    },
+    {
+      id: "reset",
+      className: "rail-btn",
+      ariaLabel: "Reset solver",
+      tooltip: "Reset",
+      icon: "reset",
+      onClick: onReset,
+    },
+  ];
+  const railItems = [...controlItems, ...viewItems, ...actionItems];
+  const activeIndex = railItems.findIndex(item => item.isActive);
+  const defaultFocusIndex = activeIndex >= 0 ? activeIndex : 0;
+  const [focusIndex, setFocusIndex] = useState(defaultFocusIndex);
+  const buttonRefs = useRef([]);
+
+  const moveFocus = nextIndex => {
+    setFocusIndex(nextIndex);
+    window.requestAnimationFrame(() => buttonRefs.current[nextIndex]?.focus());
+  };
+  const handleRailKeyDown = event => {
+    const currentIndex = buttonRefs.current.findIndex(button => button === document.activeElement);
+    const baseIndex = currentIndex >= 0 ? currentIndex : focusIndex;
+    let nextIndex = null;
+
+    if (event.key === "ArrowDown" || event.key === "ArrowRight") nextIndex = (baseIndex + 1) % railItems.length;
+    if (event.key === "ArrowUp" || event.key === "ArrowLeft") nextIndex = (baseIndex - 1 + railItems.length) % railItems.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = railItems.length - 1;
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    moveFocus(nextIndex);
+  };
+  const renderRailButton = item => {
+    const index = railItems.indexOf(item);
+
+    return (
+      <button
+        key={item.id}
+        ref={node => { buttonRefs.current[index] = node; }}
+        className={item.className}
+        aria-label={item.ariaLabel}
+        data-tooltip={item.tooltip}
+        tabIndex={focusIndex === index ? 0 : -1}
+        onFocus={() => setFocusIndex(index)}
+        onClick={item.onClick}
+      >
+        <RailIcon icon={item.icon} />
+      </button>
+    );
+  };
+
   return (
-    <nav className="icon-rail" aria-label="AeroLab rail navigation">
+    <nav className="icon-rail" aria-label="AeroLab rail navigation" onKeyDown={handleRailKeyDown}>
       <div className="icon-rail__group">
-        {CONTROL_SECTIONS.map(section => (
-          <button
-            key={section.id}
-            className={`rail-btn ${currentView === "tunnel" && panelOpen && activeSection === section.id ? "is-active" : ""}`}
-            aria-label={`Open ${section.label} controls`}
-            data-tooltip={section.label}
-            onClick={() => onSectionChange(section.id)}
-          >
-            <RailIcon icon={section.icon} />
-          </button>
-        ))}
+        {controlItems.map(renderRailButton)}
       </div>
       <div className="icon-rail__separator" />
       <div className="icon-rail__group">
-        <button
-          className={`rail-btn ${currentView === "analysis" ? "is-active" : ""}`}
-          aria-label="Open analysis view"
-          data-tooltip="Analysis"
-          onClick={() => onViewChange("analysis")}
-        >
-          <RailIcon icon="analysis" />
-        </button>
-        <button
-          className={`rail-btn ${currentView === "about" ? "is-active" : ""}`}
-          aria-label="Open about view"
-          data-tooltip="About"
-          onClick={() => onViewChange("about")}
-        >
-          <RailIcon icon="about" />
-        </button>
+        {viewItems.map(renderRailButton)}
       </div>
       <div className="icon-rail__actions">
-        <button
-          className={`rail-action rail-action--run ${running ? "is-running" : "is-paused"}`}
-          aria-label={running ? "Hold simulation" : "Run simulation"}
-          onClick={onRunToggle}
-        >
-          <RailIcon icon={running ? "pause" : "play"} />
-        </button>
-        <button className="rail-btn" aria-label="Reset solver" data-tooltip="Reset" onClick={onReset}>
-          <RailIcon icon="reset" />
-        </button>
+        {actionItems.map(renderRailButton)}
       </div>
     </nav>
   );

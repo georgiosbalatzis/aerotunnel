@@ -197,7 +197,7 @@ function HistoryChart({ history }) {
         <span><i style={{ background: "var(--f1-green)" }} /> CL lift coefficient</span>
         <span><i style={{ background: "var(--f1-red)" }} /> CD drag coefficient</span>
       </div>
-      <canvas ref={ref} className="history-chart" width={760} height={240} aria-label="CL and CD telemetry over time" />
+      <canvas ref={ref} className="history-chart" width={760} height={240} role="img" aria-label="CL and CD telemetry over time" />
     </div>
   );
 }
