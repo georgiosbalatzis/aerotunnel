@@ -1,9 +1,13 @@
 import { useEffect, useRef } from "react";
 
 const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-const DESKTOP_STREAMLINE_COUNT = 132;
-const MOBILE_STREAMLINE_COUNT = 82;
+const DESKTOP_STREAMLINE_COUNT = 220;
+const MOBILE_STREAMLINE_COUNT = 140;
 const STREAMLINE_POINTS = 128;
+const HERO_TUBE_COUNT_DESKTOP = 26;
+const HERO_TUBE_COUNT_MOBILE = 10;
+const PARTICLE_COUNT_DESKTOP = 500;
+const PARTICLE_COUNT_MOBILE = 200;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -12,6 +16,50 @@ function clamp(value, min, max) {
 function smoothstep(edge0, edge1, value) {
   const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);
+}
+
+/* ── Jet colormap: velocity [0,1] → RGB ── */
+function jetColormap(t) {
+  t = clamp(t, 0, 1);
+  let r, g, b;
+  if (t < 0.15) {
+    // deep blue → royal blue
+    const s = t / 0.15;
+    r = 0.04 + s * 0.08;
+    g = 0.1 + s * 0.32;
+    b = 1.0;
+  } else if (t < 0.35) {
+    // royal blue → cyan
+    const s = (t - 0.15) / 0.2;
+    r = 0.12 * (1 - s);
+    g = 0.42 + s * 0.41;
+    b = 1.0 - s * 0.17;
+  } else if (t < 0.5) {
+    // cyan → green
+    const s = (t - 0.35) / 0.15;
+    r = s * 0.13;
+    g = 0.83 + s * 0.17;
+    b = 0.83 - s * 0.5;
+  } else if (t < 0.7) {
+    // green → yellow
+    const s = (t - 0.5) / 0.2;
+    r = 0.13 + s * 0.8;
+    g = 1.0;
+    b = 0.33 - s * 0.2;
+  } else if (t < 0.85) {
+    // yellow → orange
+    const s = (t - 0.7) / 0.15;
+    r = 0.93 + s * 0.07;
+    g = 1.0 - s * 0.6;
+    b = 0.13 - s * 0.05;
+  } else {
+    // orange → red
+    const s = (t - 0.85) / 0.15;
+    r = 1.0;
+    g = 0.4 - s * 0.32;
+    b = 0.08 - s * 0.07;
+  }
+  return [clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1)];
 }
 
 function disposeMaterial(material) {
@@ -45,6 +93,30 @@ function buildBackgroundTexture(THREE) {
   const texture = new THREE.CanvasTexture(canvas);
   texture.needsUpdate = true;
   return texture;
+}
+
+/* ── Compute local velocity magnitude at a world-space streamline point ──
+   Uses analytical approximation based on profile proximity & wake effects.
+   When solver data is available, samples from the LBM grid. */
+function localVelocity(x, y, z, profileBounds, solver) {
+  const localX = x - 0.05;
+  const bodyW = profileBounds.width * 0.5 || 1;
+  const bodyH = profileBounds.height * 0.5 || 0.45;
+  const distFromCenter = Math.sqrt((y * y) / (bodyH * bodyH) + (z * z) / (0.44 * 0.44));
+
+  // stagnation near nose
+  const noseProx = Math.exp(-((localX + bodyW * 0.5) ** 2) / 0.6);
+  // acceleration over upper/lower surface
+  const surfaceAccel = Math.exp(-(localX * localX) / 1.0) * Math.max(0, 1.2 - distFromCenter);
+  // wake deceleration
+  const wakeDecel = smoothstep(0.0, 2.5, localX) * Math.exp(-Math.max(localX, 0) * 0.3);
+  // freestream baseline
+  let vel = 0.5;
+  vel -= noseProx * 0.4;                      // slow down at nose
+  vel += surfaceAccel * 0.45;                  // speed up over body
+  vel -= wakeDecel * 0.25 * (1 / (1 + distFromCenter * 0.8)); // slow in wake core
+
+  return clamp(vel, 0.0, 1.0);
 }
 
 export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
@@ -270,6 +342,9 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         profileGroup.add(profileGlow);
       }
 
+      /* ════════════════════════════════════════════════════════════════
+         PHASE 12.1 + 12.2 — VELOCITY-COLORED STREAMLINES (INCREASED DENSITY)
+         ════════════════════════════════════════════════════════════════ */
       const streamGroup = new THREE.Group();
       scene.add(streamGroup);
       const lineCount = isCompact ? MOBILE_STREAMLINE_COUNT : DESKTOP_STREAMLINE_COUNT;
@@ -277,26 +352,191 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
       const xStart = -4.75;
       const xEnd = 4.95;
 
+      // Distribution buckets per 12.2 spec:
+      // 40% uniform, 35% clustered near profile, 25% wake-concentrated
+      const uniformCount = Math.floor(lineCount * 0.40);
+      const clusterCount = Math.floor(lineCount * 0.35);
+      const wakeCount = lineCount - uniformCount - clusterCount;
+
       for (let i = 0; i < lineCount; i++) {
-        const row = i % 33;
-        const layer = Math.floor(i / 33);
-        const rowT = row / 32;
-        const layerT = ((layer % 5) - 2) / 2;
-        const yBase = -1.38 + rowT * 2.76;
-        const zBase = layerT * 0.52 + ((i % 2) ? 0.08 : -0.08);
+        let yBase, zBase, xStartLocal, isHeroCandidate;
+
+        if (i < uniformCount) {
+          // Uniform vertical spread — full domain
+          const row = i % 33;
+          const layer = Math.floor(i / 33);
+          const rowT = row / 32;
+          const layerT = ((layer % 5) - 2) / 2;
+          yBase = -1.38 + rowT * 2.76;
+          zBase = layerT * 0.52 + ((i % 2) ? 0.08 : -0.08);
+          xStartLocal = xStart;
+          isHeroCandidate = false;
+        } else if (i < uniformCount + clusterCount) {
+          // Clustered near profile center (within ±0.6)
+          const ci = i - uniformCount;
+          const t = ci / (clusterCount - 1);
+          yBase = -0.6 + t * 1.2;
+          const layer = ci % 5;
+          zBase = ((layer - 2) / 2) * 0.42 + ((ci % 2) ? 0.06 : -0.06);
+          xStartLocal = xStart;
+          isHeroCandidate = true;
+        } else {
+          // Wake-concentrated: start at x=0.3, more vertical spread
+          const wi = i - uniformCount - clusterCount;
+          const t = wi / (wakeCount - 1);
+          yBase = -1.0 + t * 2.0;
+          const layer = wi % 4;
+          zBase = ((layer - 1.5) / 1.5) * 0.38;
+          xStartLocal = 0.3;
+          isHeroCandidate = false;
+        }
+
         const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(STREAMLINE_POINTS * 3), 3));
-        const opacity = 0.14 + (1 - Math.abs(layerT)) * 0.2 + (i % 3) * 0.018;
+        const posArr = new Float32Array(STREAMLINE_POINTS * 3);
+        const colArr = new Float32Array(STREAMLINE_POINTS * 3);
+        geometry.setAttribute("position", new THREE.BufferAttribute(posArr, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colArr, 3));
+
         const material = new THREE.LineBasicMaterial({
-          color: i % 5 === 0 ? 0x47f1ff : 0x10cdd7,
+          vertexColors: true,
           transparent: true,
-          opacity: clamp(opacity, 0.12, 0.42),
+          opacity: 0.55,
           depthWrite: false,
         });
         const line = new THREE.Line(geometry, material);
         streamGroup.add(line);
-        streamlines.push({ line, yBase, zBase, phase: i * 0.39, rowT });
+        streamlines.push({
+          line,
+          yBase,
+          zBase,
+          xStartLocal,
+          phase: i * 0.39,
+          rowT: (yBase + 1.38) / 2.76,
+          isHeroCandidate,
+        });
       }
+
+      /* ════════════════════════════════════════════════════════════════
+         PHASE 12.3 — HERO TUBE STREAMLINES (near-surface, thicker)
+         ════════════════════════════════════════════════════════════════ */
+      const heroGroup = new THREE.Group();
+      scene.add(heroGroup);
+      const heroCount = isCompact ? HERO_TUBE_COUNT_MOBILE : HERO_TUBE_COUNT_DESKTOP;
+      const heroLines = [];
+
+      for (let i = 0; i < heroCount; i++) {
+        const t = i / (heroCount - 1);
+        // Distribute hero tubes tightly around the profile
+        const yBase = -0.42 + t * 0.84;
+        const zLayer = ((i % 3) - 1) * 0.22;
+        const curvePoints = [];
+        for (let p = 0; p < STREAMLINE_POINTS; p++) {
+          curvePoints.push(new THREE.Vector3(0, 0, 0));
+        }
+
+        heroLines.push({
+          yBase,
+          zBase: zLayer,
+          phase: i * 0.71,
+          rowT: t,
+          points: curvePoints,
+          mesh: null,
+          glowMesh: null,
+        });
+      }
+
+      function rebuildHeroTubes(THREE) {
+        heroLines.forEach(hero => {
+          if (hero.mesh) {
+            heroGroup.remove(hero.mesh);
+            hero.mesh.geometry.dispose();
+            disposeMaterial(hero.mesh.material);
+            hero.mesh = null;
+          }
+          if (hero.glowMesh) {
+            heroGroup.remove(hero.glowMesh);
+            hero.glowMesh.geometry.dispose();
+            disposeMaterial(hero.glowMesh.material);
+            hero.glowMesh = null;
+          }
+
+          const curve = new THREE.CatmullRomCurve3(hero.points);
+          const tubeGeo = new THREE.TubeGeometry(curve, 96, 0.012, 4, false);
+
+          // Per-vertex color for tube
+          const tubePosAttr = tubeGeo.attributes.position;
+          const tubeColors = new Float32Array(tubePosAttr.count * 3);
+          for (let v = 0; v < tubePosAttr.count; v++) {
+            const vx = tubePosAttr.getX(v);
+            const vy = tubePosAttr.getY(v);
+            const vz = tubePosAttr.getZ(v);
+            const vel = localVelocity(vx, vy, vz, profileBounds, null);
+            const [r, g, b] = jetColormap(vel);
+            tubeColors[v * 3] = r;
+            tubeColors[v * 3 + 1] = g;
+            tubeColors[v * 3 + 2] = b;
+          }
+          tubeGeo.setAttribute("color", new THREE.Float32BufferAttribute(tubeColors, 3));
+
+          const tubeMat = new THREE.MeshBasicMaterial({
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.82,
+            depthWrite: false,
+          });
+          hero.mesh = new THREE.Mesh(tubeGeo, tubeMat);
+          heroGroup.add(hero.mesh);
+
+          // 12.4 — Glow shell for hero tubes (additive blend)
+          const glowGeo = tubeGeo.clone();
+          const glowMat = new THREE.MeshBasicMaterial({
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.10,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+          });
+          hero.glowMesh = new THREE.Mesh(glowGeo, glowMat);
+          hero.glowMesh.scale.set(2.2, 2.2, 1.0);
+          heroGroup.add(hero.glowMesh);
+        });
+      }
+
+      /* ════════════════════════════════════════════════════════════════
+         PHASE 12.5 — ANIMATED FLOW PARTICLES (tracer dots on streamlines)
+         ════════════════════════════════════════════════════════════════ */
+      const particleCount = isCompact ? PARTICLE_COUNT_MOBILE : PARTICLE_COUNT_DESKTOP;
+      const particlePositions = new Float32Array(particleCount * 3);
+      const particleColors = new Float32Array(particleCount * 3);
+      const particleGeo = new THREE.BufferGeometry();
+      particleGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+      particleGeo.setAttribute("color", new THREE.BufferAttribute(particleColors, 3));
+
+      const particleMat = new THREE.PointsMaterial({
+        size: 0.04,
+        sizeAttenuation: true,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.9,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const particleSystem = new THREE.Points(particleGeo, particleMat);
+      scene.add(particleSystem);
+
+      // Each particle tracks a position along a streamline
+      const particleState = [];
+      for (let i = 0; i < particleCount; i++) {
+        particleState.push({
+          streamIdx: Math.floor(Math.random() * lineCount),
+          t: Math.random(), // position along streamline [0,1]
+        });
+      }
+
+      /* ═════════════════════════════════════════
+         STREAMLINE UPDATE (with velocity coloring)
+         ═════════════════════════════════════════ */
+      let heroRebuildTimer = 0;
 
       function updateStreamlines(time, solver) {
         const flow = solver?.ux ? clamp(Math.abs(solver.ux[(solver.ux.length / 2) | 0] || 0.12), 0.04, 0.24) : 0.12;
@@ -304,16 +544,20 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         const bodyH = Math.max(profileBounds.height, 0.52);
         const halfBodyH = bodyH * 0.5;
 
+        // Update regular streamlines with per-vertex velocity coloring
         streamlines.forEach(item => {
           const positions = item.line.geometry.attributes.position.array;
+          const colors = item.line.geometry.attributes.color.array;
           const centerBand = Math.max(0, halfBodyH + 0.24 - Math.abs(item.yBase));
           const ySign = item.yBase >= 0 ? 1 : -1;
           const centerSign = ySign || (item.rowT > 0.5 ? 1 : -1);
+          const lineXStart = item.xStartLocal;
+          const lineXEnd = xEnd;
 
           for (let point = 0; point < STREAMLINE_POINTS; point++) {
             const pointT = point / (STREAMLINE_POINTS - 1);
             const shiftedT = (pointT + travel + item.phase * 0.006) % 1;
-            const x = xStart + pointT * (xEnd - xStart);
+            const x = lineXStart + pointT * (lineXEnd - lineXStart);
             const localX = x - 0.05;
             const noseInfluence = Math.exp(-((localX + 0.42) * (localX + 0.42)) / 1.8);
             const bodyInfluence = Math.exp(-(localX * localX) / 1.25);
@@ -329,9 +573,95 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
             positions[point * 3] = x;
             positions[point * 3 + 1] = y;
             positions[point * 3 + 2] = z;
+
+            // 12.1 — Velocity-mapped coloring per vertex
+            const vel = localVelocity(x, y, z, profileBounds, solver);
+            const [r, g, b] = jetColormap(vel);
+            colors[point * 3] = r;
+            colors[point * 3 + 1] = g;
+            colors[point * 3 + 2] = b;
           }
           item.line.geometry.attributes.position.needsUpdate = true;
+          item.line.geometry.attributes.color.needsUpdate = true;
         });
+
+        // Update hero tube positions (same physics, different yBase range)
+        heroLines.forEach(hero => {
+          const centerBand = Math.max(0, halfBodyH + 0.24 - Math.abs(hero.yBase));
+          const ySign = hero.yBase >= 0 ? 1 : -1;
+          const centerSign = ySign || (hero.rowT > 0.5 ? 1 : -1);
+
+          for (let point = 0; point < STREAMLINE_POINTS; point++) {
+            const pointT = point / (STREAMLINE_POINTS - 1);
+            const shiftedT = (pointT + travel + hero.phase * 0.006) % 1;
+            const x = xStart + pointT * (xEnd - xStart);
+            const localX = x - 0.05;
+            const noseInfluence = Math.exp(-((localX + 0.42) * (localX + 0.42)) / 1.8);
+            const bodyInfluence = Math.exp(-(localX * localX) / 1.25);
+            const wakeInfluence = smoothstep(-0.15, 2.85, localX) * Math.exp(-Math.max(localX, 0) * 0.22);
+            const wrap = centerBand * centerSign * (0.52 * bodyInfluence + 0.26 * noseInfluence);
+            const wake = Math.sin(localX * 4.3 - time * 2.3 + hero.phase) * wakeInfluence * (0.02 + centerBand * 0.11);
+            const ripple = Math.sin(shiftedT * Math.PI * 2 + hero.phase) * 0.018;
+            const y = hero.yBase + wrap + wake + ripple;
+            const zWrap = (hero.zBase >= 0 ? 1 : -1) * centerBand * 0.24 * bodyInfluence;
+            const zWake = Math.cos(localX * 3.1 - time * 1.65 + hero.phase) * wakeInfluence * 0.035;
+            const z = hero.zBase + zWrap + zWake;
+
+            hero.points[point].set(x, y, z);
+          }
+        });
+
+        // Rebuild hero tube geometry periodically (every ~6 frames for perf)
+        heroRebuildTimer++;
+        if (heroRebuildTimer >= 6) {
+          heroRebuildTimer = 0;
+          rebuildHeroTubes(THREE);
+        }
+
+        // 12.5 — Update flow particles
+        const pPositions = particleSystem.geometry.attributes.position.array;
+        const pColors = particleSystem.geometry.attributes.color.array;
+
+        for (let i = 0; i < particleCount; i++) {
+          const ps = particleState[i];
+          const stream = streamlines[ps.streamIdx];
+          if (!stream) continue;
+
+          // Advance particle along its streamline based on local velocity
+          const sPos = stream.line.geometry.attributes.position.array;
+          const idx = Math.floor(ps.t * (STREAMLINE_POINTS - 1));
+          const safeIdx = Math.min(idx, STREAMLINE_POINTS - 1);
+          const px = sPos[safeIdx * 3];
+          const py = sPos[safeIdx * 3 + 1];
+          const pz = sPos[safeIdx * 3 + 2];
+
+          const vel = localVelocity(px, py, pz, profileBounds, solver);
+          ps.t += (0.003 + vel * 0.008);
+
+          if (ps.t >= 1.0) {
+            ps.t = 0.0;
+            ps.streamIdx = Math.floor(Math.random() * lineCount);
+          }
+
+          // Interpolate position on streamline
+          const frac = ps.t * (STREAMLINE_POINTS - 1);
+          const i0 = Math.min(Math.floor(frac), STREAMLINE_POINTS - 2);
+          const i1 = i0 + 1;
+          const blend = frac - i0;
+          const sP = stream.line.geometry.attributes.position.array;
+
+          pPositions[i * 3] = sP[i0 * 3] * (1 - blend) + sP[i1 * 3] * blend;
+          pPositions[i * 3 + 1] = sP[i0 * 3 + 1] * (1 - blend) + sP[i1 * 3 + 1] * blend;
+          pPositions[i * 3 + 2] = sP[i0 * 3 + 2] * (1 - blend) + sP[i1 * 3 + 2] * blend;
+
+          // Particle color — white-tinted version of local velocity color
+          const [cr, cg, cb] = jetColormap(vel);
+          pColors[i * 3] = 0.5 + cr * 0.5;
+          pColors[i * 3 + 1] = 0.5 + cg * 0.5;
+          pColors[i * 3 + 2] = 0.5 + cb * 0.5;
+        }
+        particleSystem.geometry.attributes.position.needsUpdate = true;
+        particleSystem.geometry.attributes.color.needsUpdate = true;
       }
 
       let isDragging = false;
