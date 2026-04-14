@@ -577,6 +577,55 @@ button, input, select { font: inherit; }
 @keyframes digit-scroll { from{ transform: translateY(85%); opacity: 0; } to{ transform: translateY(0); opacity: 1; } }
 @keyframes regime-pulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.05); } }
 
+/* ═══════════════════════════════════════
+   PHASE 20.1 — STARTUP ANIMATION
+   ═══════════════════════════════════════ */
+@keyframes startup-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.view-3d-stage { animation: startup-fade 800ms ease-out both; }
+.floating-title-chip { animation: startup-fade 400ms ease-out 400ms both; }
+.floating-rail { animation: startup-fade 400ms ease-out 600ms both; }
+.floating-mode-bar { animation: startup-fade 400ms ease-out 800ms both; }
+.floating-metrics { animation: startup-fade 400ms ease-out 1000ms both; }
+.cfd-colorbar { animation: startup-fade 400ms ease-out 800ms both; }
+.wind-indicator { animation: startup-fade 400ms ease-out 800ms both; }
+
+/* ═══════════════════════════════════════
+   PHASE 20.2 — MODE TRANSITION CROSSFADE
+   ═══════════════════════════════════════ */
+.canvas-wrapper .stage-canvas,
+.canvas-wrapper .view-3d-stage {
+  transition: opacity 300ms ease;
+}
+
+/* ═══════════════════════════════════════
+   PHASE 20.5 — SCREENSHOT MODE
+   ═══════════════════════════════════════ */
+.lab-shell.is-screenshot .floating-title-chip,
+.lab-shell.is-screenshot .floating-rail,
+.lab-shell.is-screenshot .floating-mode-bar,
+.lab-shell.is-screenshot .floating-metrics,
+.lab-shell.is-screenshot .control-panel,
+.lab-shell.is-screenshot .wind-indicator,
+.lab-shell.is-screenshot .lab-shell__scanline,
+.lab-shell.is-screenshot .canvas-hud {
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.lab-shell.is-screenshot .cfd-colorbar {
+  opacity: 1 !important;
+}
+.screenshot-watermark {
+  position: fixed; bottom: 16px; right: 72px; z-index: 300;
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(255,255,255,.25);
+  pointer-events: none;
+  opacity: 0; transition: opacity 200ms ease;
+}
+.lab-shell.is-screenshot .screenshot-watermark { opacity: 1; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation: none !important;
