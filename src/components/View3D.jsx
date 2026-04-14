@@ -96,16 +96,20 @@ function buildBackgroundTexture(THREE) {
 }
 
 function buildMetalEnvMap(THREE) {
-  const faces = Array.from({ length: 6 }, (_, faceIndex) => {
+  const faceColors = [
+    "#0c1420",
+    "#0c1420",
+    "#0a1428",
+    "#050810",
+    "#0c1420",
+    "#0c1420",
+  ];
+  const faces = faceColors.map(color => {
     const canvas = document.createElement("canvas");
     canvas.width = 64;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
-    const gradient = ctx.createLinearGradient(0, 0, 64, 64);
-    gradient.addColorStop(0, faceIndex % 2 ? "#222a36" : "#101621");
-    gradient.addColorStop(0.5, faceIndex < 3 ? "#4b5f72" : "#1b2532");
-    gradient.addColorStop(1, "#05070b");
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = color;
     ctx.fillRect(0, 0, 64, 64);
     return canvas;
   });
@@ -231,7 +235,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       const backgroundTexture = buildBackgroundTexture(THREE);
       const metalEnvMap = buildMetalEnvMap(THREE);
       scene.background = backgroundTexture;
-      scene.fog = new THREE.Fog(0x0c0e14, 8, 16);
+      scene.fog = new THREE.Fog(0x050810, 6.5, 15);
 
       const isCompact = typeof window !== "undefined" && window.innerWidth < 720;
       const camera = new THREE.PerspectiveCamera(isCompact ? 42 : 34, width / height, 0.1, 100);
@@ -265,16 +269,17 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       addGizmoAxis("Y", new THREE.Vector3(0, 0.82, 0), 0x33ff44, "#33ff44");
       addGizmoAxis("Z", new THREE.Vector3(0, 0, 0.82), 0x3344ff, "#3344ff");
 
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x8cc8ff, 0.58));
-      const keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
-      keyLight.position.set(-3, 4, 5);
+      scene.add(new THREE.HemisphereLight(0x1a2a3a, 0x050810, 0.25));
+      const keyLight = new THREE.DirectionalLight(0x8ec8ff, 0.6);
+      keyLight.position.set(-2, 3, 4);
       scene.add(keyLight);
-      const rimLight = new THREE.DirectionalLight(0x2bdcff, 0.55);
-      rimLight.position.set(4, 0.6, 3);
+      const rimLight = new THREE.DirectionalLight(0x00e5ff, 0.4);
+      rimLight.position.set(3, 0.5, -2);
       scene.add(rimLight);
-      const warmLight = new THREE.PointLight(0xffb12d, 0.42, 7);
-      warmLight.position.set(-1.6, 1.4, 2.4);
-      scene.add(warmLight);
+      const accentSpot = new THREE.SpotLight(0xff6622, 0.25, 0, 0.4, 0.7);
+      accentSpot.position.set(-1.5, 2, 3);
+      accentSpot.target.position.set(0, 0, 0);
+      scene.add(accentSpot, accentSpot.target);
 
       const tunnelGroup = new THREE.Group();
       scene.add(tunnelGroup);
@@ -295,25 +300,26 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       );
       tunnelGroup.add(centerGuide);
 
-      const groundPlane = new THREE.Mesh(
-        new THREE.PlaneGeometry(12, 8),
+      const floorFogPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(14, 6),
         new THREE.MeshBasicMaterial({
-          color: 0x0a0c14,
+          color: 0x0e1420,
           transparent: true,
-          opacity: 0.4,
+          opacity: 0.55,
+          side: THREE.DoubleSide,
           depthWrite: false,
         })
       );
-      groundPlane.position.set(0.25, -1.6, 0);
-      groundPlane.rotation.x = -Math.PI / 2;
-      scene.add(groundPlane);
+      floorFogPlane.position.set(0.25, -1.8, 0);
+      floorFogPlane.rotation.x = -Math.PI / 2;
+      scene.add(floorFogPlane);
 
       const gridPositions = [];
       const gridColors = [];
       const pushGridVertex = (x, z) => {
         const fade = clamp(1 - Math.sqrt((x / 6) ** 2 + (z / 4) ** 2), 0, 1);
         const intensity = 0.04 * fade;
-        gridPositions.push(x + 0.25, -1.598, z);
+        gridPositions.push(x + 0.25, -1.798, z);
         gridColors.push(intensity, intensity, intensity);
       };
       for (let x = -6; x <= 6.001; x += 0.5) {
@@ -431,7 +437,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           metalness: 0.72,
           roughness: 0.35,
           envMap: metalEnvMap,
-          envMapIntensity: 0.6,
+          envMapIntensity: 0.4,
           clearcoat: 0.4,
           clearcoatRoughness: 0.2,
           side: THREE.DoubleSide,
@@ -860,7 +866,6 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         camera.lookAt(focus);
 
         profileGroup.rotation.y = Math.sin(elapsed * 0.28) * 0.035;
-        warmLight.intensity = 0.36 + Math.sin(elapsed * 1.7) * 0.08;
         updateStreamlines(elapsed, solverRef?.current);
         renderer.render(scene, camera);
         gizmoGroup.quaternion.copy(camera.quaternion).invert();
