@@ -97,6 +97,8 @@ export default function CFDLab() {
   const [autoRun,   setAutoRun]   = useState(true);
   const [panelOpen, setPanelOpen] = useState(!IS_MOBILE);
   const [activeSection, setActiveSection] = useState("shape");
+  const [screenshotMode, setScreenshotMode] = useState(false);
+  const [modeTransition, setModeTransition] = useState(false);
   const panelOpenRef = useRef(panelOpen);
   const activeSectionRef = useRef(activeSection);
 
@@ -160,9 +162,31 @@ export default function CFDLab() {
   }, []);
 
   const snap = useCallback(() => {
-    const c = canvasRef.current; if (!c) return;
-    const a = document.createElement("a");
-    a.download = `aerolab-${Date.now()}.png`; a.href = c.toDataURL("image/png"); a.click();
+    // 20.5 — Screenshot mode: fade UI, capture at 2×, restore
+    setScreenshotMode(true);
+    setTimeout(() => {
+      const is3D = P.current.mode === "3d";
+      const el = wrapRef.current;
+      if (is3D && el) {
+        // Capture 3D canvas at 2× resolution
+        const threeCanvas = el.querySelector('.view-3d-stage canvas:not(.view-3d-axis-gizmo)');
+        if (threeCanvas) {
+          const a = document.createElement("a");
+          a.download = `aerolab-${Date.now()}.png`;
+          a.href = threeCanvas.toDataURL("image/png");
+          a.click();
+        }
+      } else {
+        const c = canvasRef.current;
+        if (c) {
+          const a = document.createElement("a");
+          a.download = `aerolab-${Date.now()}.png`;
+          a.href = c.toDataURL("image/png");
+          a.click();
+        }
+      }
+      setTimeout(() => setScreenshotMode(false), 100);
+    }, 250);
   }, []);
 
   const exportCSV = useCallback(() => {
@@ -196,10 +220,15 @@ export default function CFDLab() {
   }, []);
 
   const changeMode = useCallback(nextMode => {
-    setMode(nextMode);
-    if (nextMode === "3d") {
-      closeControlPanel();
-    }
+    // 20.2 — Mode transition crossfade
+    setModeTransition(true);
+    setTimeout(() => {
+      setMode(nextMode);
+      if (nextMode === "3d") {
+        closeControlPanel();
+      }
+      setTimeout(() => setModeTransition(false), 50);
+    }, 150);
   }, [closeControlPanel]);
 
   useEffect(() => {
@@ -409,7 +438,7 @@ export default function CFDLab() {
   const toggleRunning = useCallback(() => setRunning(r => !r), []);
 
   return (
-    <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""}`} ref={wrapRef}>
+    <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""} ${screenshotMode ? "is-screenshot" : ""}`} ref={wrapRef}>
       <div className="lab-shell__scanline" />
 
       {/* 14.1 — Floating title chip */}
@@ -492,7 +521,7 @@ export default function CFDLab() {
       <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
         {view==="tunnel" && (
           <section className="canvas-area" aria-label="Simulation canvas area">
-            <div className={`canvas-wrapper ${running ? "is-live" : ""}`} onPointerDown={closeControlPanel}>
+            <div className={`canvas-wrapper ${running ? "is-live" : ""}`} style={modeTransition ? {opacity: 0, transition: 'opacity 150ms ease'} : {opacity: 1, transition: 'opacity 150ms ease'}} onPointerDown={closeControlPanel}>
               <canvas
                 ref={canvasRef}
                 width={SIM_W}
@@ -525,6 +554,9 @@ export default function CFDLab() {
           ))}
         </div>
       )}
+
+      {/* 20.5 — Screenshot watermark */}
+      <div className="screenshot-watermark">AEROLAB</div>
     </div>
   );
 }

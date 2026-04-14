@@ -186,10 +186,16 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
   const threeRef = useRef(null);
   const latestConfigRef = useRef({ poly, cx, cy, sx, sy, aoa, mode });
 
+  const prevPolyRef = useRef(poly);
   useEffect(() => {
     latestConfigRef.current = { poly, cx, cy, sx, sy, aoa, mode };
     const t = threeRef.current;
     if (t?.buildProfile) t.buildProfile(latestConfigRef.current);
+    // 20.3 — Camera auto-framing on shape change
+    if (t?.animateToTarget && poly !== prevPolyRef.current) {
+      t.animateToTarget(0.12, 1.45, 7.35);
+    }
+    prevPolyRef.current = poly;
   }, [poly, cx, cy, sx, sy, aoa, mode]);
 
   useEffect(() => {
@@ -824,15 +830,18 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
       let isDragging = false;
       let previousPointer = { x: 0, y: 0 };
+      let lastInteractionTime = 0;
       const domEl = renderer.domElement;
 
       const onPointerDown = event => {
         isDragging = true;
+        lastInteractionTime = performance.now() / 1000;
         previousPointer = { x: event.clientX, y: event.clientY };
         domEl.setPointerCapture?.(event.pointerId);
       };
       const onPointerMove = event => {
         if (!isDragging) return;
+        lastInteractionTime = performance.now() / 1000;
         orbit.theta -= (event.clientX - previousPointer.x) * 0.006;
         orbit.phi -= (event.clientY - previousPointer.y) * 0.006;
         orbit.phi = clamp(orbit.phi, 0.45, Math.PI - 0.35);
@@ -843,6 +852,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         domEl.releasePointerCapture?.(event.pointerId);
       };
       const onWheel = event => {
+        lastInteractionTime = performance.now() / 1000;
         orbit.radius = clamp(orbit.radius + event.deltaY * 0.004, 3.4, 9.2);
       };
 
@@ -855,10 +865,43 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       let animId = 0;
       const clock = new THREE.Clock();
 
+      // 20.3 — Camera auto-framing: smooth lerp targets
+      let targetOrbit = { theta: orbit.theta, phi: orbit.phi, radius: orbit.radius };
+      let isLerping = false;
+      const LERP_SPEED = 3.5; // ~600ms to settle
+
+      function animateToTarget(tTheta, tPhi, tRadius) {
+        targetOrbit = { theta: tTheta, phi: tPhi, radius: tRadius };
+        isLerping = true;
+      }
+
       function animate() {
         animId = requestAnimationFrame(animate);
         const elapsed = clock.getElapsedTime();
-        if (!isDragging) orbit.theta += 0.0008;
+        const dt = Math.min(clock.getDelta(), 0.05);
+
+        // 20.3 — Smooth camera lerp for auto-framing
+        if (isLerping) {
+          const t = 1 - Math.exp(-LERP_SPEED * dt);
+          orbit.theta += (targetOrbit.theta - orbit.theta) * t;
+          orbit.phi += (targetOrbit.phi - orbit.phi) * t;
+          orbit.radius += (targetOrbit.radius - orbit.radius) * t;
+          if (Math.abs(orbit.theta - targetOrbit.theta) < 0.001 &&
+              Math.abs(orbit.phi - targetOrbit.phi) < 0.001 &&
+              Math.abs(orbit.radius - targetOrbit.radius) < 0.01) {
+            isLerping = false;
+          }
+        }
+
+        // 20.4 — Idle camera drift with vertical oscillation
+        const idleTime = elapsed - lastInteractionTime;
+        if (!isDragging && !isLerping && idleTime > 5) {
+          orbit.theta += 0.0008;
+          orbit.phi += Math.sin(elapsed * 0.15) * 0.0003;
+          orbit.phi = clamp(orbit.phi, 0.45, Math.PI - 0.35);
+        } else if (!isDragging && !isLerping) {
+          orbit.theta += 0.0008;
+        }
 
         const sinPhi = Math.sin(orbit.phi);
         camera.position.set(
@@ -890,6 +933,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
       threeRef.current = {
         buildProfile,
+        animateToTarget,
         renderer,
         scene,
         gizmoRenderer,
