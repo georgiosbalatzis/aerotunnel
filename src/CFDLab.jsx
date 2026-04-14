@@ -592,7 +592,7 @@ export default function CFDLab() {
                       role="img"
                       aria-label="CFD wind tunnel simulation. Particles show airflow around the selected aerodynamic profile."
                       style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
-                    {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} />}
+                    {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} mode={mode} />}
                     <div className="canvas-hud">
                       <div className="hud-instrument-frame" aria-hidden="true">
                         <div className="hud-frame-box" />
