@@ -1,21 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTheme } from "./ThemeContext";
 import View3D from "./components/View3D";
 import AnalysisPanel from "./components/AnalysisPanel";
 import AboutPanel from "./components/AboutPanel";
 import CommandBar from "./components/CommandBar";
 import ControlPanel from "./components/ControlPanel";
 import IconRail from "./components/IconRail";
-import LiveMetricsColumn from "./components/LiveMetricsColumn";
-import MetricCard from "./components/MetricCard";
-import { CONTROL_SECTIONS } from "./components/iconRailConfig";
 import "./cfdlab.css";
 
 import {
   SIM_W, SIM_H, COLS, ROWS,
-  DEFAULT_PARTICLES, MAX_PARTICLES, TRAIL_LEN, IS_MOBILE,
+  DEFAULT_PARTICLES, TRAIL_LEN, IS_MOBILE,
   LBM, createPool, resizePool,
-  xformPoly, simplPoly, genPreset, PRESET_GROUPS,
+  xformPoly, simplPoly, genPreset,
   TURBO, COOLWARM,
 } from "./engine/index.js";
 
@@ -29,12 +25,6 @@ const MODES = [
 ];
 
 const COLORBAR_TICKS = [0.2, 0.4, 0.6, 0.8];
-const AXIS_TICKS = [20, 40, 60, 80];
-
-const SHORTCUTS = [
-  ["Space","Run / Pause"],["R","Reset solver"],["1-5","Switch view mode"],
-  ["F","Fullscreen"],["S","Snapshot"],["Z","Undo shape"],["/","Keyboard help"],
-];
 
 function formatFieldValue(value) {
   if (!Number.isFinite(value)) return "0";
@@ -43,10 +33,6 @@ function formatFieldValue(value) {
   if (abs >= 10) return value.toFixed(1);
   if (abs >= 1) return value.toFixed(2);
   return value.toFixed(3);
-}
-
-function isWideMetricsViewport() {
-  return typeof window !== "undefined" && window.innerWidth >= 1440;
 }
 
 /* ── Hooks ── */
@@ -64,7 +50,6 @@ function useHistory(maxLen = 1000) {
    MAIN COMPONENT
    ═══════════════════════════════════════ */
 export default function CFDLab() {
-  const { toggle: onThemeToggle } = useTheme();
   const solverRef  = useRef(null);
   const partsRef   = useRef(createPool());
   const canvasRef  = useRef(null);
@@ -100,15 +85,13 @@ export default function CFDLab() {
   const [vel,       setVel]       = useState(0.12);
   const [turb,      setTurb]      = useState(0.15);
   const [nu,        setNu]        = useState(0.015);
-  const [histRef, pushHist, clearHist] = useHistory(1000);
+  const [histRef, pushHist] = useHistory(1000);
   const [histSnap,  setHistSnap]  = useState([]);
-  const [isFS,      setIsFS]      = useState(false);
-  const [showKeys,  setShowKeys]  = useState(false);
   const [autoRun,   setAutoRun]   = useState(true);
-  const [sessionName, setSessionName] = useState("FP1 AERO RUN");
   const [panelOpen, setPanelOpen] = useState(!IS_MOBILE);
   const [activeSection, setActiveSection] = useState("shape");
-  const [metricsOpen, setMetricsOpen] = useState(() => isWideMetricsViewport());
+  const panelOpenRef = useRef(panelOpen);
+  const activeSectionRef = useRef(activeSection);
 
   /* ── Consolidated params ref ── */
   const P = useRef({
@@ -159,34 +142,6 @@ export default function CFDLab() {
     return () => cancelAnimationFrame(frame);
   }, [running, hasRun]);
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-
-    const wideQuery = window.matchMedia("(min-width: 1440px)");
-    const compactQuery = window.matchMedia("(max-width: 1200px)");
-    const handleWideChange = event => {
-      if (event.matches) setMetricsOpen(true);
-    };
-    const handleCompactChange = event => {
-      if (event.matches) setMetricsOpen(false);
-    };
-
-    if (wideQuery.addEventListener) {
-      wideQuery.addEventListener("change", handleWideChange);
-      compactQuery.addEventListener("change", handleCompactChange);
-      return () => {
-        wideQuery.removeEventListener("change", handleWideChange);
-        compactQuery.removeEventListener("change", handleCompactChange);
-      };
-    }
-
-    wideQuery.addListener(handleWideChange);
-    compactQuery.addListener(handleCompactChange);
-    return () => {
-      wideQuery.removeListener(handleWideChange);
-      compactQuery.removeListener(handleCompactChange);
-    };
-  }, []);
 
   useEffect(() => {
     const canvas = waveRef.current;
@@ -219,14 +174,8 @@ export default function CFDLab() {
 
   const toggleFS = useCallback(() => {
     const el = wrapRef.current; if (!el) return;
-    if (!document.fullscreenElement) el.requestFullscreen?.().then(() => setIsFS(true)).catch(() => {});
-    else { document.exitFullscreen?.(); setIsFS(false); }
-  }, []);
-
-  useEffect(() => {
-    const h = () => setIsFS(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", h);
-    return () => document.removeEventListener("fullscreenchange", h);
+    if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => {});
+    else document.exitFullscreen?.();
   }, []);
 
   const snap = useCallback(() => {
@@ -255,33 +204,22 @@ export default function CFDLab() {
     setPoly(p);
   }, [poly]);
 
-  const resetAll = useCallback(() => {
-    setRunning(false); setVel(0.12); setTurb(0.15); setNu(0.015);
-    setCx(COLS*0.35); setCy(ROWS/2); setSx(COLS*0.25); setSy(ROWS*0.45);
-    setAoa(0); setSimplify(0); setPCount(DEFAULT_PARTICLES); setTrailOp(1);
-    setSimSpd(1); setPreset("f1car");
-    setPoly(genPreset("f1car")); setPrevPoly(null);
-    setStats({ cl:0, cd:0, re:0, maxV:0 }); setHasRun(false);
-    fieldRangeRef.current = { min: 0, max: 1 }; setFieldRange(fieldRangeRef.current);
-    clearHist(); setHistSnap([]);
-    const s = new LBM(COLS, ROWS); s.setNu(0.015); solverRef.current = s;
-  }, [clearHist]);
+  const closeControlPanel = useCallback(() => {
+    panelOpenRef.current = false;
+    setPanelOpen(false);
+  }, []);
 
-  const toggleShortcutHelp = useCallback(() => {
-    setShowKeys(open => {
-      const nextOpen = !open;
-      if (nextOpen) setMetricsOpen(true);
-      return nextOpen;
-    });
+  const changeActiveSection = useCallback(section => {
+    activeSectionRef.current = section;
+    setActiveSection(section);
   }, []);
 
   const changeMode = useCallback(nextMode => {
     setMode(nextMode);
     if (nextMode === "3d") {
-      setPanelOpen(false);
-      setMetricsOpen(false);
+      closeControlPanel();
     }
-  }, []);
+  }, [closeControlPanel]);
 
   useEffect(() => {
     const h = e => {
@@ -297,12 +235,11 @@ export default function CFDLab() {
         case "KeyF": toggleFS(); break;
         case "KeyS": if (!e.ctrlKey && !e.metaKey) snap(); break;
         case "KeyZ": if (!e.ctrlKey && !e.metaKey) undoShape(); break;
-        case "Slash": e.preventDefault(); toggleShortcutHelp(); break;
       }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [resetSolver, changeMode, toggleFS, snap, undoShape, toggleShortcutHelp]);
+  }, [resetSolver, changeMode, toggleFS, snap, undoShape]);
 
   const fpsF = useRef(0), fpsT = useRef(0);
 
@@ -455,8 +392,6 @@ export default function CFDLab() {
     return { label:"TURB.", col:"var(--f1-red)" };
   }, [stats.re]);
   const ldRatio = useMemo(() => stats.cd > 0 ? (stats.cl/stats.cd).toFixed(2) : "—", [stats.cl, stats.cd]);
-  const currentMode = MODES.find(m => m.id === mode) || MODES[0];
-  const currentPreset = PRESET_GROUPS.flatMap(g => g.items).find(i => i.id === preset);
   const is3D = mode === "3d";
   const colorbarGradient = mode === "pressure"
     ? "linear-gradient(to bottom,#ff9500,#555,#00b4ff)"
@@ -473,231 +408,133 @@ export default function CFDLab() {
 
   useEffect(() => { const iv = setInterval(() => setHistSnap([...histRef.current]), 500); return () => clearInterval(iv); }, [histRef]);
 
-  const metricHistory = useMemo(() => ({
-    cl: histSnap.map(item => item.cl),
-    cd: histSnap.map(item => item.cd),
-    ld: histSnap.map(item => item.cd > 0 ? item.cl / item.cd : null),
-    re: histSnap.map(item => item.re),
-    maxV: histSnap.map(item => item.maxV),
-    flow: histSnap.map(item => item.re),
-  }), [histSnap]);
-
   const metrics = [
-    { label:"CL",   value:hasRun?stats.cl:"—",  rawValue:hasRun?stats.cl:null, note:"Lift",       tone:"var(--f1-green)", historyValues:metricHistory.cl, deltaMode:"up" },
-    { label:"CD",   value:hasRun?stats.cd:"—",  rawValue:hasRun?stats.cd:null, note:"Drag",       tone:"var(--f1-red)",   historyValues:metricHistory.cd, deltaMode:"down" },
-    { label:"L/D",  value:hasRun?ldRatio:"—",   rawValue:hasRun&&stats.cd>0?stats.cl/stats.cd:null, note:"Efficiency", tone:"var(--f1-blue)", historyValues:metricHistory.ld, deltaMode:"up" },
-    { label:"Re",   value:hasRun?(stats.re>999?`${(stats.re/1000).toFixed(1)}k`:stats.re):"—", rawValue:hasRun?stats.re:null, note:"Reynolds", tone:"var(--f1-amber)", historyValues:metricHistory.re, deltaMode:"up" },
-    { label:"U/U₀", value:hasRun?stats.maxV:"—", rawValue:hasRun?stats.maxV:null, note:"Peak vel.", tone:"var(--f1-blue)", historyValues:metricHistory.maxV, deltaMode:"up" },
-    { label:"FLOW", value:hasRun?regime.label:"—", rawValue:null, note:"Regime", tone:hasRun?regime.col:"var(--f1-dim)", historyValues:metricHistory.flow, badge:hasRun, pulse:hasRun&&regime.label==="TURB." },
+    { label:"CL",   value:hasRun?stats.cl:"—",  tone:"var(--f1-green)" },
+    { label:"CD",   value:hasRun?stats.cd:"—",  tone:"var(--f1-red)" },
+    { label:"L/D",  value:hasRun?ldRatio:"—",   tone:"var(--f1-blue)" },
+    { label:"FLOW", value:hasRun?regime.label:"—", tone:hasRun?regime.col:"var(--f1-dim)" },
   ];
 
   const openControlPanel = useCallback(section => {
-    setActiveSection(section);
     setView("tunnel");
-    setPanelOpen(true);
+    const nextOpen = !(panelOpenRef.current && activeSectionRef.current === section);
+    panelOpenRef.current = nextOpen;
+    activeSectionRef.current = section;
+    setPanelOpen(nextOpen);
+    setActiveSection(section);
   }, []);
   const changeRailView = useCallback(nextView => {
     setView(nextView);
-    setPanelOpen(false);
-  }, []);
-  const toggleControlPanel = useCallback(() => {
-    setView("tunnel");
-    setPanelOpen(open => !open);
-  }, []);
-  const toggleLiveMetrics = useCallback(() => setMetricsOpen(open => !open), []);
+    closeControlPanel();
+  }, [closeControlPanel]);
   const toggleRunning = useCallback(() => setRunning(r => !r), []);
 
   return (
     <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""}`} ref={wrapRef}>
       <div className="lab-shell__scanline" />
 
-      <CommandBar
+      {/* 14.1 — Floating title chip */}
+      <CommandBar running={running} fps={fps} />
+
+      {/* 14.2 — Floating icon rail toolbar */}
+      <IconRail
+        activeSection={activeSection}
+        onSectionChange={openControlPanel}
         running={running}
-        fps={fps}
-        sessionName={sessionName}
-        onNameChange={setSessionName}
-        currentPreset={currentPreset}
-        currentMode={currentMode}
-        aoa={aoa}
-        stats={stats}
-        hasRun={hasRun}
+        onRunToggle={toggleRunning}
+        onReset={resetSolver}
+        currentView={view}
         panelOpen={panelOpen}
-        onPanelToggle={toggleControlPanel}
-        metricsOpen={metricsOpen}
-        onMetricsToggle={toggleLiveMetrics}
-        onThemeToggle={onThemeToggle}
+        onViewChange={changeRailView}
       />
 
-      <div className="lab-body">
-        <IconRail
-          activeSection={activeSection}
-          onSectionChange={openControlPanel}
-          running={running}
-          onRunToggle={toggleRunning}
-          onReset={resetSolver}
-          currentView={view}
-          panelOpen={panelOpen}
-          onViewChange={changeRailView}
+      {/* 14.3 — Floating control panel drawer */}
+      {view==="tunnel" && (
+        <ControlPanel
+          key={activeSection}
+          isOpen={panelOpen}
+          section={activeSection}
+          onSectionChange={changeActiveSection}
+          onClose={closeControlPanel}
+          preset={preset}
+          onPresetSelect={(nextPreset, nextPoly) => { setPreset(nextPreset); applyPoly(nextPoly); }}
+          onShapeImport={applyPoly}
+          cx={cx} setCx={setCx} cy={cy} setCy={setCy}
+          sx={sx} setSx={setSx} sy={sy} setSy={setSy}
+          aoa={aoa} setAoa={setAoa} simplify={simplify} setSimplify={setSimplify}
+          vel={vel} setVel={setVel} turb={turb} setTurb={setTurb}
+          nu={nu} setNu={setNu} pCount={pCount} setPCount={setPCount}
+          trailOp={trailOp} setTrailOp={setTrailOp} simSpd={simSpd} setSimSpd={setSimSpd}
+          autoRun={autoRun} setAutoRun={setAutoRun}
         />
+      )}
 
+      {/* Mode pills — floating top-center */}
+      {view==="tunnel" && (
+        <div className="floating-mode-bar" aria-label="Visualization modes">
+          {MODES.map((m,i) => (
+            <button key={m.id} className={`floating-mode-pill ${mode===m.id?"is-active":""}`}
+              aria-label={`Switch visualization mode to ${m.label}`}
+              style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => changeMode(m.id)}>
+              <span className="floating-mode-pill__label">{IS_MOBILE?m.short:m.label}</span>
+              <sup className="floating-mode-pill__key">{i+1}</sup>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Main canvas area — full viewport */}
+      <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
         {view==="tunnel" && (
-          <ControlPanel
-            key={activeSection}
-            isOpen={panelOpen}
-            section={activeSection}
-            onSectionChange={setActiveSection}
-            onClose={() => setPanelOpen(false)}
-            preset={preset}
-            onPresetSelect={(nextPreset, nextPoly) => { setPreset(nextPreset); applyPoly(nextPoly); }}
-            onShapeImport={applyPoly}
-            cx={cx}
-            setCx={setCx}
-            cy={cy}
-            setCy={setCy}
-            sx={sx}
-            setSx={setSx}
-            sy={sy}
-            setSy={setSy}
-            aoa={aoa}
-            setAoa={setAoa}
-            simplify={simplify}
-            setSimplify={setSimplify}
-            vel={vel}
-            setVel={setVel}
-            turb={turb}
-            setTurb={setTurb}
-            nu={nu}
-            setNu={setNu}
-            pCount={pCount}
-            setPCount={setPCount}
-            trailOp={trailOp}
-            setTrailOp={setTrailOp}
-            simSpd={simSpd}
-            setSimSpd={setSimSpd}
-            autoRun={autoRun}
-            setAutoRun={setAutoRun}
-          />
-        )}
-
-        <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
-          {view==="tunnel" && (
-              <>
-                <section className="canvas-area" aria-label="Simulation canvas area">
-                  <div className={`canvas-wrapper ${running ? "is-live" : ""}`}>
-                    <canvas
-                      ref={canvasRef}
-                      width={SIM_W}
-                      height={SIM_H}
-                      className="stage-canvas"
-                      role="img"
-                      aria-label="CFD wind tunnel simulation. Particles show airflow around the selected aerodynamic profile."
-                      style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
-                    {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} mode={mode} />}
-                    <div className="canvas-hud">
-                      <div className="hud-instrument-frame" aria-hidden="true">
-                        <div className="hud-frame-box" />
-                        <div className="hud-frame-edge hud-frame-edge--top">
-                          <span className="hud-frame-label hud-frame-label--air">&lsaquo; AIR IN</span>
-                          <span className="hud-frame-label hud-frame-label--mode" style={{color:currentMode.color}}>{currentMode.label.toUpperCase()} &middot; LBM D2Q9</span>
-                          <span className="hud-frame-label hud-frame-label--wake">WAKE &rsaquo;</span>
-                        </div>
-                        <div className="hud-frame-edge hud-frame-edge--bottom">
-                          <span className="hud-frame-label">{COLS}&times;{ROWS}</span>
-                          <span className="hud-scale-bar"><b>0</b><i /><b>U<sub>0</sub></b></span>
-                          <span className="hud-frame-label">f1stories.gr</span>
-                        </div>
-                        <div className="hud-left-axis">
-                          {AXIS_TICKS.map(tick => (
-                            <span className="hud-axis-tick" style={{"--tick": `${tick}%`}} key={tick}>
-                              <i /><em>{tick}%</em>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="hud-mode-stack" aria-label="Visualization modes">
-                        {MODES.map((m,i) => (
-                          <button key={m.id} className={`hud-mode-pill ${mode===m.id?"is-active":""}`}
-                            aria-label={`Switch visualization mode to ${m.label}`}
-                            style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => changeMode(m.id)}>
-                            <span className="hud-mode-pill__label">{IS_MOBILE?m.short:m.label}</span>
-                            <span className="hud-mode-pill__key">[{i+1}]</span>
-                          </button>
-                        ))}
-                        <button
-                          className={`hud-run-button ${running ? "is-running" : "is-paused"}`}
-                          aria-label={running ? "Hold simulation" : "Run simulation"}
-                          onClick={toggleRunning}
-                        >
-                          {running ? "HOLD" : "RUN"}
-                        </button>
-                      </div>
-                      {!IS_MOBILE && (
-                        <div className="hud-utility-row" aria-label="Canvas tools">
-                          <button className="hud-tool-btn" aria-label="Reset solver" onClick={resetSolver} title="Reset solver [R]">SOLVER</button>
-                          <button className="hud-tool-btn" aria-label="Capture simulation snapshot" onClick={snap} title="Snapshot [S]">SHOT</button>
-                          <button className="hud-tool-btn" aria-label={isFS ? "Exit fullscreen" : "Enter fullscreen"} onClick={toggleFS} title="Fullscreen [F]">{isFS?"EXIT":"FULL"}</button>
-                          <button className="hud-tool-btn" aria-label="Export telemetry CSV" onClick={exportCSV} disabled={!histSnap.length}>CSV</button>
-                          {prevPoly && <button className="hud-tool-btn" aria-label="Undo shape change" onClick={undoShape} title="Undo shape [Z]">UNDO</button>}
-                          <button className="hud-tool-btn" aria-label="Reset all controls and solver" onClick={resetAll}>RESET</button>
-                          <button className="hud-tool-btn" aria-label="Toggle keyboard shortcut help" onClick={toggleShortcutHelp} title="[/]">KEYS</button>
-                        </div>
-                      )}
-                      <div className="hud-mode-indicator" style={{"--tone":currentMode.tone}}>
-                        <span className="hud-mode-indicator__dot" style={{background:currentMode.color}} />
-                        {currentMode.label.toUpperCase()}
-                      </div>
-                      <div className="hud-colorbar" aria-label="Field range">
-                        <div className="hud-colorbar__cap">MAX</div>
-                        <div className="hud-colorbar__body">
-                          <div className="hud-colorbar__bar" style={{background:colorbarGradient}} />
-                          <div className="hud-colorbar__ticks">
-                            {colorbarTicks.map(tick => (
-                              <span className="hud-colorbar__tick" style={{"--tick": tick.position}} key={tick.position}>
-                                <i /><b>{tick.value}</b>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="hud-colorbar__cap">MIN</div>
-                      </div>
-                      <div className="hud-turbulence">
-                        <canvas ref={waveRef} width={40} height={24} className="hud-turbulence__canvas" aria-hidden />
-                        <span>TURB {turb.toFixed(1)}</span>
-                      </div>
-                      {!hasRun && !running && (
-                        <div className="hud-waiting"><span>&#9654; PRESS RUN &middot; SPACE</span></div>
-                      )}
+          <section className="canvas-area" aria-label="Simulation canvas area">
+            <div className={`canvas-wrapper ${running ? "is-live" : ""}`} onPointerDown={closeControlPanel}>
+              <canvas
+                ref={canvasRef}
+                width={SIM_W}
+                height={SIM_H}
+                className="stage-canvas"
+                role="img"
+                aria-label="CFD wind tunnel simulation."
+                style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
+              {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} mode={mode} />}
+              <div className="canvas-hud">
+                <div className="hud-colorbar" aria-label="Field range">
+                  <div className="hud-colorbar__cap">MAX</div>
+                  <div className="hud-colorbar__body">
+                    <div className="hud-colorbar__bar" style={{background:colorbarGradient}} />
+                    <div className="hud-colorbar__ticks">
+                      {colorbarTicks.map(tick => (
+                        <span className="hud-colorbar__tick" style={{"--tick": tick.position}} key={tick.position}>
+                          <i /><b>{tick.value}</b>
+                        </span>
+                      ))}
                     </div>
                   </div>
-              </section>
+                  <div className="hud-colorbar__cap">MIN</div>
+                </div>
+                <div className="hud-turbulence">
+                  <canvas ref={waveRef} width={40} height={24} className="hud-turbulence__canvas" aria-hidden />
+                  <span>TURB {turb.toFixed(1)}</span>
+                </div>
+                {!hasRun && !running && (
+                  <div className="hud-waiting"><span>&#9654; PRESS RUN &middot; SPACE</span></div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+        {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} />}
+        {view==="about" && <AboutPanel />}
+      </main>
 
-              {!IS_MOBILE && (
-                <LiveMetricsColumn
-                  isOpen={metricsOpen}
-                  miniRef={miniRef}
-                  vel={vel}
-                  turb={turb}
-                  nu={nu}
-                  pCount={pCount}
-                  maxParticles={MAX_PARTICLES}
-                  currentPreset={currentPreset}
-                  hasRun={hasRun}
-                  stats={stats}
-                  showKeys={showKeys}
-                  shortcuts={SHORTCUTS}
-                />
-              )}
-            </>
-          )}
-          {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} />}
-          {view==="about" && <AboutPanel />}
-        </main>
-      </div>
-
+      {/* 14.4 — Floating metric pills */}
       {view==="tunnel" && (
-        <div className={`metrics-ribbon ${!hasRun?"is-waiting":""}`}>
+        <div className={`floating-metrics ${!hasRun?"is-waiting":""}`}>
           {metrics.map(m => (
-            <MetricCard key={m.label} {...m} running={running} />
+            <div key={m.label} className="floating-metric-pill" style={{"--tone":m.tone}}>
+              <span className="floating-metric-pill__label">{m.label}</span>
+              <span className="floating-metric-pill__value">{m.value}</span>
+            </div>
           ))}
         </div>
       )}
