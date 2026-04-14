@@ -380,17 +380,45 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 /* ── METRICS RIBBON ── */
 .metrics-ribbon {
   display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
-  min-height: 72px; border-top: 1px solid var(--f1-edge); background: var(--f1-raised); flex-shrink: 0;
+  min-height: 72px; border-top: 1px solid var(--f1-edge); background: var(--f1-carbon); flex-shrink: 0;
 }
 /* FIX: waiting state — dimmed */
 .metrics-ribbon.is-waiting { opacity: .5; }
 .metrics-ribbon.is-waiting .metric-value { animation: pulse-waiting 2s ease-in-out infinite; }
 
-.metric-card { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border-right: 1px solid var(--f1-border); position: relative; overflow: hidden; }
-.metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--tone, var(--f1-border)); }
-.metric-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: .2em; text-transform: uppercase; color: var(--f1-dim); }
-.metric-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: .9; color: var(--tone, var(--f1-white)); letter-spacing: .02em; }
+.metric-card {
+  position: relative; overflow: hidden; min-width: 0; min-height: 72px;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 14px 18px; border-right: 1px solid var(--f1-border);
+  border-left: 3px solid var(--tone, var(--f1-border));
+}
+.metric-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: .22em; text-transform: uppercase; color: var(--f1-dim); line-height: 1; }
+.metric-value {
+  display: flex; align-items: baseline; gap: 1px; min-height: 29px; overflow: hidden;
+  font-family: var(--font-display); font-size: 32px; font-weight: 800; line-height: .9;
+  color: var(--tone, var(--f1-white)); letter-spacing: .02em;
+}
+.metric-char { display: inline-block; animation: digit-scroll .15s ease-out both; animation-delay: var(--delay, 0ms); }
 .metric-note { font-size: 10px; color: var(--f1-dim); }
+.metric-note-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 11px; }
+.metric-delta {
+  opacity: 0; display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .08em; color: var(--f1-red);
+  transition: opacity .15s ease-out;
+}
+.metric-delta.is-visible { opacity: 1; }
+.metric-delta.is-improved { color: var(--f1-green); }
+.metric-delta.is-degraded { color: var(--f1-red); }
+.metric-sparkline {
+  position: absolute; left: 14px; right: 14px; bottom: 4px; width: calc(100% - 28px); height: 12px;
+  display: block; color: var(--tone, var(--f1-red)); opacity: .95;
+}
+.metric-regime-badge {
+  align-self: flex-start; margin-top: 3px; padding: 4px 9px;
+  background: var(--tone, var(--f1-border)); color: var(--f1-white);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; line-height: 1; text-transform: uppercase;
+}
+.metric-regime-badge.is-pulsing { animation: regime-pulse 2s ease-in-out infinite; }
 
 /* ── BUTTONS ── */
 .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--f1-red); border: none; color: #fff; font-family: var(--font-display); font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: all .15s; clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); box-shadow: 0 0 20px var(--f1-red-glow); }
@@ -504,6 +532,8 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 @keyframes panel-tab-fade { from{opacity:0} to{opacity:1} }
 @keyframes live-pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+@keyframes digit-scroll { from{ transform: translateY(85%); opacity: 0; } to{ transform: translateY(0); opacity: 1; } }
+@keyframes regime-pulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.05); } }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {

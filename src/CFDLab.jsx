@@ -6,6 +6,7 @@ import AboutPanel from "./components/AboutPanel";
 import CommandBar from "./components/CommandBar";
 import ControlPanel from "./components/ControlPanel";
 import IconRail from "./components/IconRail";
+import MetricCard from "./components/MetricCard";
 import { CONTROL_SECTIONS } from "./components/iconRailConfig";
 import "./cfdlab.css";
 
@@ -436,13 +437,22 @@ export default function CFDLab() {
 
   useEffect(() => { const iv = setInterval(() => setHistSnap([...histRef.current]), 500); return () => clearInterval(iv); }, [histRef]);
 
+  const metricHistory = useMemo(() => ({
+    cl: histSnap.map(item => item.cl),
+    cd: histSnap.map(item => item.cd),
+    ld: histSnap.map(item => item.cd > 0 ? item.cl / item.cd : null),
+    re: histSnap.map(item => item.re),
+    maxV: histSnap.map(item => item.maxV),
+    flow: histSnap.map(item => item.re),
+  }), [histSnap]);
+
   const metrics = [
-    { label:"CL",   value:hasRun?stats.cl:"—",  note:"Lift",       tone:"var(--f1-green)" },
-    { label:"CD",   value:hasRun?stats.cd:"—",  note:"Drag",       tone:"var(--f1-red)" },
-    { label:"L/D",  value:hasRun?ldRatio:"—",   note:"Efficiency", tone:"var(--f1-blue)" },
-    { label:"Re",   value:hasRun?(stats.re>999?`${(stats.re/1000).toFixed(1)}k`:stats.re):"—", note:"Reynolds", tone:"var(--f1-amber)" },
-    { label:"U/U₀", value:hasRun?stats.maxV:"—", note:"Peak vel.",  tone:"var(--f1-blue)" },
-    { label:"FLOW", value:hasRun?regime.label:"—", note:"Regime",   tone:hasRun?regime.col:"var(--f1-dim)" },
+    { label:"CL",   value:hasRun?stats.cl:"—",  rawValue:hasRun?stats.cl:null, note:"Lift",       tone:"var(--f1-green)", historyValues:metricHistory.cl, deltaMode:"up" },
+    { label:"CD",   value:hasRun?stats.cd:"—",  rawValue:hasRun?stats.cd:null, note:"Drag",       tone:"var(--f1-red)",   historyValues:metricHistory.cd, deltaMode:"down" },
+    { label:"L/D",  value:hasRun?ldRatio:"—",   rawValue:hasRun&&stats.cd>0?stats.cl/stats.cd:null, note:"Efficiency", tone:"var(--f1-blue)", historyValues:metricHistory.ld, deltaMode:"up" },
+    { label:"Re",   value:hasRun?(stats.re>999?`${(stats.re/1000).toFixed(1)}k`:stats.re):"—", rawValue:hasRun?stats.re:null, note:"Reynolds", tone:"var(--f1-amber)", historyValues:metricHistory.re, deltaMode:"up" },
+    { label:"U/U₀", value:hasRun?stats.maxV:"—", rawValue:hasRun?stats.maxV:null, note:"Peak vel.", tone:"var(--f1-blue)", historyValues:metricHistory.maxV, deltaMode:"up" },
+    { label:"FLOW", value:hasRun?regime.label:"—", rawValue:null, note:"Regime", tone:hasRun?regime.col:"var(--f1-dim)", historyValues:metricHistory.flow, badge:hasRun, pulse:hasRun&&regime.label==="TURB." },
   ];
 
   const openControlPanel = useCallback(section => {
@@ -673,11 +683,7 @@ export default function CFDLab() {
       {view==="tunnel" && (
         <div className={`metrics-ribbon ${!hasRun?"is-waiting":""}`}>
           {metrics.map(m => (
-            <div className="metric-card" style={{"--tone":m.tone}} key={m.label}>
-              <div className="metric-label">{m.label}</div>
-              <div className="metric-value">{m.value}</div>
-              <div className="metric-note">{m.note}</div>
-            </div>
+            <MetricCard key={m.label} {...m} running={running} />
           ))}
         </div>
       )}
