@@ -28,6 +28,11 @@ body {
 }
 
 button, input, select { font: inherit; }
+:where(a, button, input, select, textarea, [tabindex]):focus { outline: none; }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--f1-blue);
+  outline-offset: 2px;
+}
 ::selection { background: var(--f1-red-dim); color: var(--f1-white); }
 *::-webkit-scrollbar { width: 4px; height: 4px; }
 *::-webkit-scrollbar-track { background: var(--f1-black); }
@@ -108,7 +113,7 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 .session-name-input {
   background: var(--f1-slate); border: 1px solid var(--f1-red); color: var(--f1-white);
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
-  padding: 2px 6px; width: 140px; outline: none;
+  padding: 2px 6px; width: 140px;
 }
 
 /* ── PHASE 2 LAYOUT SKELETON ── */
@@ -593,6 +598,15 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 @keyframes live-pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
 @keyframes digit-scroll { from{ transform: translateY(85%); opacity: 0; } to{ transform: translateY(0); opacity: 1; } }
 @keyframes regime-pulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.05); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {

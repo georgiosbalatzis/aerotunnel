@@ -576,7 +576,13 @@ export default function CFDLab() {
               <>
                 <section className="canvas-area" aria-label="Simulation canvas area">
                   <div className={`canvas-wrapper ${running ? "is-live" : ""}`}>
-                    <canvas ref={canvasRef} width={SIM_W} height={SIM_H} className="stage-canvas"
+                    <canvas
+                      ref={canvasRef}
+                      width={SIM_W}
+                      height={SIM_H}
+                      className="stage-canvas"
+                      role="img"
+                      aria-label="CFD wind tunnel simulation. Particles show airflow around the selected aerodynamic profile."
                       style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
                     {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} />}
                     <div className="canvas-hud">
@@ -603,24 +609,29 @@ export default function CFDLab() {
                       <div className="hud-mode-stack" aria-label="Visualization modes">
                         {MODES.map((m,i) => (
                           <button key={m.id} className={`hud-mode-pill ${mode===m.id?"is-active":""}`}
+                            aria-label={`Switch visualization mode to ${m.label}`}
                             style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => setMode(m.id)}>
                             <span className="hud-mode-pill__label">{IS_MOBILE?m.short:m.label}</span>
                             <span className="hud-mode-pill__key">[{i+1}]</span>
                           </button>
                         ))}
-                        <button className={`hud-run-button ${running ? "is-running" : "is-paused"}`} onClick={toggleRunning}>
+                        <button
+                          className={`hud-run-button ${running ? "is-running" : "is-paused"}`}
+                          aria-label={running ? "Hold simulation" : "Run simulation"}
+                          onClick={toggleRunning}
+                        >
                           {running ? "HOLD" : "RUN"}
                         </button>
                       </div>
                       {!IS_MOBILE && (
                         <div className="hud-utility-row" aria-label="Canvas tools">
-                          <button className="hud-tool-btn" onClick={resetSolver} title="Reset solver [R]">SOLVER</button>
-                          <button className="hud-tool-btn" onClick={snap} title="Snapshot [S]">SHOT</button>
-                          <button className="hud-tool-btn" onClick={toggleFS} title="Fullscreen [F]">{isFS?"EXIT":"FULL"}</button>
-                          <button className="hud-tool-btn" onClick={exportCSV} disabled={!histSnap.length}>CSV</button>
-                          {prevPoly && <button className="hud-tool-btn" onClick={undoShape} title="Undo shape [Z]">UNDO</button>}
-                          <button className="hud-tool-btn" onClick={resetAll}>RESET</button>
-                          <button className="hud-tool-btn" onClick={toggleShortcutHelp} title="[/]">KEYS</button>
+                          <button className="hud-tool-btn" aria-label="Reset solver" onClick={resetSolver} title="Reset solver [R]">SOLVER</button>
+                          <button className="hud-tool-btn" aria-label="Capture simulation snapshot" onClick={snap} title="Snapshot [S]">SHOT</button>
+                          <button className="hud-tool-btn" aria-label={isFS ? "Exit fullscreen" : "Enter fullscreen"} onClick={toggleFS} title="Fullscreen [F]">{isFS?"EXIT":"FULL"}</button>
+                          <button className="hud-tool-btn" aria-label="Export telemetry CSV" onClick={exportCSV} disabled={!histSnap.length}>CSV</button>
+                          {prevPoly && <button className="hud-tool-btn" aria-label="Undo shape change" onClick={undoShape} title="Undo shape [Z]">UNDO</button>}
+                          <button className="hud-tool-btn" aria-label="Reset all controls and solver" onClick={resetAll}>RESET</button>
+                          <button className="hud-tool-btn" aria-label="Toggle keyboard shortcut help" onClick={toggleShortcutHelp} title="[/]">KEYS</button>
                         </div>
                       )}
                       <div className="hud-mode-indicator" style={{"--tone":currentMode.tone}}>

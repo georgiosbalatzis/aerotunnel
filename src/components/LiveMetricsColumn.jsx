@@ -47,7 +47,14 @@ export default function LiveMetricsColumn({
     <aside className={`live-metrics-col ${isOpen ? "is-open" : ""}`} aria-label="Live metrics column">
       <div className="live-section">
         <div className="live-section__title">ONBOARD</div>
-        <canvas ref={miniRef} width={200} height={110} className="mini-canvas" />
+        <canvas
+          ref={miniRef}
+          width={200}
+          height={110}
+          className="mini-canvas"
+          role="img"
+          aria-label="Onboard camera telemetry preview"
+        />
         <div className="live-signals">
           {signals.map(signal => <SigRow key={signal.label} {...signal} />)}
         </div>
