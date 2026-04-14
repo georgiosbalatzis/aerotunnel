@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 
 const CHART_COLORS = {
-  cl: "#00d46a",
-  cd: "#e8000d",
-  re: "#ff9500",
-  ld: "#00b4ff",
+  cl: "#22ff88",
+  cd: "#ff6600",
+  re: "#eeff22",
+  ld: "#00d4ff",
 };
 
 function formatRe(value) {
@@ -165,9 +165,9 @@ function HistoryChart({ history }) {
 
       ctx.font = `${10 * ratio}px 'Share Tech Mono'`;
       ctx.textBaseline = "top";
-      ctx.fillStyle = "rgba(0,212,106,0.9)";
+      ctx.fillStyle = "rgba(34,255,136,0.9)";
       ctx.fillText("CL", 12 * ratio, pad.top);
-      ctx.fillStyle = "rgba(232,0,13,0.9)";
+      ctx.fillStyle = "rgba(255,102,0,0.9)";
       ctx.fillText("CD", width - 34 * ratio, pad.top);
       ctx.fillStyle = "rgba(128,128,160,0.75)";
       ctx.fillText(clRange.max.toFixed(3), 12 * ratio, pad.top + 16 * ratio);
@@ -194,8 +194,8 @@ function HistoryChart({ history }) {
   return (
     <div className="history-chart-shell">
       <div className="history-chart-legend" aria-hidden="true">
-        <span><i style={{ background: "var(--f1-green)" }} /> CL lift coefficient</span>
-        <span><i style={{ background: "var(--f1-red)" }} /> CD drag coefficient</span>
+        <span><i style={{ background: "var(--accent-hi)" }} /> CL lift coefficient</span>
+        <span><i style={{ background: "var(--accent-warn)" }} /> CD drag coefficient</span>
       </div>
       <canvas ref={ref} className="history-chart" width={760} height={240} role="img" aria-label="CL and CD telemetry over time" />
     </div>
@@ -216,10 +216,10 @@ export default function AnalysisPanel({ hSnap, exportCSV, stats, ldRatio, regime
     re: hSnap.map(sample => sample.re),
   }), [hSnap]);
   const kpis = [
-    { label: "CL", value: stats.cl || "-", note: "Lift coefficient", tone: "var(--f1-green)", color: CHART_COLORS.cl, values: history.cl },
-    { label: "CD", value: stats.cd || "-", note: "Drag coefficient", tone: "var(--f1-red)", color: CHART_COLORS.cd, values: history.cd },
-    { label: "L/D", value: ldRatio, note: "Aero efficiency", tone: "var(--f1-blue)", color: CHART_COLORS.ld, values: history.ld },
-    { label: "Re", value: formatRe(stats.re), note: "Reynolds number", tone: "var(--f1-amber)", color: CHART_COLORS.re, values: history.re },
+    { label: "CL", value: stats.cl || "-", note: "Lift coefficient", tone: "var(--accent-hi)", color: CHART_COLORS.cl, values: history.cl },
+    { label: "CD", value: stats.cd || "-", note: "Drag coefficient", tone: "var(--accent-warn)", color: CHART_COLORS.cd, values: history.cd },
+    { label: "L/D", value: ldRatio, note: "Aero efficiency", tone: "var(--accent-flow)", color: CHART_COLORS.ld, values: history.ld },
+    { label: "Re", value: formatRe(stats.re), note: "Reynolds number", tone: "var(--accent-mid)", color: CHART_COLORS.re, values: history.re },
   ];
 
   return (

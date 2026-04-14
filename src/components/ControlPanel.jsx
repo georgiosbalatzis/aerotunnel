@@ -158,7 +158,7 @@ export default function ControlPanel({
     pointsRef.current.push([x, y]);
     const ctx = drawRef.current.getContext("2d");
     const points = pointsRef.current;
-    ctx.strokeStyle = "#e8000d";
+    ctx.strokeStyle = "#00d4ff";
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     if (points.length > 1) {
@@ -259,7 +259,7 @@ export default function ControlPanel({
       <div className="slider-stack">
         <Slider label="Particles" value={pCount} display={pCount} min={0} max={MAX_PARTICLES} step={10} onChange={setPCount} tone="var(--f1-blue)" />
         <Slider label="Trail Opacity" value={trailOp} display={trailOp.toFixed(2)} min={0} max={1} step={.05} onChange={setTrailOp} tone="var(--f1-amber)" />
-        <Slider label="Sim Speed" value={simSpd} display={`${simSpd}\u00d7`} min={1} max={8} step={1} onChange={setSimSpd} tone="var(--f1-red)" />
+        <Slider label="Sim Speed" value={simSpd} display={`${simSpd}\u00d7`} min={1} max={8} step={1} onChange={setSimSpd} tone="var(--accent-flow)" />
         <label className={`toggle-chip ${autoRun ? "is-active" : ""}`}>
           <input type="checkbox" checked={autoRun} onChange={() => setAutoRun(value => !value)} />
           AUTO GREEN-FLAG

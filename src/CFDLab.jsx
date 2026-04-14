@@ -17,15 +17,15 @@ import {
 
 /* ── Static config ── */
 const MODES = [
-  { id:"velocity",    label:"Velocity",    short:"VEL", color:"#00b4ff", tone:"var(--f1-blue)"  },
-  { id:"pressure",    label:"Pressure",    short:"PRS", color:"#ff9500", tone:"var(--f1-amber)" },
-  { id:"streamlines", label:"Streamlines", short:"STR", color:"#00d46a", tone:"var(--f1-green)" },
-  { id:"vorticity",   label:"Vorticity",   short:"VRT", color:"#e8000d", tone:"var(--f1-red)"   },
-  { id:"3d",          label:"3D View",     short:"3D",  color:"#ff9500", tone:"var(--f1-amber)" },
+  { id:"velocity",    label:"Velocity",    short:"VEL", color:"#00d4ff", tone:"var(--accent-flow)" },
+  { id:"pressure",    label:"Pressure",    short:"PRS", color:"#ff6600", tone:"var(--accent-warn)" },
+  { id:"streamlines", label:"Streamlines", short:"STR", color:"#22ff88", tone:"var(--accent-hi)" },
+  { id:"vorticity",   label:"Vorticity",   short:"VRT", color:"#eeff22", tone:"var(--accent-mid)" },
+  { id:"3d",          label:"3D View",     short:"3D",  color:"#00d4ff", tone:"var(--accent-flow)" },
 ];
 
 const COLORBAR_TICKS = [0, 0.25, 0.5, 0.75, 1];
-const CFD_JET_GRADIENT = "linear-gradient(to top,#001fff 0%,#00e5ff 32%,#2cff65 50%,#fff33d 68%,#ff7a00 84%,#e8000d 100%)";
+const CFD_JET_GRADIENT = "linear-gradient(to top,#001fff 0%,#00d4ff 32%,#22ff88 50%,#eeff22 68%,#ff6600 84%,#ff0022 100%)";
 const FIELD_LEGENDS = {
   velocity: "VELOCITY\nm/s",
   pressure: "PRESSURE\nrho",
@@ -295,7 +295,7 @@ export default function CFDLab() {
         const isStr = vm==="streamlines" || vm==="3d";
         const alphas = isStr ? [.15,.4,.8] : [.07,.18,.32];
         const widths = isStr ? [.5,.8,1.2] : [.3,.5,.65];
-        const cols = ["rgba(0,180,255,","rgba(0,212,106,","rgba(240,240,248,"];
+        const cols = ["rgba(0,212,255,","rgba(34,255,136,","rgba(255,255,255,"];
         for (let band = 0; band < 3; band++) {
           const a = alphas[band]*tO;
           ctx.strokeStyle = cols[band]+a+")"; ctx.lineWidth = widths[band];
@@ -326,8 +326,8 @@ export default function CFDLab() {
           i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
         });
         ctx.closePath();
-        ctx.strokeStyle = "#e8000d"; ctx.lineWidth = 2;
-        ctx.shadowColor = "#e8000d"; ctx.shadowBlur = 12;
+        ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2;
+        ctx.shadowColor = "#00d4ff"; ctx.shadowBlur = 12;
         ctx.stroke(); ctx.shadowBlur = 0;
       }
 
@@ -370,7 +370,7 @@ export default function CFDLab() {
   const regime = useMemo(() => {
     if (stats.re < 2300) return { label:"LAMINAR", col:"var(--f1-green)" };
     if (stats.re < 4000) return { label:"TRANS.", col:"var(--f1-amber)" };
-    return { label:"TURB.", col:"var(--f1-red)" };
+    return { label:"TURB.", col:"var(--accent-crit)" };
   }, [stats.re]);
   const ldRatio = useMemo(() => stats.cd > 0 ? (stats.cl/stats.cd).toFixed(2) : "—", [stats.cl, stats.cd]);
   const is3D = mode === "3d";
@@ -388,9 +388,9 @@ export default function CFDLab() {
   useEffect(() => { const iv = setInterval(() => setHistSnap([...histRef.current]), 500); return () => clearInterval(iv); }, [histRef]);
 
   const metrics = [
-    { label:"CL",   value:hasRun?stats.cl:"—",  tone:"var(--f1-green)" },
-    { label:"CD",   value:hasRun?stats.cd:"—",  tone:"var(--f1-red)" },
-    { label:"L/D",  value:hasRun?ldRatio:"—",   tone:"var(--f1-blue)" },
+    { label:"CL",   value:hasRun?stats.cl:"—",  tone:"var(--accent-hi)" },
+    { label:"CD",   value:hasRun?stats.cd:"—",  tone:"var(--accent-warn)" },
+    { label:"L/D",  value:hasRun?ldRatio:"—",   tone:"var(--accent-flow)" },
     { label:"FLOW", value:hasRun?regime.label:"—", tone:hasRun?regime.col:"var(--f1-dim)" },
   ];
 
