@@ -162,18 +162,30 @@ export default function CFDLab() {
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
 
-    const query = window.matchMedia("(min-width: 1440px)");
-    const handleChange = event => {
+    const wideQuery = window.matchMedia("(min-width: 1440px)");
+    const compactQuery = window.matchMedia("(max-width: 1200px)");
+    const handleWideChange = event => {
       if (event.matches) setMetricsOpen(true);
     };
+    const handleCompactChange = event => {
+      if (event.matches) setMetricsOpen(false);
+    };
 
-    if (query.addEventListener) {
-      query.addEventListener("change", handleChange);
-      return () => query.removeEventListener("change", handleChange);
+    if (wideQuery.addEventListener) {
+      wideQuery.addEventListener("change", handleWideChange);
+      compactQuery.addEventListener("change", handleCompactChange);
+      return () => {
+        wideQuery.removeEventListener("change", handleWideChange);
+        compactQuery.removeEventListener("change", handleCompactChange);
+      };
     }
 
-    query.addListener(handleChange);
-    return () => query.removeListener(handleChange);
+    wideQuery.addListener(handleWideChange);
+    compactQuery.addListener(handleCompactChange);
+    return () => {
+      wideQuery.removeListener(handleWideChange);
+      compactQuery.removeListener(handleCompactChange);
+    };
   }, []);
 
   useEffect(() => {

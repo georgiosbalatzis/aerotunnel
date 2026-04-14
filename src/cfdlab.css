@@ -596,7 +596,14 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {
-  .live-metrics-col { display: none; }
+  .live-metrics-col {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 55;
+    box-shadow: -18px 0 34px rgba(0,0,0,.35);
+  }
 }
 @media (max-width: 960px) {
   .command-bar__center { min-width: 0; }
@@ -611,8 +618,15 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
   .command-bar__left { min-width: auto; }
   .command-bar__center { display: none; }
   .command-bar__right { gap: 6px; padding: 0 8px; margin-left: auto; }
+  .command-icon-button { display: none; }
   .brand-sub { display: none; }
-  .control-panel { width: calc(100vw - 48px); transform: translateX(calc(-100vw + 48px)); }
+  .control-panel {
+    left: 48px;
+    width: min(320px, calc(100vw - 48px));
+    transform: translateX(calc(-100% - 48px));
+    z-index: 85;
+    box-shadow: 22px 0 44px rgba(0,0,0,.45);
+  }
   .control-panel.is-open { transform: translateX(0); }
   .hud-frame-label--mode,
   .hud-frame-label--wake,
@@ -627,7 +641,111 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
   .hud-colorbar__bar { width: 10px; }
   .hud-colorbar__ticks { inset: 0 0 0 10px; }
   .about-features { grid-template-columns: 1fr; }
-  .metrics-ribbon { grid-template-columns: repeat(2, 1fr); min-height: 64px; }
+  .metrics-ribbon { grid-template-columns: repeat(3, 1fr); min-height: 64px; }
   .about-title { font-size: 36px; }
   .analysis-kpi-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .lab-body { position: relative; }
+  .command-bar__right { gap: 4px; padding: 0 6px; border-left: 0; }
+  .command-icon-button,
+  .fps-readout { display: none; }
+  .status-pill { padding: 5px 8px; font-size: 8px; letter-spacing: 0; }
+  .brand-logo-mark { margin-left: 8px; }
+  .brand-name { font-size: 16px; letter-spacing: 0; }
+
+  .icon-rail {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 56px;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: 0;
+    border-top: 1px solid var(--f1-edge);
+    z-index: 95;
+    scrollbar-width: none;
+  }
+  .icon-rail::-webkit-scrollbar { display: none; }
+  .icon-rail__group,
+  .icon-rail__actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .icon-rail__separator { display: none; }
+  .rail-btn {
+    width: 44px;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  .rail-action {
+    width: 38px;
+    height: 38px;
+    margin: 0 3px;
+    flex-shrink: 0;
+  }
+  .rail-btn::after { display: none; }
+  .rail-btn.is-active { box-shadow: inset 0 -2px 0 var(--f1-red); }
+
+  .lab-canvas-zone { width: 100%; }
+  .control-panel {
+    position: fixed;
+    left: 0;
+    top: 48px;
+    bottom: 56px;
+    width: min(320px, 100vw);
+    transform: translateX(-100%);
+  }
+  .control-panel.is-open { transform: translateX(0); }
+
+  .hud-frame-box { inset: 14px; }
+  .hud-left-axis { left: 14px; top: 14px; bottom: 14px; }
+  .hud-frame-edge { left: 14px; right: 14px; }
+  .hud-frame-edge--top { top: 6px; }
+  .hud-frame-edge--bottom { bottom: 6px; }
+  .hud-mode-stack { left: 12px; top: 46px; width: 72px; }
+  .hud-mode-pill,
+  .hud-run-button { width: 72px; }
+  .hud-mode-indicator { right: 36px; top: 46px; max-width: 136px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hud-colorbar { right: -2px; width: 30px; min-height: 96px; }
+  .hud-turbulence { display: none; }
+
+  .metrics-ribbon {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 56px;
+    z-index: 90;
+    display: flex;
+    grid-template-columns: none;
+    gap: 8px;
+    min-height: 82px;
+    padding: 8px 10px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    border-top: 1px solid var(--f1-border-hi);
+    box-shadow: 0 -18px 40px rgba(0,0,0,.45);
+    scrollbar-width: none;
+  }
+  .metrics-ribbon::-webkit-scrollbar { display: none; }
+  .metric-card {
+    flex: 0 0 min(74vw, 260px);
+    min-height: 64px;
+    padding: 9px 12px 18px;
+    border: 1px solid var(--f1-border);
+    border-left: 3px solid var(--tone, var(--f1-border));
+    scroll-snap-align: start;
+  }
+  .metric-value { font-size: 28px; min-height: 26px; }
+  .metric-sparkline { left: 12px; right: 12px; width: calc(100% - 24px); }
 }
