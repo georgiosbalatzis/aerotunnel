@@ -54,6 +54,34 @@ function useHistory(maxLen = 1000) {
   return [buf, push, clear];
 }
 
+/* ── 21.4 — Self-intersection check ── */
+function segmentsIntersect(ax, ay, bx, by, cx, cy, dx, dy) {
+  const d1x = bx - ax, d1y = by - ay, d2x = dx - cx, d2y = dy - cy;
+  const denom = d1x * d2y - d1y * d2x;
+  if (Math.abs(denom) < 1e-12) return false;
+  const t = ((cx - ax) * d2y - (cy - ay) * d2x) / denom;
+  const u = ((cx - ax) * d1y - (cy - ay) * d1x) / denom;
+  return t > 0.01 && t < 0.99 && u > 0.01 && u < 0.99;
+}
+
+function checkSelfIntersection(poly) {
+  const n = poly.length;
+  if (n < 4) return false;
+  for (let i = 0; i < n; i++) {
+    const a = poly[i], b = poly[(i + 1) % n];
+    const ax = a[0] ?? a.x ?? 0, ay = a[1] ?? a.y ?? 0;
+    const bx = b[0] ?? b.x ?? 0, by = b[1] ?? b.y ?? 0;
+    for (let j = i + 2; j < n; j++) {
+      if (j === (i + n - 1) % n) continue; // skip adjacent
+      const c = poly[j], d = poly[(j + 1) % n];
+      const cx = c[0] ?? c.x ?? 0, cy = c[1] ?? c.y ?? 0;
+      const dx = d[0] ?? d.x ?? 0, dy = d[1] ?? d.y ?? 0;
+      if (segmentsIntersect(ax, ay, bx, by, cx, cy, dx, dy)) return true;
+    }
+  }
+  return false;
+}
+
 /* ═══════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════ */
@@ -99,6 +127,9 @@ export default function CFDLab() {
   const [activeSection, setActiveSection] = useState("shape");
   const [screenshotMode, setScreenshotMode] = useState(false);
   const [modeTransition, setModeTransition] = useState(false);
+  const [solverWarning, setSolverWarning] = useState(null);
+  const [convergenceDelta, setConvergenceDelta] = useState(1);
+  const solverWarningTimer = useRef(null);
   const panelOpenRef = useRef(panelOpen);
   const activeSectionRef = useRef(activeSection);
 
@@ -205,6 +236,34 @@ export default function CFDLab() {
 
   const applyPoly = useCallback((p) => {
     if (!p) return;
+    // 21.4 — Geometry validation
+    if (p.length < 3) {
+      setSolverWarning("geom-points");
+      if (solverWarningTimer.current) clearTimeout(solverWarningTimer.current);
+      solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 4000);
+      return;
+    }
+    // Bounding box area check
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const pt of p) {
+      const x = pt[0] ?? pt.x ?? 0, y = pt[1] ?? pt.y ?? 0;
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+    if ((maxX - minX) * (maxY - minY) < 1e-6) {
+      setSolverWarning("geom-area");
+      if (solverWarningTimer.current) clearTimeout(solverWarningTimer.current);
+      solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 4000);
+      return;
+    }
+    // Self-intersection check (O(n²) edge pairs)
+    const selfIntersects = checkSelfIntersection(p);
+    if (selfIntersects) {
+      setSolverWarning("geom-intersect");
+      if (solverWarningTimer.current) clearTimeout(solverWarningTimer.current);
+      solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 5000);
+      // Warn but don't block — still apply the geometry
+    }
     setPrevPoly(poly);
     setPoly(p);
   }, [poly]);
@@ -272,6 +331,27 @@ export default function CFDLab() {
 
       if (p.running) {
         for (let s = 0; s < p.simSpd; s++) solver.step(inV, p.turb);
+
+        // 21.1 — Divergence detection
+        if (solver.diverged) {
+          solver.diverged = false;
+          setRunning(false);
+          setSolverWarning("diverged");
+          if (solverWarningTimer.current) clearTimeout(solverWarningTimer.current);
+          solverWarningTimer.current = setTimeout(() => setSolverWarning(null), 5000);
+        }
+        // 21.2 — Overflow warning (>5% of fluid cells clamped)
+        else if (solver.overflowCount > solver.N * 0.05) {
+          if (!solverWarningTimer.current) {
+            setSolverWarning("overflow");
+            solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 3000);
+          }
+        }
+      }
+
+      // 21.3 — Update convergence delta (throttled)
+      if (frameRef.current % 10 === 0 && solver.convergenceDelta !== undefined) {
+        setConvergenceDelta(solver.convergenceDelta);
       }
 
       frameRef.current++; fpsF.current++;
@@ -442,7 +522,7 @@ export default function CFDLab() {
       <div className="lab-shell__scanline" />
 
       {/* 14.1 — Floating title chip */}
-      <CommandBar running={running} fps={fps} />
+      <CommandBar running={running} fps={fps} convergenceDelta={convergenceDelta} solverWarning={solverWarning} />
 
       {/* 14.2 — Floating icon rail toolbar */}
       <IconRail
@@ -542,6 +622,20 @@ export default function CFDLab() {
         {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} />}
         {view==="about" && <AboutPanel />}
       </main>
+
+      {/* 21.1/21.2/21.4 — Solver warning HUD */}
+      {solverWarning && (
+        <div className={`solver-warning solver-warning--${solverWarning}`} role="alert">
+          <span className="solver-warning__icon">&#9888;</span>
+          <span className="solver-warning__text">
+            {solverWarning === "diverged" && "SOLVER DIVERGED — Reduce velocity or increase viscosity"}
+            {solverWarning === "overflow" && "VELOCITY OVERFLOW — Solver struggling, consider adjusting parameters"}
+            {solverWarning === "geom-points" && "INVALID GEOMETRY — Polygon must have at least 3 points"}
+            {solverWarning === "geom-area" && "INVALID GEOMETRY — Shape has zero area"}
+            {solverWarning === "geom-intersect" && "SELF-INTERSECTING GEOMETRY — Results may be inaccurate"}
+          </span>
+        </div>
+      )}
 
       {/* 14.4 — Floating metric pills */}
       {view==="tunnel" && (

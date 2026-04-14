@@ -20,6 +20,14 @@ export class LBM {
     this.spd = new Float32Array(this.N);
     this.curl = new Float32Array(this.N);
     this.omega = 1.85;
+    // 21.1 — Divergence flag
+    this.diverged = false;
+    // 21.2 — Overflow counter (velocity clamped cells per step)
+    this.overflowCount = 0;
+    // 21.3 — Convergence delta (L2 norm of velocity change)
+    this.convergenceDelta = 1;
+    this._prevUx = new Float32Array(this.N);
+    this._prevUy = new Float32Array(this.N);
     this._init(0.12);
   }
 
@@ -76,7 +84,9 @@ export class LBM {
       f1[b+6]=t8; f1[b+8]=t6;
     }
 
-    // Macroscopic quantities
+    // Macroscopic quantities + 21.1 NaN sentinel + 21.2 velocity limiter
+    let overflow = 0;
+    const MAX_U = 0.25; // lattice velocity limit (|u| << c_s ≈ 0.577)
     for (let k = 0; k < N; k++) {
       if (solid[k]) { ux[k]=0; uy[k]=0; rho[k]=1; this.spd[k]=0; continue; }
       const b = k * 9;
@@ -84,10 +94,25 @@ export class LBM {
       for (let d = 0; d < 9; d++) {
         const fv = f1[b + d]; r += fv; vx += CX[d] * fv; vy += CY[d] * fv;
       }
+      // 21.1 — NaN/Inf detection
+      if (r !== r || vx !== vx || vy !== vy || !isFinite(r)) {
+        this.diverged = true;
+        rho[k] = 1; ux[k] = 0; uy[k] = 0; this.spd[k] = 0;
+        continue;
+      }
       if (r < 0.01) r = 1;
-      rho[k] = r; ux[k] = vx / r; uy[k] = vy / r;
-      this.spd[k] = Math.sqrt(vx * vx + vy * vy) / r;
+      let uvx = vx / r, uvy = vy / r;
+      // 21.2 — Velocity magnitude limiter
+      const mag = Math.sqrt(uvx * uvx + uvy * uvy);
+      if (mag > MAX_U) {
+        const scale = MAX_U / mag;
+        uvx *= scale; uvy *= scale;
+        overflow++;
+      }
+      rho[k] = r; ux[k] = uvx; uy[k] = uvy;
+      this.spd[k] = Math.sqrt(uvx * uvx + uvy * uvy);
     }
+    this.overflowCount = overflow;
 
     // Zou-He inlet BC with turbulence perturbation
     const ps = turb * 0.004;
@@ -126,6 +151,20 @@ export class LBM {
         f0[b+d] = f1[b+d] + omega*(WT[d]*r*(1+3*cu+4.5*cu*cu-1.5*usq) - f1[b+d]);
       }
     }
+
+    // 21.3 — Convergence delta (L2 norm of velocity change)
+    let sumDeltaSq = 0;
+    let fluidCells = 0;
+    for (let k = 0; k < N; k++) {
+      if (solid[k]) continue;
+      const dux = ux[k] - this._prevUx[k];
+      const duy = uy[k] - this._prevUy[k];
+      sumDeltaSq += dux * dux + duy * duy;
+      fluidCells++;
+    }
+    this.convergenceDelta = fluidCells > 0 ? Math.sqrt(sumDeltaSq / fluidCells) : 0;
+    this._prevUx.set(ux);
+    this._prevUy.set(uy);
 
     // Curl (vorticity)
     for (let j = 1; j < R-1; j++)
