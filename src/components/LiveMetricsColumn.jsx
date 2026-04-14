@@ -37,7 +37,7 @@ export default function LiveMetricsColumn({
     { label: "Velocity", note: vel.toFixed(3), value: vel / 0.18, tone: "var(--f1-blue)" },
     { label: "Turbulence", note: turb.toFixed(1), value: turb / 3, tone: "var(--f1-amber)" },
     { label: "Viscosity", note: nu.toFixed(3), value: nu / 0.1, tone: "var(--f1-green)" },
-    { label: "Particles", note: `${pCount}/${maxParticles}`, value: pCount / maxParticles, tone: "var(--f1-red)" },
+    { label: "Particles", note: `${pCount}/${maxParticles}`, value: pCount / maxParticles, tone: "var(--accent-flow)" },
   ];
   const currentCl = hasRun && Number.isFinite(stats.cl) ? stats.cl.toFixed(3) : "-";
   const profileName = currentPreset?.label || "CUSTOM";
