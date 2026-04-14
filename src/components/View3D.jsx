@@ -30,6 +30,23 @@ function disposeObject(object) {
   });
 }
 
+function buildBackgroundTexture(THREE) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 16;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, "#06080c");
+  gradient.addColorStop(0.48, "#0c0e14");
+  gradient.addColorStop(1, "#06080c");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+}
+
 export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
   const mountRef = useRef(null);
   const threeRef = useRef(null);
@@ -75,14 +92,15 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.setClearColor(0xf7f9fb, 1);
+      renderer.setClearColor(0x0a0c12, 1);
       if ("outputEncoding" in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.domElement.style.touchAction = "none";
       el.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xf7f9fb);
-      scene.fog = new THREE.Fog(0xf7f9fb, 7.5, 14);
+      const backgroundTexture = buildBackgroundTexture(THREE);
+      scene.background = backgroundTexture;
+      scene.fog = new THREE.Fog(0x0c0e14, 8, 16);
 
       const isCompact = typeof window !== "undefined" && window.innerWidth < 720;
       const camera = new THREE.PerspectiveCamera(isCompact ? 42 : 34, width / height, 0.1, 100);
@@ -105,7 +123,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
 
       const tunnelPlane = new THREE.Mesh(
         new THREE.PlaneGeometry(10.4, 3.55, 1, 1),
-        new THREE.MeshBasicMaterial({ color: 0xf7f9fb })
+        new THREE.MeshBasicMaterial({ color: 0x0d1118, transparent: true, opacity: 0.72 })
       );
       tunnelPlane.position.set(0.25, 0, -1.35);
       tunnelGroup.add(tunnelPlane);
@@ -115,7 +133,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
           new THREE.Vector3(-4.75, 0, -1.34),
           new THREE.Vector3(4.85, 0, -1.34),
         ]),
-        new THREE.LineBasicMaterial({ color: 0xdce8ef, transparent: true, opacity: 0.55 })
+        new THREE.LineBasicMaterial({ color: 0x2bdcff, transparent: true, opacity: 0.16 })
       );
       tunnelGroup.add(centerGuide);
 
@@ -385,6 +403,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         buildProfile,
         renderer,
         scene,
+        backgroundTexture,
         ro,
         get animId() { return animId; },
         cleanupControls: () => {
@@ -407,6 +426,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
         t.cleanupControls?.();
         t.ro?.disconnect();
         disposeObject(t.scene);
+        t.backgroundTexture?.dispose();
         t.renderer?.dispose();
         if (el.contains(t.renderer?.domElement)) el.removeChild(t.renderer.domElement);
         threeRef.current = null;
@@ -416,9 +436,6 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa }) {
   }, [solverRef]);
 
   return (
-    <div ref={mountRef} className="view-3d-stage">
-      <div className="view-3d-label">3D AERO TUNNEL · STREAMLINE FIELD</div>
-      <div className="view-3d-hint">LBM D2Q9 · SURFACE MAP</div>
-    </div>
+    <div ref={mountRef} className="view-3d-stage" />
   );
 }

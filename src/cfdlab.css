@@ -44,6 +44,9 @@ button, input, select { font: inherit; }
   background: radial-gradient(ellipse 60% 40% at 50% -10%, var(--f1-red-dim) 0%, transparent 60%), var(--f1-black);
   position: relative;
 }
+.lab-shell.is-3d-takeover {
+  background: #06080c;
+}
 
 /* FIX: scanline hidden in light mode via opacity tied to theme */
 .lab-shell__scanline {
@@ -118,6 +121,11 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 
 /* ── PHASE 2 LAYOUT SKELETON ── */
 .lab-body { display: flex; flex: 1; min-height: 0; overflow: hidden; position: relative; background: var(--f1-void); }
+.lab-shell.is-3d-takeover .lab-body {
+  background: transparent;
+  position: relative;
+  z-index: 20;
+}
 .icon-rail {
   width: 48px; flex-shrink: 0; display: flex; flex-direction: column; align-items: stretch;
   background: var(--f1-raised); border-right: 1px solid var(--f1-edge); z-index: 60;
@@ -256,6 +264,14 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 .lab-canvas-zone--analysis,
 .lab-canvas-zone--about { overflow-y: auto; display: block; background: var(--f1-base); }
 .canvas-area { flex: 1; min-width: 0; min-height: 0; display: flex; position: relative; background: #000; }
+.lab-shell.is-3d-takeover .lab-canvas-zone,
+.lab-shell.is-3d-takeover .canvas-area,
+.lab-shell.is-3d-takeover .canvas-wrapper {
+  background: transparent;
+}
+.lab-shell.is-3d-takeover .canvas-area {
+  overflow: visible;
+}
 
 /* ── CANVAS ── */
 .canvas-wrapper {
@@ -263,6 +279,13 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
   transition: box-shadow .2s ease-out;
 }
 .canvas-wrapper.is-live { box-shadow: inset 0 0 0 1px rgba(0,212,106,.3); }
+.lab-shell.is-3d-takeover .canvas-wrapper {
+  overflow: visible;
+  box-shadow: none;
+}
+.lab-shell.is-3d-takeover .canvas-wrapper.is-live {
+  box-shadow: none;
+}
 .canvas-hud { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
 .hud-instrument-frame { position: absolute; inset: 0; pointer-events: none; }
 .hud-frame-box {
@@ -508,9 +531,10 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
 
 /* 3D view labels */
 .view-3d-stage {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: #f7f9fb;
+  z-index: 0;
+  background: #06080c;
   overflow: hidden;
 }
 .view-3d-stage canvas {
@@ -518,23 +542,57 @@ button.command-chip__value { border: 0; background: transparent; cursor: pointer
   width: 100%;
   height: 100%;
 }
-.view-3d-label,
-.view-3d-hint {
-  position: absolute;
-  z-index: 20;
-  pointer-events: none;
-  padding: 5px 9px;
-  background: rgba(255,255,255,.76);
-  border: 1px solid rgba(18,91,255,.18);
-  color: #0a1620;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  backdrop-filter: blur(8px);
+
+.lab-shell.is-3d-takeover .command-bar,
+.lab-shell.is-3d-takeover .icon-rail,
+.lab-shell.is-3d-takeover .control-panel,
+.lab-shell.is-3d-takeover .metrics-ribbon,
+.lab-shell.is-3d-takeover .live-metrics-col {
+  background: rgba(8,10,18,.72);
+  border-color: rgba(255,255,255,.06);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
 }
-.view-3d-label { top: 14px; left: 14px; color: #0d7d8f; }
-.view-3d-hint { right: 14px; bottom: 14px; color: #465866; }
+.lab-shell.is-3d-takeover .command-menu-button,
+.lab-shell.is-3d-takeover .command-icon-button,
+.lab-shell.is-3d-takeover .command-bar__left,
+.lab-shell.is-3d-takeover .command-bar__right,
+.lab-shell.is-3d-takeover .command-chip,
+.lab-shell.is-3d-takeover .control-panel__header,
+.lab-shell.is-3d-takeover .control-tabs,
+.lab-shell.is-3d-takeover .control-tab,
+.lab-shell.is-3d-takeover .control-panel__footer,
+.lab-shell.is-3d-takeover .metrics-ribbon,
+.lab-shell.is-3d-takeover .metric-card,
+.lab-shell.is-3d-takeover .live-section,
+.lab-shell.is-3d-takeover .live-metrics-col {
+  border-color: rgba(255,255,255,.06);
+}
+.lab-shell.is-3d-takeover .metric-card,
+.lab-shell.is-3d-takeover .live-package-card,
+.lab-shell.is-3d-takeover .shortcut-item,
+.lab-shell.is-3d-takeover .toggle-chip,
+.lab-shell.is-3d-takeover .dropzone,
+.lab-shell.is-3d-takeover .sketch-canvas {
+  background: rgba(8,10,18,.48);
+  border-color: rgba(255,255,255,.06);
+  box-shadow: none;
+}
+.lab-shell.is-3d-takeover .preset-btn,
+.lab-shell.is-3d-takeover .import-tab,
+.lab-shell.is-3d-takeover .session-name-input {
+  background: rgba(8,10,18,.5);
+  border-color: rgba(255,255,255,.06);
+}
+.lab-shell.is-3d-takeover .live-metrics-col.is-open {
+  box-shadow: none;
+}
+.lab-shell.is-3d-takeover .metrics-ribbon {
+  position: relative;
+  z-index: 80;
+}
 
 /* ── ANALYSIS VIEW ── */
 .analysis-view { padding: 20px; display: grid; gap: 16px; max-width: 1500px; margin: 0 auto; }

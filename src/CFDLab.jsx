@@ -275,17 +275,25 @@ export default function CFDLab() {
     });
   }, []);
 
+  const changeMode = useCallback(nextMode => {
+    setMode(nextMode);
+    if (nextMode === "3d") {
+      setPanelOpen(false);
+      setMetricsOpen(false);
+    }
+  }, []);
+
   useEffect(() => {
     const h = e => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
       switch (e.code) {
         case "Space": e.preventDefault(); setRunning(r => !r); break;
         case "KeyR": resetSolver(); break;
-        case "Digit1": setMode("velocity"); break;
-        case "Digit2": setMode("pressure"); break;
-        case "Digit3": setMode("streamlines"); break;
-        case "Digit4": setMode("vorticity"); break;
-        case "Digit5": setMode("3d"); break;
+        case "Digit1": changeMode("velocity"); break;
+        case "Digit2": changeMode("pressure"); break;
+        case "Digit3": changeMode("streamlines"); break;
+        case "Digit4": changeMode("vorticity"); break;
+        case "Digit5": changeMode("3d"); break;
         case "KeyF": toggleFS(); break;
         case "KeyS": if (!e.ctrlKey && !e.metaKey) snap(); break;
         case "KeyZ": if (!e.ctrlKey && !e.metaKey) undoShape(); break;
@@ -294,7 +302,7 @@ export default function CFDLab() {
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [resetSolver, toggleFS, snap, undoShape, toggleShortcutHelp]);
+  }, [resetSolver, changeMode, toggleFS, snap, undoShape, toggleShortcutHelp]);
 
   const fpsF = useRef(0), fpsT = useRef(0);
 
@@ -500,7 +508,7 @@ export default function CFDLab() {
   const toggleRunning = useCallback(() => setRunning(r => !r), []);
 
   return (
-    <div className="lab-shell" ref={wrapRef}>
+    <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""}`} ref={wrapRef}>
       <div className="lab-shell__scanline" />
 
       <CommandBar
@@ -610,7 +618,7 @@ export default function CFDLab() {
                         {MODES.map((m,i) => (
                           <button key={m.id} className={`hud-mode-pill ${mode===m.id?"is-active":""}`}
                             aria-label={`Switch visualization mode to ${m.label}`}
-                            style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => setMode(m.id)}>
+                            style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => changeMode(m.id)}>
                             <span className="hud-mode-pill__label">{IS_MOBILE?m.short:m.label}</span>
                             <span className="hud-mode-pill__key">[{i+1}]</span>
                           </button>
