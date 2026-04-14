@@ -276,7 +276,7 @@ button, input, select { font: inherit; }
 .canvas-hud { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
 
 /* ═══════════════════════════════════════
-   PHASE 14 — FLOATING MODE PILLS (top-center)
+   PHASE 15 — CFD HUD OVERLAYS
    ═══════════════════════════════════════ */
 .floating-mode-bar {
   position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 200;
@@ -296,37 +296,59 @@ button, input, select { font: inherit; }
 .floating-mode-pill:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.6); }
 .floating-mode-pill.is-active {
   color: #fff; border-bottom-color: var(--tone, var(--f1-red));
-  background: rgba(255,255,255,.04);
+  background: color-mix(in srgb, var(--tone, var(--f1-red)) 15%, transparent);
 }
 .floating-mode-pill:active { transform: scale(0.96); }
 .floating-mode-pill__label { white-space: nowrap; }
 .floating-mode-pill__key { font-size: 8px; color: rgba(255,255,255,.2); }
 
-.hud-colorbar {
-  position: absolute; top: 50%; right: 0; width: 40px; height: 60%; min-height: 120px; max-height: 360px;
-  transform: translateY(-50%); display: grid; grid-template-rows: auto 1fr auto; gap: 5px; align-items: stretch;
-  padding: 6px 0; background: rgba(0,0,0,.35);
+.cfd-colorbar {
+  position: fixed; right: 16px; top: 50%; transform: translateY(-50%); z-index: 200;
+  width: 48px; padding: 8px 6px 7px;
+  background: rgba(8,10,18,.5);
+  border: 1px solid rgba(255,255,255,.06);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  pointer-events: none;
 }
-.hud-colorbar__cap {
-  font-family: var(--font-mono); font-size: 7px; letter-spacing: .12em; color: var(--f1-dim);
-  text-align: center; text-transform: uppercase;
+.cfd-colorbar__scale { position: relative; width: 48px; height: 200px; }
+.cfd-colorbar__bar {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 12px; border: 1px solid rgba(255,255,255,.1);
 }
-.hud-colorbar__body { position: relative; display: grid; grid-template-columns: 12px 28px; min-height: 0; }
-.hud-colorbar__bar { width: 12px; min-height: 0; border: 1px solid rgba(255,255,255,.16); }
-.hud-colorbar__ticks { position: absolute; inset: 0 0 0 12px; }
-.hud-colorbar__tick {
-  position: absolute; left: 0; top: var(--tick); display: flex; align-items: center; gap: 3px;
-  transform: translateY(-50%); font-family: var(--font-mono); font-size: 7px; color: var(--f1-silver);
+.cfd-colorbar__ticks { position: absolute; inset: 0; }
+.cfd-colorbar__tick {
+  position: absolute; right: 12px; top: var(--tick);
+  width: 54px; transform: translateY(-50%);
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+  font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,.5);
 }
-.hud-colorbar__tick i { width: 6px; height: 1px; background: var(--f1-silver); opacity: .7; }
-.hud-colorbar__tick b { font-weight: 400; }
-.hud-turbulence {
-  position: absolute; left: 32px; bottom: 42px; z-index: 20;
-  display: flex; align-items: center; gap: 6px; padding: 4px 7px;
-  background: rgba(3,3,5,.82); border: 1px solid var(--f1-border); backdrop-filter: blur(8px);
-  font-family: var(--font-mono); font-size: 8px; letter-spacing: .12em; color: var(--f1-amber);
+.cfd-colorbar__tick i { width: 6px; height: 1px; background: rgba(255,255,255,.5); flex-shrink: 0; }
+.cfd-colorbar__tick b { font-weight: 400; line-height: 1; }
+.cfd-colorbar__title {
+  margin-top: 8px; margin-left: -24px; width: 72px;
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px;
+  line-height: 1.2; text-transform: uppercase; text-align: right;
+  color: rgba(255,255,255,.35); white-space: pre-line;
 }
-.hud-turbulence__canvas { width: 40px; height: 24px; display: block; }
+.wind-indicator {
+  position: fixed; top: 16px; right: 16px; z-index: 200;
+  display: grid; justify-items: center; gap: 2px;
+  color: rgba(255,255,255,.35); pointer-events: none;
+}
+.wind-indicator__arrow {
+  width: 48px; height: 16px; display: block;
+  transform: rotate(var(--aoa, 0deg)); transform-origin: 50% 50%;
+  overflow: visible;
+}
+.wind-indicator__arrow path {
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.wind-indicator span {
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .08em;
+  color: rgba(255,255,255,.35);
+}
 
 /* FIX: "waiting for data" overlay */
 .hud-waiting {
@@ -414,10 +436,14 @@ button, input, select { font: inherit; }
   background: #06080c;
   overflow: hidden;
 }
-.view-3d-stage canvas {
+.view-3d-stage canvas:not(.view-3d-axis-gizmo) {
   display: block;
   width: 100%;
   height: 100%;
+}
+.view-3d-axis-gizmo {
+  position: fixed; left: 16px; bottom: 16px; z-index: 220;
+  width: 64px; height: 64px; pointer-events: none;
 }
 
 /* 3D takeover — all floating UI is already glass-styled, just ensure
@@ -544,7 +570,6 @@ button, input, select { font: inherit; }
 @media (max-width: 1024px) {
   /* Tablet: show only CL and CD */
   .floating-metric-pill:nth-child(n+3) { display: none; }
-  .hud-colorbar { display: none; }
   .control-panel { max-height: 60vh; width: 240px; }
 }
 @media (max-width: 960px) {
@@ -563,7 +588,11 @@ button, input, select { font: inherit; }
   .about-features { grid-template-columns: 1fr; }
   .about-title { font-size: 36px; }
   .analysis-kpi-grid { grid-template-columns: 1fr; }
-  .hud-turbulence { display: none; }
+  .cfd-colorbar { right: 8px; padding: 7px 5px 6px; }
+  .cfd-colorbar__scale { height: 160px; }
+  .cfd-colorbar__tick { font-size: 8px; width: 48px; }
+  .cfd-colorbar__title { margin-left: -18px; width: 66px; font-size: 7px; }
+  .wind-indicator { top: 50px; right: 8px; }
 
   /* Control panel: slides up from bottom */
   .control-panel {
@@ -593,6 +622,8 @@ button, input, select { font: inherit; }
   .floating-title-chip__name { font-size: 11px; letter-spacing: 1.5px; }
   .floating-title-chip__fps { display: none; }
   .floating-mode-bar { top: 8px; }
+  .wind-indicator { display: none; }
+  .view-3d-axis-gizmo { left: 8px; bottom: 56px; }
 
   .control-panel {
     bottom: 48px;
