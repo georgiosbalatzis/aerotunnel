@@ -586,12 +586,20 @@ button, input, select { font: inherit; }
   }
 }
 
-/* ── RESPONSIVE ── */
+/* ═══════════════════════════════════════
+   PHASE 19 — RESPONSIVE & PERFORMANCE
+   ═══════════════════════════════════════ */
+
+/* ── 19.1 TABLET (≤ 1024px) ── */
 @media (max-width: 1024px) {
-  /* Tablet: show only CL and CD */
+  /* Metrics pills: show only CL and CD (first 2) */
   .floating-metric-pill:nth-child(n+3) { display: none; }
+  /* Colorbar legend: hide */
+  .cfd-colorbar { display: none; }
+  /* Control panel max-width */
   .control-panel { max-height: 60vh; width: 240px; }
 }
+
 @media (max-width: 960px) {
   .about-hero { grid-template-columns: 1fr; }
   .about-features { grid-template-columns: repeat(2, 1fr); }
@@ -599,53 +607,62 @@ button, input, select { font: inherit; }
   .analysis-main-grid,
   .analysis-bottom-row { grid-template-columns: 1fr; }
 }
-@media (max-width: 720px) {
-  /* Mobile: hide metrics pills, mode pills become icons only */
-  .floating-metrics { display: none; }
-  .floating-mode-pill__label { max-width: 3ch; overflow: hidden; }
-  .floating-mode-bar { gap: 2px; padding: 3px; }
-  .floating-mode-pill { padding: 0 8px; font-size: 9px; letter-spacing: .8px; }
-  .about-features { grid-template-columns: 1fr; }
-  .about-title { font-size: 36px; }
-  .analysis-kpi-grid { grid-template-columns: 1fr; }
-  .cfd-colorbar { right: 8px; padding: 7px 5px 6px; }
-  .cfd-colorbar__scale { height: 160px; }
-  .cfd-colorbar__tick { font-size: 8px; width: 48px; }
-  .cfd-colorbar__title { margin-left: -18px; width: 66px; font-size: 7px; }
-  .wind-indicator { top: 50px; right: 8px; }
 
-  /* Control panel: slides up from bottom */
-  .control-panel {
-    left: 0; right: 0; top: auto; bottom: 56px;
-    width: 100%; max-height: 50vh;
-    transform: translateY(20px); border: 1px solid rgba(255,255,255,.06);
-  }
-  .control-panel.is-open { transform: translateY(0); }
-}
-@media (max-width: 480px) {
-  /* Mobile: icon rail moves to bottom */
+/* ── 19.2 MOBILE (≤ 720px) ── */
+@media (max-width: 720px) {
+  /* Icon rail: moves to bottom as horizontal toolbar */
   .floating-rail {
     position: fixed; left: 0; right: 0; bottom: 0; top: auto;
     transform: none; flex-direction: row; padding: 4px 8px;
-    height: 48px; justify-content: center;
+    height: 44px; justify-content: center;
   }
   .floating-rail__group,
   .floating-rail__actions {
     display: flex; align-items: center; gap: 0; margin: 0; padding: 0;
   }
   .floating-rail__separator { width: 1px; height: 24px; margin: 0 4px; }
-  .floating-rail-btn { width: 40px; height: 40px; }
+  .floating-rail-btn { width: 38px; height: 38px; }
   .floating-rail-btn::after { display: none; }
   .floating-rail-btn.is-active { box-shadow: inset 0 -2px 0 var(--accent-flow); }
   .floating-rail-action { width: 34px; height: 34px; }
+
+  /* Metrics pills: hide entirely */
+  .floating-metrics { display: none; }
+
+  /* Mode pills: compress to icons only (no text labels) */
+  .floating-mode-pill__label { max-width: 3ch; overflow: hidden; text-overflow: clip; }
+  .floating-mode-bar { gap: 2px; padding: 3px; }
+  .floating-mode-pill { padding: 0 8px; font-size: 9px; letter-spacing: .8px; }
+
+  /* Control panel: slides up from bottom as half-sheet drawer */
+  .control-panel {
+    left: 0; right: 0; top: auto; bottom: 44px;
+    width: 100%; max-height: 50vh;
+    transform: translateY(20px); border: 1px solid rgba(255,255,255,.06);
+  }
+  .control-panel.is-open { transform: translateY(0); }
+
+  /* Coordinate gizmo: hide */
+  .view-3d-axis-gizmo { display: none; }
+
+  /* Colorbar: compact on mobile (if tablet breakpoint doesn't hide it) */
+  .cfd-colorbar { right: 8px; padding: 7px 5px 6px; }
+  .cfd-colorbar__scale { height: 160px; }
+  .cfd-colorbar__tick { font-size: 8px; width: 48px; }
+  .cfd-colorbar__title { margin-left: -18px; width: 66px; font-size: 7px; }
+  .wind-indicator { top: 50px; right: 8px; }
+
+  /* Analysis / About views */
+  .about-features { grid-template-columns: 1fr; }
+  .about-title { font-size: 36px; }
+  .analysis-kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Small mobile refinements (≤ 480px) ── */
+@media (max-width: 480px) {
   .floating-title-chip { top: 8px; left: 8px; height: 30px; padding: 0 10px; }
   .floating-title-chip__name { font-size: 11px; letter-spacing: 1.5px; }
   .floating-title-chip__fps { display: none; }
   .floating-mode-bar { top: 8px; }
   .wind-indicator { display: none; }
-  .view-3d-axis-gizmo { left: 8px; bottom: 56px; }
-
-  .control-panel {
-    bottom: 48px;
-  }
 }
