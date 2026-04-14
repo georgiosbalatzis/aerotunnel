@@ -87,6 +87,52 @@ button, input, select { font: inherit; }
   color: rgba(255,255,255,.25); letter-spacing: .1em;
 }
 
+/* 21.3 — Convergence indicator in title chip */
+.floating-title-chip__convergence {
+  display: flex; align-items: center; gap: 4px; margin-left: 4px;
+}
+.convergence-bar {
+  height: 3px; min-width: 2px; border-radius: 0;
+  transition: width 300ms ease, background 300ms ease;
+}
+.convergence-label {
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .08em;
+  transition: color 300ms ease; white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════
+   PHASE 21 — SOLVER WARNING HUD
+   ═══════════════════════════════════════ */
+.solver-warning {
+  position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%);
+  z-index: 300; display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-glass-hi);
+  border: 1px solid var(--border-glass);
+  border-left: 3px solid var(--accent-crit);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  animation: solver-warn-in 200ms ease-out;
+  max-width: 90vw;
+}
+.solver-warning--overflow { border-left-color: var(--accent-warn); }
+.solver-warning--geom-intersect { border-left-color: var(--accent-mid); }
+.solver-warning--geom-points,
+.solver-warning--geom-area { border-left-color: var(--accent-warn); }
+.solver-warning__icon {
+  font-size: 14px; line-height: 1; flex-shrink: 0;
+  color: var(--accent-crit);
+}
+.solver-warning--overflow .solver-warning__icon { color: var(--accent-warn); }
+.solver-warning--geom-intersect .solver-warning__icon { color: var(--accent-mid); }
+.solver-warning--geom-points .solver-warning__icon,
+.solver-warning--geom-area .solver-warning__icon { color: var(--accent-warn); }
+.solver-warning__text {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-primary); line-height: 1.3;
+}
+@keyframes solver-warn-in { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
 /* ═══════════════════════════════════════
    PHASE 14 — FLOATING ICON RAIL
    ═══════════════════════════════════════ */
