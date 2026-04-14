@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "./ThemeContext";
-import F1Logo from "./components/F1Logo";
 import View3D from "./components/View3D";
 import AnalysisPanel from "./components/AnalysisPanel";
 import AboutPanel from "./components/AboutPanel";
@@ -27,10 +26,22 @@ const MODES = [
   { id:"3d",          label:"3D View",     short:"3D",  color:"#ff9500", tone:"var(--f1-amber)" },
 ];
 
+const COLORBAR_TICKS = [0.2, 0.4, 0.6, 0.8];
+const AXIS_TICKS = [20, 40, 60, 80];
+
 const SHORTCUTS = [
   ["Space","Run / Pause"],["R","Reset solver"],["1-5","Switch view mode"],
   ["F","Fullscreen"],["S","Snapshot"],["Z","Undo shape"],["/","Keyboard help"],
 ];
+
+function formatFieldValue(value) {
+  if (!Number.isFinite(value)) return "0";
+  const abs = Math.abs(value);
+  if (abs >= 1000) return `${(value / 1000).toFixed(1)}k`;
+  if (abs >= 10) return value.toFixed(1);
+  if (abs >= 1) return value.toFixed(2);
+  return value.toFixed(3);
+}
 
 /* ── Hooks ── */
 function useHistory(maxLen = 1000) {
@@ -67,10 +78,12 @@ export default function CFDLab() {
   const canvasRef  = useRef(null);
   const wrapRef    = useRef(null);
   const miniRef    = useRef(null);
+  const waveRef    = useRef(null);
   const rafRef     = useRef(null);
   const frameRef   = useRef(0);
   const imgRef     = useRef(null);
   const buf32Ref   = useRef(null);
+  const fieldRangeRef = useRef({ min: 0, max: 1 });
 
   /* ── State ── */
   const [view,      setView]      = useState("tunnel");
@@ -81,6 +94,7 @@ export default function CFDLab() {
   const [prevPoly,  setPrevPoly]  = useState(null);
   const [simplify,  setSimplify]  = useState(0);
   const [stats,     setStats]     = useState({ cl: 0, cd: 0, re: 0, maxV: 0 });
+  const [fieldRange, setFieldRange] = useState({ min: 0, max: 1 });
   const [hasRun,    setHasRun]    = useState(false);
   const [pCount,    setPCount]    = useState(DEFAULT_PARTICLES);
   const [trailOp,   setTrailOp]   = useState(1);
@@ -153,6 +167,31 @@ export default function CFDLab() {
     return () => cancelAnimationFrame(frame);
   }, [running, hasRun]);
 
+  useEffect(() => {
+    const canvas = waveRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let phase = 0;
+    const drawWave = () => {
+      const { width, height } = canvas;
+      const mid = height / 2;
+      const amp = running ? Math.max(2, Math.min(10, turb * 3.2)) : 0;
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = running ? "#ff9500" : "rgba(240,240,248,.35)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let x = 0; x < width; x++) {
+        const y = mid + Math.sin((x * 0.34) + phase) * amp + Math.sin((x * 0.12) - phase) * amp * 0.35;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      phase += 0.7;
+    };
+    drawWave();
+    const interval = setInterval(drawWave, 200);
+    return () => clearInterval(interval);
+  }, [running, turb]);
+
   const resetSolver = useCallback(() => {
     const s = new LBM(COLS, ROWS); s.setNu(P.current.nu); solverRef.current = s; rebuild();
   }, [rebuild]);
@@ -202,6 +241,7 @@ export default function CFDLab() {
     setSimSpd(1); setPreset("f1car");
     setPoly(genPreset("f1car")); setPrevPoly(null);
     setStats({ cl:0, cd:0, re:0, maxV:0 }); setHasRun(false);
+    fieldRangeRef.current = { min: 0, max: 1 }; setFieldRange(fieldRangeRef.current);
     clearHist(); setHistSnap([]);
     const s = new LBM(COLS, ROWS); s.setNu(0.015); solverRef.current = s;
   }, [clearHist]);
@@ -255,6 +295,7 @@ export default function CFDLab() {
       if (now - fpsT.current >= 1000) { setFps(fpsF.current); fpsF.current = 0; fpsT.current = now; }
 
       const vm = p.mode;
+      let frameFieldMin = null, frameFieldMax = null;
       const solidC = (255<<24)|(44<<16)|(44<<8)|52;
       const bgC = (255<<24)|(3<<16)|(3<<8)|5;
 
@@ -276,6 +317,7 @@ export default function CFDLab() {
           if (solver.solid[k]) continue;
           const v = field[k]; if (v < fMn) fMn = v; if (v > fMx) fMx = v;
         }
+        frameFieldMin = fMn; frameFieldMax = fMx;
         const fR = fMx - fMn;
         if (fR < 1e-10) { buf32.fill(lut[128]); }
         else {
@@ -347,6 +389,19 @@ export default function CFDLab() {
         const cd = cnt>0 ? tFx/cnt*0.5+0.008 : 0;
         const ns = { cl:+cl.toFixed(4), cd:+cd.toFixed(4), re:Math.round(re), maxV: inV>0?+(mV/inV).toFixed(3):0 };
         setStats(ns); pushHist(ns);
+        if (Number.isFinite(frameFieldMin) && Number.isFinite(frameFieldMax)) {
+          const current = fieldRangeRef.current;
+          const currentSpan = Math.max(Math.abs(current.max - current.min), 1e-6);
+          const nextSpan = Math.max(Math.abs(frameFieldMax - frameFieldMin), 1e-6);
+          const shifted = Math.abs(frameFieldMin - current.min) / currentSpan > 0.05
+            || Math.abs(frameFieldMax - current.max) / currentSpan > 0.05
+            || Math.abs(nextSpan - currentSpan) / currentSpan > 0.05;
+          if (shifted) {
+            const nextRange = { min: frameFieldMin, max: frameFieldMax };
+            fieldRangeRef.current = nextRange;
+            setFieldRange(nextRange);
+          }
+        }
       }
 
       const mc = miniRef.current;
@@ -366,6 +421,18 @@ export default function CFDLab() {
   const currentMode = MODES.find(m => m.id === mode) || MODES[0];
   const currentPreset = PRESET_GROUPS.flatMap(g => g.items).find(i => i.id === preset);
   const is3D = mode === "3d";
+  const colorbarGradient = mode === "pressure"
+    ? "linear-gradient(to bottom,#ff9500,#555,#00b4ff)"
+    : "linear-gradient(to bottom,#ff2200,#ffff00,#00ff88,#0088ff)";
+  const colorbarTicks = useMemo(() => {
+    const min = Number.isFinite(fieldRange.min) ? fieldRange.min : 0;
+    const max = Number.isFinite(fieldRange.max) ? fieldRange.max : 1;
+    const span = max - min || 1;
+    return COLORBAR_TICKS.map(position => ({
+      position: `${position * 100}%`,
+      value: formatFieldValue(max - span * position),
+    }));
+  }, [fieldRange]);
 
   useEffect(() => { const iv = setInterval(() => setHistSnap([...histRef.current]), 500); return () => clearInterval(iv); }, [histRef]);
 
@@ -468,69 +535,93 @@ export default function CFDLab() {
 
         <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
           {view==="tunnel" && (
-            <>
-              <section className="canvas-area" aria-label="Simulation canvas area">
-                <div className="canvas-toolbar">
-                  <div className="canvas-mode-list" aria-label="Visualization modes">
-                    {MODES.map((m,i) => (
-                      <button key={m.id} className={`mode-chip ${mode===m.id?"is-active":""}`}
-                        style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => setMode(m.id)}>
-                        <span className="mode-chip__dot" style={{background:m.color}} />
-                        {IS_MOBILE?m.short:m.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="canvas-toolbar-actions">
-                    <button className={`btn-primary ${running?"":"is-paused"}`} onClick={() => setRunning(r => !r)}>
-                      {running?"⏸ HOLD":"▶ RUN"}
-                    </button>
-                    <button className="btn-ghost" onClick={resetSolver} title="Reset [R]">↺</button>
-                    {!IS_MOBILE && <>
-                      <button className="btn-ghost" onClick={snap} title="Snapshot [S]">📷</button>
-                      <button className="btn-ghost" onClick={toggleFS} title="Fullscreen [F]">{isFS?"⊖":"⊕"}</button>
-                      <button className="btn-ghost" onClick={exportCSV} disabled={!histSnap.length}>CSV ↓</button>
-                      {prevPoly && <button className="btn-ghost" onClick={undoShape} title="Undo shape [Z]">↩ Undo</button>}
-                      <button className="btn-ghost" onClick={resetAll}>RESET</button>
-                      <button className="btn-ghost" onClick={() => setShowKeys(k => !k)} title="[/]">⌨</button>
-                    </>}
-                  </div>
-                </div>
-
-                {showKeys && !IS_MOBILE && (
-                  <div className="shortcut-overlay">
-                    <div className="shortcut-grid">
+              <>
+                <section className="canvas-area" aria-label="Simulation canvas area">
+                  {showKeys && !IS_MOBILE && (
+                    <div className="shortcut-overlay">
+                      <div className="shortcut-grid">
                       {SHORTCUTS.map(([k,d]) => (
                         <div className="shortcut-item" key={k}><kbd>{k}</kbd><span>{d}</span></div>
                       ))}
                     </div>
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                <div className="canvas-wrapper">
-                  <canvas ref={canvasRef} width={SIM_W} height={SIM_H} className="stage-canvas"
-                    style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
-                  {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} />}
-                  <div className="canvas-hud">
-                    <div className="hud-corner hud-corner--tl" /><div className="hud-corner hud-corner--tr" />
-                    <div className="hud-corner hud-corner--bl" /><div className="hud-corner hud-corner--br" />
-                    <div className="hud-top-bar">
-                      <div className="hud-label"><F1Logo size={10} /> AIR IN →</div>
-                      <div className="hud-label" style={{color:currentMode.color}}>{currentMode.label.toUpperCase()} · LBM D2Q9 · {COLS}×{ROWS}</div>
-                      <div className="hud-label">→ OUT</div>
-                    </div>
-                    <div className="hud-bottom-bar">
-                      <div className="hud-label" style={{opacity:.4,fontSize:8}}>f1stories.gr</div>
-                      <div className="colorbar">
-                        <span className="colorbar__label">HI</span>
-                        <div className="colorbar__bar" style={{background:mode==="pressure"?"linear-gradient(to bottom,#ff9500,#555,#00b4ff)":"linear-gradient(to bottom,#ff2200,#ffff00,#00ff88,#0088ff)"}} />
-                        <span className="colorbar__label">LO</span>
+                  <div className={`canvas-wrapper ${running ? "is-live" : ""}`}>
+                    <canvas ref={canvasRef} width={SIM_W} height={SIM_H} className="stage-canvas"
+                      style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
+                    {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} />}
+                    <div className="canvas-hud">
+                      <div className="hud-instrument-frame" aria-hidden="true">
+                        <div className="hud-frame-box" />
+                        <div className="hud-frame-edge hud-frame-edge--top">
+                          <span className="hud-frame-label hud-frame-label--air">&lsaquo; AIR IN</span>
+                          <span className="hud-frame-label hud-frame-label--mode" style={{color:currentMode.color}}>{currentMode.label.toUpperCase()} &middot; LBM D2Q9</span>
+                          <span className="hud-frame-label hud-frame-label--wake">WAKE &rsaquo;</span>
+                        </div>
+                        <div className="hud-frame-edge hud-frame-edge--bottom">
+                          <span className="hud-frame-label">{COLS}&times;{ROWS}</span>
+                          <span className="hud-scale-bar"><b>0</b><i /><b>U<sub>0</sub></b></span>
+                          <span className="hud-frame-label">f1stories.gr</span>
+                        </div>
+                        <div className="hud-left-axis">
+                          {AXIS_TICKS.map(tick => (
+                            <span className="hud-axis-tick" style={{"--tick": `${tick}%`}} key={tick}>
+                              <i /><em>{tick}%</em>
+                            </span>
+                          ))}
+                        </div>
                       </div>
+                      <div className="hud-mode-stack" aria-label="Visualization modes">
+                        {MODES.map((m,i) => (
+                          <button key={m.id} className={`hud-mode-pill ${mode===m.id?"is-active":""}`}
+                            style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => setMode(m.id)}>
+                            <span className="hud-mode-pill__label">{IS_MOBILE?m.short:m.label}</span>
+                            <span className="hud-mode-pill__key">[{i+1}]</span>
+                          </button>
+                        ))}
+                        <button className={`hud-run-button ${running ? "is-running" : "is-paused"}`} onClick={toggleRunning}>
+                          {running ? "HOLD" : "RUN"}
+                        </button>
+                      </div>
+                      {!IS_MOBILE && (
+                        <div className="hud-utility-row" aria-label="Canvas tools">
+                          <button className="hud-tool-btn" onClick={resetSolver} title="Reset solver [R]">SOLVER</button>
+                          <button className="hud-tool-btn" onClick={snap} title="Snapshot [S]">SHOT</button>
+                          <button className="hud-tool-btn" onClick={toggleFS} title="Fullscreen [F]">{isFS?"EXIT":"FULL"}</button>
+                          <button className="hud-tool-btn" onClick={exportCSV} disabled={!histSnap.length}>CSV</button>
+                          {prevPoly && <button className="hud-tool-btn" onClick={undoShape} title="Undo shape [Z]">UNDO</button>}
+                          <button className="hud-tool-btn" onClick={resetAll}>RESET</button>
+                          <button className="hud-tool-btn" onClick={() => setShowKeys(k => !k)} title="[/]">KEYS</button>
+                        </div>
+                      )}
+                      <div className="hud-mode-indicator" style={{"--tone":currentMode.tone}}>
+                        <span className="hud-mode-indicator__dot" style={{background:currentMode.color}} />
+                        {currentMode.label.toUpperCase()}
+                      </div>
+                      <div className="hud-colorbar" aria-label="Field range">
+                        <div className="hud-colorbar__cap">MAX</div>
+                        <div className="hud-colorbar__body">
+                          <div className="hud-colorbar__bar" style={{background:colorbarGradient}} />
+                          <div className="hud-colorbar__ticks">
+                            {colorbarTicks.map(tick => (
+                              <span className="hud-colorbar__tick" style={{"--tick": tick.position}} key={tick.position}>
+                                <i /><b>{tick.value}</b>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="hud-colorbar__cap">MIN</div>
+                      </div>
+                      <div className="hud-turbulence">
+                        <canvas ref={waveRef} width={40} height={24} className="hud-turbulence__canvas" aria-hidden />
+                        <span>TURB {turb.toFixed(1)}</span>
+                      </div>
+                      {!hasRun && !running && (
+                        <div className="hud-waiting"><span>&#9654; PRESS RUN &middot; SPACE</span></div>
+                      )}
                     </div>
-                    {!hasRun && !running && (
-                      <div className="hud-waiting"><span>▶ Press RUN or Space to start simulation</span></div>
-                    )}
                   </div>
-                </div>
               </section>
 
               {!IS_MOBILE && (
