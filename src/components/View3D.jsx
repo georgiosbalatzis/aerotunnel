@@ -248,32 +248,36 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       const orbit = { phi: 1.45, theta: 0.12, radius: isCompact ? 8.9 : 7.35 };
       const focus = new THREE.Vector3(0.25, 0, 0);
 
-      const gizmoRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-      gizmoRenderer.setSize(64, 64);
-      gizmoRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      gizmoRenderer.setClearColor(0x000000, 0);
-      gizmoRenderer.domElement.className = "view-3d-axis-gizmo";
-      gizmoRenderer.domElement.setAttribute("aria-hidden", "true");
-      el.appendChild(gizmoRenderer.domElement);
+      // 22.5 — Skip gizmo renderer on mobile to save a WebGL context + draw calls
+      let gizmoRenderer = null, gizmoScene = null, gizmoCamera = null, gizmoGroup = null;
+      if (!isCompact) {
+        gizmoRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        gizmoRenderer.setSize(64, 64);
+        gizmoRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        gizmoRenderer.setClearColor(0x000000, 0);
+        gizmoRenderer.domElement.className = "view-3d-axis-gizmo";
+        gizmoRenderer.domElement.setAttribute("aria-hidden", "true");
+        el.appendChild(gizmoRenderer.domElement);
 
-      const gizmoScene = new THREE.Scene();
-      const gizmoCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 10);
-      gizmoCamera.position.set(0, 0, 3);
-      const gizmoGroup = new THREE.Group();
-      gizmoScene.add(gizmoGroup);
+        gizmoScene = new THREE.Scene();
+        gizmoCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 10);
+        gizmoCamera.position.set(0, 0, 3);
+        gizmoGroup = new THREE.Group();
+        gizmoScene.add(gizmoGroup);
 
-      const addGizmoAxis = (label, endpoint, color, textColor) => {
-        const axis = new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), endpoint]),
-          new THREE.LineBasicMaterial({ color, depthTest: false, depthWrite: false })
-        );
-        const axisLabel = buildAxisLabel(THREE, label, textColor);
-        axisLabel.position.copy(endpoint).multiplyScalar(1.15);
-        gizmoGroup.add(axis, axisLabel);
-      };
-      addGizmoAxis("X", new THREE.Vector3(0.82, 0, 0), 0xff3344, "#ff3344");
-      addGizmoAxis("Y", new THREE.Vector3(0, 0.82, 0), 0x33ff44, "#33ff44");
-      addGizmoAxis("Z", new THREE.Vector3(0, 0, 0.82), 0x3344ff, "#3344ff");
+        const addGizmoAxis = (label, endpoint, color, textColor) => {
+          const axis = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), endpoint]),
+            new THREE.LineBasicMaterial({ color, depthTest: false, depthWrite: false })
+          );
+          const axisLabel = buildAxisLabel(THREE, label, textColor);
+          axisLabel.position.copy(endpoint).multiplyScalar(1.15);
+          gizmoGroup.add(axis, axisLabel);
+        };
+        addGizmoAxis("X", new THREE.Vector3(0.82, 0, 0), 0xff3344, "#ff3344");
+        addGizmoAxis("Y", new THREE.Vector3(0, 0.82, 0), 0x33ff44, "#33ff44");
+        addGizmoAxis("Z", new THREE.Vector3(0, 0, 0.82), 0x3344ff, "#3344ff");
+      }
 
       scene.add(new THREE.HemisphereLight(0x1a2a3a, 0x050810, 0.25));
       const keyLight = new THREE.DirectionalLight(0x8ec8ff, 0.6);
@@ -386,22 +390,40 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         });
       }
 
+      // 22.3 — Geometry cache keyed on polygon hash
+      let cachedPolyHash = null;
+      let cachedExtrudeGeo = null;
+      let cachedEdgeGeo = null;
+
+      function hashPoly(poly) {
+        if (!poly || !poly.length) return "";
+        let h = "";
+        for (let i = 0; i < poly.length; i++) {
+          const p = poly[i];
+          const x = (p[0] ?? p.x ?? 0).toFixed(3);
+          const y = (p[1] ?? p.y ?? 0).toFixed(3);
+          h += x + "," + y + ";";
+        }
+        return h;
+      }
+
       function buildProfile(config) {
         if (profileMesh) {
           profileGroup.remove(profileMesh);
-          profileMesh.geometry.dispose();
+          // Don't dispose cached geometry — only dispose material
           disposeMaterial(profileMesh.material);
           profileMesh = null;
         }
         if (pressureShellMesh) {
           profileGroup.remove(pressureShellMesh);
-          pressureShellMesh.geometry.dispose();
+          // Shell uses a cloned geometry — dispose it
+          pressureShellMesh.geometry?.dispose();
           disposeMaterial(pressureShellMesh.material);
           pressureShellMesh = null;
         }
         if (edgeMesh) {
           profileGroup.remove(edgeMesh);
-          edgeMesh.geometry.dispose();
+          // Edge geometry is cached — only dispose material
           disposeMaterial(edgeMesh.material);
           edgeMesh = null;
         }
@@ -422,21 +444,40 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         };
         profileBounds = bounds;
 
-        const shape = new THREE.Shape();
-        shape.moveTo(pts[0][0], pts[0][1]);
-        for (let i = 1; i < pts.length; i++) shape.lineTo(pts[i][0], pts[i][1]);
-        shape.closePath();
+        // 22.3 — Reuse cached geometry if polygon unchanged
+        const polyHash = hashPoly(config.poly);
+        let geometry, edgeGeometry;
 
-        const geometry = new THREE.ExtrudeGeometry(shape, {
-          depth: bounds.depth,
-          bevelEnabled: true,
-          bevelThickness: 0.09,
-          bevelSize: 0.075,
-          bevelSegments: 9,
-          curveSegments: 14,
-        });
-        geometry.center();
-        geometry.computeVertexNormals();
+        if (polyHash === cachedPolyHash && cachedExtrudeGeo) {
+          geometry = cachedExtrudeGeo;
+          edgeGeometry = cachedEdgeGeo;
+        } else {
+          // Dispose old cached geometry
+          if (cachedExtrudeGeo) cachedExtrudeGeo.dispose();
+          if (cachedEdgeGeo) cachedEdgeGeo.dispose();
+
+          const shape = new THREE.Shape();
+          shape.moveTo(pts[0][0], pts[0][1]);
+          for (let i = 1; i < pts.length; i++) shape.lineTo(pts[i][0], pts[i][1]);
+          shape.closePath();
+
+          geometry = new THREE.ExtrudeGeometry(shape, {
+            depth: bounds.depth,
+            bevelEnabled: true,
+            bevelThickness: 0.09,
+            bevelSize: 0.075,
+            bevelSegments: 9,
+            curveSegments: 14,
+          });
+          geometry.center();
+          geometry.computeVertexNormals();
+
+          edgeGeometry = new THREE.EdgesGeometry(geometry, 15);
+
+          cachedPolyHash = polyHash;
+          cachedExtrudeGeo = geometry;
+          cachedEdgeGeo = edgeGeometry;
+        }
 
         const material = new THREE.MeshPhysicalMaterial({
           color: new THREE.Color(0x1a1e28),
@@ -491,7 +532,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         profileGroup.add(pressureShellMesh);
 
         edgeMesh = new THREE.LineSegments(
-          new THREE.EdgesGeometry(geometry, 15),
+          edgeGeometry,
           new THREE.LineBasicMaterial({
             color: 0x00e5ff,
             transparent: true,
@@ -504,17 +545,15 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       }
 
       /* ════════════════════════════════════════════════════════════════
-         PHASE 12.1 + 12.2 — VELOCITY-COLORED STREAMLINES (INCREASED DENSITY)
+         PHASE 12.1 + 12.2 — VELOCITY-COLORED STREAMLINES
+         PHASE 22.1 — MERGED INTO SINGLE DRAW CALL
          ════════════════════════════════════════════════════════════════ */
-      const streamGroup = new THREE.Group();
-      scene.add(streamGroup);
       const lineCount = isCompact ? MOBILE_STREAMLINE_COUNT : DESKTOP_STREAMLINE_COUNT;
       const streamlines = [];
       const xStart = -4.75;
       const xEnd = 4.95;
 
-      // Distribution buckets per 12.2 spec:
-      // 40% uniform, 35% clustered near profile, 25% wake-concentrated
+      // Distribution buckets per 12.2 spec
       const uniformCount = Math.floor(lineCount * 0.40);
       const clusterCount = Math.floor(lineCount * 0.35);
       const wakeCount = lineCount - uniformCount - clusterCount;
@@ -523,7 +562,6 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         let yBase, zBase, xStartLocal, isHeroCandidate;
 
         if (i < uniformCount) {
-          // Uniform vertical spread — full domain
           const row = i % 33;
           const layer = Math.floor(i / 33);
           const rowT = row / 32;
@@ -533,7 +571,6 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           xStartLocal = xStart;
           isHeroCandidate = false;
         } else if (i < uniformCount + clusterCount) {
-          // Clustered near profile center (within ±0.6)
           const ci = i - uniformCount;
           const t = ci / (clusterCount - 1);
           yBase = -0.6 + t * 1.2;
@@ -542,7 +579,6 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           xStartLocal = xStart;
           isHeroCandidate = true;
         } else {
-          // Wake-concentrated: start at x=0.3, more vertical spread
           const wi = i - uniformCount - clusterCount;
           const t = wi / (wakeCount - 1);
           yBase = -1.0 + t * 2.0;
@@ -552,30 +588,36 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           isHeroCandidate = false;
         }
 
-        const geometry = new THREE.BufferGeometry();
-        const posArr = new Float32Array(STREAMLINE_POINTS * 3);
-        const colArr = new Float32Array(STREAMLINE_POINTS * 3);
-        geometry.setAttribute("position", new THREE.BufferAttribute(posArr, 3));
-        geometry.setAttribute("color", new THREE.BufferAttribute(colArr, 3));
-
-        const material = new THREE.LineBasicMaterial({
-          vertexColors: true,
-          transparent: true,
-          opacity: 0.55,
-          depthWrite: false,
-        });
-        const line = new THREE.Line(geometry, material);
-        streamGroup.add(line);
         streamlines.push({
-          line,
           yBase,
           zBase,
           xStartLocal,
           phase: i * 0.39,
           rowT: (yBase + 1.38) / 2.76,
           isHeroCandidate,
+          // Per-line offset into the merged buffer
+          offset: i * STREAMLINE_POINTS,
         });
       }
+
+      // 22.1 — Single merged geometry for all streamlines
+      // Use LineSegments with pairs of vertices (2 verts per segment)
+      const segmentsPerLine = STREAMLINE_POINTS - 1;
+      const totalSegments = lineCount * segmentsPerLine;
+      const mergedPosArr = new Float32Array(totalSegments * 2 * 3);
+      const mergedColArr = new Float32Array(totalSegments * 2 * 3);
+      const mergedStreamGeo = new THREE.BufferGeometry();
+      mergedStreamGeo.setAttribute("position", new THREE.BufferAttribute(mergedPosArr, 3));
+      mergedStreamGeo.setAttribute("color", new THREE.BufferAttribute(mergedColArr, 3));
+
+      const mergedStreamMat = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.55,
+        depthWrite: false,
+      });
+      const mergedStreamMesh = new THREE.LineSegments(mergedStreamGeo, mergedStreamMat);
+      scene.add(mergedStreamMesh);
 
       /* ════════════════════════════════════════════════════════════════
          PHASE 12.3 — HERO TUBE STREAMLINES (near-surface, thicker)
@@ -702,22 +744,31 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
          ═════════════════════════════════════════ */
       let heroRebuildTimer = 0;
 
+      // 22.1 — Shared position cache for particle lookups
+      const streamPositions = new Float32Array(lineCount * STREAMLINE_POINTS * 3);
+      // Temp buffer for computing per-line points before writing segments
+      const tmpLinePosArr = new Float32Array(STREAMLINE_POINTS * 3);
+      const tmpLineColArr = new Float32Array(STREAMLINE_POINTS * 3);
+
       function updateStreamlines(time, solver) {
         const flow = solver?.ux ? clamp(Math.abs(solver.ux[(solver.ux.length / 2) | 0] || 0.12), 0.04, 0.24) : 0.12;
         const travel = (time * (0.22 + flow * 0.85)) % 1;
         const bodyH = Math.max(profileBounds.height, 0.52);
         const halfBodyH = bodyH * 0.5;
 
-        // Update regular streamlines with per-vertex velocity coloring
-        streamlines.forEach(item => {
-          const positions = item.line.geometry.attributes.position.array;
-          const colors = item.line.geometry.attributes.color.array;
+        // 22.1 — Update all streamlines into merged buffer
+        const mPos = mergedStreamGeo.attributes.position.array;
+        const mCol = mergedStreamGeo.attributes.color.array;
+
+        for (let li = 0; li < lineCount; li++) {
+          const item = streamlines[li];
           const centerBand = Math.max(0, halfBodyH + 0.24 - Math.abs(item.yBase));
           const ySign = item.yBase >= 0 ? 1 : -1;
           const centerSign = ySign || (item.rowT > 0.5 ? 1 : -1);
           const lineXStart = item.xStartLocal;
           const lineXEnd = xEnd;
 
+          // Compute points into temp buffer
           for (let point = 0; point < STREAMLINE_POINTS; point++) {
             const pointT = point / (STREAMLINE_POINTS - 1);
             const shiftedT = (pointT + travel + item.phase * 0.006) % 1;
@@ -734,20 +785,45 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
             const zWake = Math.cos(localX * 3.1 - time * 1.65 + item.phase) * wakeInfluence * 0.035;
             const z = item.zBase + zWrap + zWake;
 
-            positions[point * 3] = x;
-            positions[point * 3 + 1] = y;
-            positions[point * 3 + 2] = z;
+            tmpLinePosArr[point * 3] = x;
+            tmpLinePosArr[point * 3 + 1] = y;
+            tmpLinePosArr[point * 3 + 2] = z;
 
-            // 12.1 — Velocity-mapped coloring per vertex
             const vel = localVelocity(x, y, z, profileBounds, solver);
             const [r, g, b] = jetColormap(vel);
-            colors[point * 3] = r;
-            colors[point * 3 + 1] = g;
-            colors[point * 3 + 2] = b;
+            tmpLineColArr[point * 3] = r;
+            tmpLineColArr[point * 3 + 1] = g;
+            tmpLineColArr[point * 3 + 2] = b;
           }
-          item.line.geometry.attributes.position.needsUpdate = true;
-          item.line.geometry.attributes.color.needsUpdate = true;
-        });
+
+          // Copy to streamPositions for particle lookups
+          const spBase = li * STREAMLINE_POINTS * 3;
+          streamPositions.set(tmpLinePosArr, spBase);
+
+          // Write line segments (pairs of adjacent points) into merged buffer
+          const segBase = li * segmentsPerLine * 6; // 6 floats per segment (2 verts × 3)
+          for (let s = 0; s < segmentsPerLine; s++) {
+            const dst = segBase + s * 6;
+            const s0 = s * 3, s1 = (s + 1) * 3;
+            // Vertex A (start of segment)
+            mPos[dst]     = tmpLinePosArr[s0];
+            mPos[dst + 1] = tmpLinePosArr[s0 + 1];
+            mPos[dst + 2] = tmpLinePosArr[s0 + 2];
+            // Vertex B (end of segment)
+            mPos[dst + 3] = tmpLinePosArr[s1];
+            mPos[dst + 4] = tmpLinePosArr[s1 + 1];
+            mPos[dst + 5] = tmpLinePosArr[s1 + 2];
+            // Colors
+            mCol[dst]     = tmpLineColArr[s0];
+            mCol[dst + 1] = tmpLineColArr[s0 + 1];
+            mCol[dst + 2] = tmpLineColArr[s0 + 2];
+            mCol[dst + 3] = tmpLineColArr[s1];
+            mCol[dst + 4] = tmpLineColArr[s1 + 1];
+            mCol[dst + 5] = tmpLineColArr[s1 + 2];
+          }
+        }
+        mergedStreamGeo.attributes.position.needsUpdate = true;
+        mergedStreamGeo.attributes.color.needsUpdate = true;
 
         // Update hero tube positions (same physics, different yBase range)
         heroLines.forEach(hero => {
@@ -775,11 +851,14 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           }
         });
 
-        // Rebuild hero tube geometry periodically (every ~6 frames for perf)
-        heroRebuildTimer++;
-        if (heroRebuildTimer >= 6) {
-          heroRebuildTimer = 0;
-          rebuildHeroTubes(THREE);
+        // 22.4 — Hero tube rebuild throttle: every 12 frames, skip when paused
+        const solverRunning = solver?.ux && solver.ux[(solver.ux.length / 2) | 0] !== undefined;
+        if (solverRunning) {
+          heroRebuildTimer++;
+          if (heroRebuildTimer >= 12) {
+            heroRebuildTimer = 0;
+            rebuildHeroTubes(THREE);
+          }
         }
 
         // 12.5 — Update flow particles
@@ -788,16 +867,14 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
         for (let i = 0; i < particleCount; i++) {
           const ps = particleState[i];
-          const stream = streamlines[ps.streamIdx];
-          if (!stream) continue;
+          if (ps.streamIdx >= lineCount) continue;
 
-          // Advance particle along its streamline based on local velocity
-          const sPos = stream.line.geometry.attributes.position.array;
-          const idx = Math.floor(ps.t * (STREAMLINE_POINTS - 1));
-          const safeIdx = Math.min(idx, STREAMLINE_POINTS - 1);
-          const px = sPos[safeIdx * 3];
-          const py = sPos[safeIdx * 3 + 1];
-          const pz = sPos[safeIdx * 3 + 2];
+          // 22.1 — Read from cached streamPositions instead of per-line geometry
+          const spBase = ps.streamIdx * STREAMLINE_POINTS * 3;
+          const idx = Math.min(Math.floor(ps.t * (STREAMLINE_POINTS - 1)), STREAMLINE_POINTS - 1);
+          const px = streamPositions[spBase + idx * 3];
+          const py = streamPositions[spBase + idx * 3 + 1];
+          const pz = streamPositions[spBase + idx * 3 + 2];
 
           const vel = localVelocity(px, py, pz, profileBounds, solver);
           ps.t += (0.003 + vel * 0.008);
@@ -812,11 +889,11 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           const i0 = Math.min(Math.floor(frac), STREAMLINE_POINTS - 2);
           const i1 = i0 + 1;
           const blend = frac - i0;
-          const sP = stream.line.geometry.attributes.position.array;
+          const b0 = spBase + i0 * 3, b1 = spBase + i1 * 3;
 
-          pPositions[i * 3] = sP[i0 * 3] * (1 - blend) + sP[i1 * 3] * blend;
-          pPositions[i * 3 + 1] = sP[i0 * 3 + 1] * (1 - blend) + sP[i1 * 3 + 1] * blend;
-          pPositions[i * 3 + 2] = sP[i0 * 3 + 2] * (1 - blend) + sP[i1 * 3 + 2] * blend;
+          pPositions[i * 3] = streamPositions[b0] * (1 - blend) + streamPositions[b1] * blend;
+          pPositions[i * 3 + 1] = streamPositions[b0 + 1] * (1 - blend) + streamPositions[b1 + 1] * blend;
+          pPositions[i * 3 + 2] = streamPositions[b0 + 2] * (1 - blend) + streamPositions[b1 + 2] * blend;
 
           // Particle color — white-tinted version of local velocity color
           const [cr, cg, cb] = jetColormap(vel);
@@ -914,8 +991,10 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         profileGroup.rotation.y = Math.sin(elapsed * 0.28) * 0.035;
         updateStreamlines(elapsed, solverRef?.current);
         renderer.render(scene, camera);
-        gizmoGroup.quaternion.copy(camera.quaternion).invert();
-        gizmoRenderer.render(gizmoScene, gizmoCamera);
+        if (gizmoGroup) {
+          gizmoGroup.quaternion.copy(camera.quaternion).invert();
+          gizmoRenderer.render(gizmoScene, gizmoCamera);
+        }
       }
 
       buildProfile(latestConfigRef.current);
@@ -941,6 +1020,12 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         backgroundTexture,
         metalEnvMap,
         ro,
+        // 22.1 — References for merged stream cleanup
+        mergedStreamMesh,
+        mergedStreamGeo,
+        mergedStreamMat,
+        // 22.3 — Cached geometry references
+        getCachedGeo: () => ({ cachedExtrudeGeo, cachedEdgeGeo }),
         get animId() { return animId; },
         cleanupControls: () => {
           domEl.removeEventListener("pointerdown", onPointerDown);
@@ -961,14 +1046,23 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         cancelAnimationFrame(t.animId);
         t.cleanupControls?.();
         t.ro?.disconnect();
+        // 22.1 — Dispose merged streamline resources
+        t.mergedStreamGeo?.dispose();
+        t.mergedStreamMat?.dispose();
+        // 22.3 — Dispose cached geometry
+        const cached = t.getCachedGeo?.();
+        if (cached) {
+          cached.cachedExtrudeGeo?.dispose();
+          cached.cachedEdgeGeo?.dispose();
+        }
         disposeObject(t.scene);
-        disposeObject(t.gizmoScene);
+        if (t.gizmoScene) disposeObject(t.gizmoScene);
         t.backgroundTexture?.dispose();
         t.metalEnvMap?.dispose();
         t.renderer?.dispose();
         t.gizmoRenderer?.dispose();
         if (el.contains(t.renderer?.domElement)) el.removeChild(t.renderer.domElement);
-        if (el.contains(t.gizmoRenderer?.domElement)) el.removeChild(t.gizmoRenderer.domElement);
+        if (t.gizmoRenderer && el.contains(t.gizmoRenderer.domElement)) el.removeChild(t.gizmoRenderer.domElement);
         threeRef.current = null;
       }
 
