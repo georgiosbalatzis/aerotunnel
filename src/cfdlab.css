@@ -261,6 +261,18 @@ button, input, select { font: inherit; }
 .error-callout { padding: 8px 10px; background: var(--f1-red-dim); border: 1px solid var(--f1-red); color: var(--f1-red); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; margin-top: 6px; }
 
 /* ═══════════════════════════════════════
+   PHASE 26 — PARAMETRIC GEOMETRY
+   ═══════════════════════════════════════ */
+.naca-editor,
+.f1-tuner-editor { display: grid; gap: 12px; }
+.naca-designation {
+  font-family: var(--font-display); font-size: 22px; font-weight: 800;
+  letter-spacing: .08em; text-align: center; color: var(--accent-flow);
+  padding: 6px 0 2px;
+}
+.naca-presets { margin-top: 4px; }
+
+/* ═══════════════════════════════════════
    PHASE 18 — SLIDERS (18.2)
    ═══════════════════════════════════════ */
 .slider-stack { display: grid; gap: 12px; }
