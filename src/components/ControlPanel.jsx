@@ -142,6 +142,9 @@ export default function ControlPanel({
   setSimSpd,
   autoRun,
   setAutoRun,
+  mode,
+  onExportSTL,
+  onImportSession,
 }) {
   const [activeTab, setActiveTab] = useState(section);
   const [importTab, setImportTab] = useState("preset");
@@ -177,6 +180,22 @@ export default function ControlPanel({
     if (!file) return;
     setError("");
     const name = file.name.toLowerCase();
+    // 29.1 — Detect JSON session import
+    if (name.endsWith(".json")) {
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (data.app === "aerolab" && data.version) {
+            onImportSession?.(data);
+            return;
+          }
+        } catch (_) { /* not valid JSON */ }
+        setError("Not a valid AeroLab session file");
+      };
+      reader.readAsText(file);
+      return;
+    }
     const load = (readMode, parser) => {
       const reader = new FileReader();
       reader.onload = event => {
@@ -488,6 +507,9 @@ export default function ControlPanel({
           </div>
         </div>
         <div className="control-panel__footer">
+          {activeTab === "shape" && mode === "3d" && (
+            <button className="btn-ghost btn-export-stl" onClick={onExportSTL}>Export STL</button>
+          )}
           <F1Logo size={14} />
           <a href="https://f1stories.gr" target="_blank" rel="noopener noreferrer">f1stories.gr</a>
         </div>

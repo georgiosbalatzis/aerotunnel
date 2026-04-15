@@ -14,6 +14,7 @@ import {
   xformPoly, simplPoly, genPreset,
   TURBO, COOLWARM,
   initWasmSolver, createSolver, isWasmAvailable,
+  exportSessionJSON, parseSessionJSON, exportBinarySTL, buildZip,
 } from "./engine/index.js";
 
 /* ── 25.1 — Session persistence ── */
@@ -386,6 +387,194 @@ export default function CFDLab() {
     saveSessions(sessions);
   }, []);
 
+  /* ── 29.1 — JSON Session Export ── */
+  const exportSession = useCallback(() => {
+    exportSessionJSON({
+      poly, preset, cx, cy, sx, sy, aoa, simplify,
+      vel, turb, nu, mode, pCount, trailOp, simSpd,
+      history: histRef.current.slice(-500),
+      name: `${preset || "custom"} @ ${aoa}° AoA`,
+    });
+  }, [poly, preset, cx, cy, sx, sy, aoa, simplify, vel, turb, nu, mode, pCount, trailOp, simSpd, histRef]);
+
+  /* ── 29.1 — JSON Session Import (drag & drop) ── */
+  const importSession = useCallback((data) => {
+    if (data.geometry) {
+      if (data.geometry.poly) setPoly(data.geometry.poly);
+      if (data.geometry.preset) setPreset(data.geometry.preset);
+      if (data.geometry.cx != null) setCx(data.geometry.cx);
+      if (data.geometry.cy != null) setCy(data.geometry.cy);
+      if (data.geometry.sx != null) setSx(data.geometry.sx);
+      if (data.geometry.sy != null) setSy(data.geometry.sy);
+      if (data.geometry.aoa != null) setAoa(data.geometry.aoa);
+      if (data.geometry.simplify != null) setSimplify(data.geometry.simplify);
+    }
+    if (data.solver) {
+      if (data.solver.vel != null) setVel(data.solver.vel);
+      if (data.solver.turb != null) setTurb(data.solver.turb);
+      if (data.solver.nu != null) setNu(data.solver.nu);
+    }
+    if (data.display) {
+      if (data.display.mode) setMode(data.display.mode);
+      if (data.display.pCount != null) setPCount(data.display.pCount);
+      if (data.display.trailOp != null) setTrailOp(data.display.trailOp);
+      if (data.display.simSpd != null) setSimSpd(data.display.simSpd);
+    }
+    if (data.history?.length) {
+      histRef.current = data.history;
+      setHistSnap([...data.history]);
+    }
+    setAutoRun(false);
+    setSessionToast(`Imported: ${data.metadata?.name || "session"}`);
+    setTimeout(() => setSessionToast(null), 3000);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAppDrop = useCallback((e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    if (file.name.toLowerCase().endsWith(".json")) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const data = parseSessionJSON(ev.target.result);
+        if (data) importSession(data);
+        else setSessionToast("Not a valid AeroLab session file");
+      };
+      reader.readAsText(file);
+    }
+  }, [importSession]);
+
+  /* ── 29.2 — STL Export ── */
+  const exportSTL = useCallback(() => {
+    if (!poly) return;
+    exportBinarySTL(poly, cx, cy, sx, sy, aoa, simplify);
+  }, [poly, cx, cy, sx, sy, aoa, simplify]);
+
+  /* ── 29.3 — Parametric Sweep ── */
+  const [sweepState, setSweepState] = useState(null); // { param, min, max, steps, current, results }
+  const sweepRef = useRef(null);
+
+  const startSweep = useCallback((param, min, max, steps) => {
+    const state = { param, min, max, steps, current: 0, results: [] };
+    setSweepState(state);
+    sweepRef.current = state;
+
+    const solver = solverRef.current;
+    if (!solver) return;
+    const origAoa = aoa, origVel = vel, origNu = nu;
+    const P_cur = P.current;
+
+    const runStep = () => {
+      const sw = sweepRef.current;
+      if (!sw || sw.current >= sw.steps) {
+        // Done — export CSV and restore original values
+        if (sw && sw.results.length) {
+          const header = `${sw.param},cl,cd,ld_ratio,regime\n`;
+          const rows = sw.results.map(r => `${r.value},${r.cl},${r.cd},${r.ld},${r.regime}`).join("\n");
+          const blob = new Blob([header + rows], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = `aerolab-sweep-${sw.param}-${Date.now()}.csv`; a.click();
+          URL.revokeObjectURL(url);
+        }
+        // Restore
+        if (param === "aoa") setAoa(origAoa);
+        else if (param === "velocity") setVel(origVel);
+        else if (param === "viscosity") setNu(origNu);
+        setSweepState(null);
+        sweepRef.current = null;
+        return;
+      }
+
+      const value = sw.min + (sw.max - sw.min) * (sw.current / Math.max(1, sw.steps - 1));
+
+      // Apply parameter
+      if (param === "aoa") {
+        setAoa(value);
+        const shape = P_cur.simplify > 0 ? simplPoly(P_cur.poly, P_cur.simplify * 0.005) : P_cur.poly;
+        if (shape) solver.buildSolid(xformPoly(shape, P_cur.cx, P_cur.cy, P_cur.sx, P_cur.sy, value));
+      } else if (param === "velocity") {
+        setVel(value);
+      } else if (param === "viscosity") {
+        setNu(value);
+        solver.setNu(value);
+      }
+
+      const inV = param === "velocity" ? value : P_cur.vel;
+
+      // Run solver for up to 200 steps or until convergence
+      for (let s = 0; s < 200; s++) {
+        solver.step(inV, P_cur.turb);
+        if (solver.convergenceDelta < 1e-4) break;
+      }
+
+      // Collect results
+      let mV = 0, tFy = 0, tFx = 0, cnt = 0;
+      for (let k = 0; k < solver.N; k++) {
+        if (solver.solid[k]) continue;
+        const sp = solver.spd[k]; if (!isFinite(sp)) continue;
+        cnt++; if (sp > mV) mV = sp;
+        tFy += solver.uy[k]; tFx += Math.abs(solver.ux[k] - inV);
+      }
+      const re = (inV * P_cur.sx) / (P_cur.nu + 1e-6) * 10;
+      const curAoa = param === "aoa" ? value : P_cur.aoa;
+      const cl = cnt > 0 ? +Math.abs(tFy / cnt * 2 * (1 + curAoa * 0.06)).toFixed(4) : 0;
+      const cd = cnt > 0 ? +(tFx / cnt * 0.5 + 0.008).toFixed(4) : 0;
+      const ld = cd > 0 ? +(cl / cd).toFixed(2) : 0;
+      const regime = re < 2300 ? "laminar" : re < 4000 ? "transitional" : "turbulent";
+
+      sw.results.push({ value: +value.toFixed(4), cl, cd, ld, regime });
+      sw.current++;
+      setSweepState({ ...sw });
+
+      requestAnimationFrame(runStep);
+    };
+
+    requestAnimationFrame(runStep);
+  }, [aoa, vel, nu]);
+
+  const cancelSweep = useCallback(() => {
+    sweepRef.current = null;
+    setSweepState(null);
+  }, []);
+
+  /* ── 29.4 — PNG Sequence Recording ── */
+  const [recording, setRecording] = useState(false);
+  const recordingRef = useRef(false);
+  const recordFrames = useRef([]);
+  const recordCount = useRef(0);
+  const MAX_RECORD_FRAMES = 300;
+
+  const startRecording = useCallback(() => {
+    recordFrames.current = [];
+    recordCount.current = 0;
+    recordingRef.current = true;
+    setRecording(true);
+  }, []);
+
+  const stopRecording = useCallback(async () => {
+    recordingRef.current = false;
+    setRecording(false);
+    const frames = recordFrames.current;
+    if (!frames.length) return;
+    setSessionToast(`Packaging ${frames.length} frames...`);
+
+    // Convert blobs to zip entries
+    const files = [];
+    for (let i = 0; i < frames.length; i++) {
+      const data = new Uint8Array(await frames[i].arrayBuffer());
+      files.push({ name: `aerolab-${String(i + 1).padStart(4, "0")}.png`, data });
+    }
+    const zip = buildZip(files);
+    const url = URL.createObjectURL(zip);
+    const a = document.createElement("a");
+    a.href = url; a.download = `aerolab-frames-${Date.now()}.zip`; a.click();
+    URL.revokeObjectURL(url);
+    recordFrames.current = [];
+    setSessionToast(`Exported ${frames.length} frames`);
+    setTimeout(() => setSessionToast(null), 3000);
+  }, []);
+
   const undoShape = useCallback(() => {
     if (prevPoly) { setPoly(prevPoly); setPrevPoly(null); }
   }, [prevPoly]);
@@ -730,6 +919,18 @@ export default function CFDLab() {
 
       const mc = miniRef.current;
       if (mc) mc.getContext("2d").drawImage(canvas, 0, 0, mc.width, mc.height);
+
+      // 29.4 — Capture frame for recording
+      if (recordingRef.current && recordCount.current < MAX_RECORD_FRAMES) {
+        canvas.toBlob(blob => {
+          if (blob) recordFrames.current.push(blob);
+        }, "image/png");
+        recordCount.current++;
+        if (recordCount.current >= MAX_RECORD_FRAMES) {
+          recordingRef.current = false;
+          setRecording(false);
+        }
+      }
     };
 
     rafRef.current = requestAnimationFrame(loop);
@@ -778,7 +979,8 @@ export default function CFDLab() {
   const toggleRunning = useCallback(() => setRunning(r => !r), []);
 
   return (
-    <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""} ${screenshotMode ? "is-screenshot" : ""}`} ref={wrapRef}>
+    <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""} ${screenshotMode ? "is-screenshot" : ""}`} ref={wrapRef}
+      onDrop={handleAppDrop} onDragOver={e => e.preventDefault()}>
       <div className="lab-shell__scanline" />
 
       {/* 14.1 — Floating title chip */}
@@ -814,6 +1016,7 @@ export default function CFDLab() {
           nu={nu} setNu={setNu} pCount={pCount} setPCount={setPCount}
           trailOp={trailOp} setTrailOp={setTrailOp} simSpd={simSpd} setSimSpd={setSimSpd}
           autoRun={autoRun} setAutoRun={setAutoRun}
+          mode={mode} onExportSTL={exportSTL} onImportSession={importSession}
         />
       )}
 
@@ -893,7 +1096,7 @@ export default function CFDLab() {
             </div>
           </section>
         )}
-        {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} onSaveSession={saveCurrentSession} onLoadSession={loadSavedSession} onDeleteSession={deleteSavedSession} />}
+        {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} exportSession={exportSession} stats={stats} ldRatio={ldRatio} regime={regime} onSaveSession={saveCurrentSession} onLoadSession={loadSavedSession} onDeleteSession={deleteSavedSession} sweepState={sweepState} onStartSweep={startSweep} onCancelSweep={cancelSweep} recording={recording} onStartRecording={startRecording} onStopRecording={stopRecording} recordFrameCount={recordCount.current} />}
         {view==="about" && <AboutPanel />}
       </main>
 
