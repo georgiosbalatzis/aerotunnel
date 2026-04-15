@@ -202,6 +202,69 @@ function HistoryChart({ history }) {
   );
 }
 
+/* ── 29.3 — Parametric Sweep Section ── */
+function SweepSection({ sweepState, onStartSweep, onCancelSweep }) {
+  const [param, setParam] = useState("aoa");
+  const [min, setMin] = useState(-10);
+  const [max, setMax] = useState(20);
+  const [steps, setSteps] = useState(31);
+
+  const defaults = { aoa: { min: -10, max: 20, steps: 31 }, velocity: { min: 0.02, max: 0.18, steps: 17 }, viscosity: { min: 0.005, max: 0.1, steps: 20 } };
+
+  const handleParamChange = (p) => {
+    setParam(p);
+    setMin(defaults[p].min); setMax(defaults[p].max); setSteps(defaults[p].steps);
+  };
+
+  const progress = sweepState ? sweepState.current / sweepState.steps : 0;
+
+  return (
+    <section className="a-panel analysis-sweep-panel">
+      <div className="a-panel__header">
+        <div>
+          <div className="a-panel__title">Parametric Sweep</div>
+          <div className="a-panel__sub">Automated parameter variation &rarr; CSV export</div>
+        </div>
+      </div>
+      <div className="sweep-controls">
+        <div className="sweep-row">
+          <label className="sweep-label">Parameter
+            <select className="sweep-select" value={param} onChange={e => handleParamChange(e.target.value)} disabled={!!sweepState}>
+              <option value="aoa">Angle of Attack</option>
+              <option value="velocity">Inlet Velocity</option>
+              <option value="viscosity">Viscosity</option>
+            </select>
+          </label>
+        </div>
+        <div className="sweep-row sweep-row--triple">
+          <label className="sweep-label">Min
+            <input className="sweep-input" type="number" value={min} onChange={e => setMin(+e.target.value)} disabled={!!sweepState} step={param === "aoa" ? 1 : 0.01} />
+          </label>
+          <label className="sweep-label">Max
+            <input className="sweep-input" type="number" value={max} onChange={e => setMax(+e.target.value)} disabled={!!sweepState} step={param === "aoa" ? 1 : 0.01} />
+          </label>
+          <label className="sweep-label">Steps
+            <input className="sweep-input" type="number" value={steps} onChange={e => setSteps(Math.max(2, +e.target.value))} disabled={!!sweepState} min={2} max={100} />
+          </label>
+        </div>
+        {sweepState ? (
+          <div className="sweep-progress">
+            <div className="sweep-progress-bar">
+              <div className="sweep-progress-fill" style={{ width: `${progress * 100}%` }} />
+            </div>
+            <div className="sweep-progress-text">
+              <span>Step {sweepState.current}/{sweepState.steps}</span>
+              <button className="btn-ghost" onClick={onCancelSweep}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button className="btn-primary" onClick={() => onStartSweep(param, min, max, steps)}>Run Sweep</button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function loadSavedSessions() {
   try {
     const raw = localStorage.getItem("aerolab-sessions");
@@ -209,7 +272,7 @@ function loadSavedSessions() {
   } catch (_) { return []; }
 }
 
-export default function AnalysisPanel({ hSnap, exportCSV, stats, ldRatio, regime, onSaveSession, onLoadSession, onDeleteSession }) {
+export default function AnalysisPanel({ hSnap, exportCSV, exportSession, stats, ldRatio, regime, onSaveSession, onLoadSession, onDeleteSession, sweepState, onStartSweep, onCancelSweep, recording, onStartRecording, onStopRecording, recordFrameCount }) {
   const [savedSessions, setSavedSessions] = useState(() => loadSavedSessions());
   const refreshSessions = useCallback(() => setSavedSessions(loadSavedSessions()), []);
 
@@ -308,9 +371,19 @@ export default function AnalysisPanel({ hSnap, exportCSV, stats, ldRatio, regime
         )}
       </section>
 
+      {/* 29.3 — Parametric Sweep */}
+      <SweepSection sweepState={sweepState} onStartSweep={onStartSweep} onCancelSweep={onCancelSweep} />
+
       <div className="analysis-bottom-row">
         <div className="analysis-session-meta">
-          <button className="btn-primary" onClick={exportCSV} disabled={!hSnap.length}>Export CSV</button>
+          <div className="analysis-export-buttons">
+            <button className="btn-primary" onClick={exportCSV} disabled={!hSnap.length}>Export CSV</button>
+            <button className="btn-primary" onClick={exportSession} disabled={!hSnap.length}>Export Session</button>
+            {recording
+              ? <button className="btn-primary btn-record is-recording" onClick={onStopRecording}>Stop Rec ({recordFrameCount})</button>
+              : <button className="btn-primary btn-record" onClick={onStartRecording}>Record</button>
+            }
+          </div>
           <div>
             <span>Session started at {sessionStart}</span>
             <span>{hSnap.length} samples recorded</span>

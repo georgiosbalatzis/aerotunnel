@@ -595,7 +595,7 @@ button, input, select { font: inherit; }
 .history-empty { font-family: var(--font-mono); font-size: 10px; color: var(--f1-dim); padding: 18px 10px; text-align: center; }
 .analysis-bottom-row { display: grid; grid-template-columns: 1fr minmax(200px, 280px); gap: 16px; align-items: stretch; }
 .analysis-session-meta {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  display: flex; flex-direction: column; gap: 10px;
   background: var(--f1-carbon); border: 1px solid var(--f1-border); padding: 14px 16px;
 }
 .analysis-session-meta > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--f1-dim); }
@@ -917,6 +917,34 @@ button, input, select { font: inherit; }
   /* Canvas gets full height */
   .canvas-area { min-height: 100vh; }
 }
+
+/* ── 29.1 — Export buttons row ── */
+.analysis-export-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── 29.2 — STL export button ── */
+.btn-export-stl { margin-right: auto; font-size: 10px; padding: 4px 10px; }
+
+/* ── 29.3 — Parametric Sweep ── */
+.analysis-sweep-panel { margin-bottom: 16px; }
+.sweep-controls { padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; }
+.sweep-row { display: flex; gap: 10px; }
+.sweep-row--triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.sweep-label { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--f1-dim); flex: 1; }
+.sweep-select, .sweep-input {
+  background: var(--f1-dark); border: 1px solid var(--f1-border); color: var(--f1-white);
+  font-family: var(--font-mono); font-size: 12px; padding: 6px 8px; border-radius: 2px;
+}
+.sweep-select:focus, .sweep-input:focus { border-color: var(--accent-flow); outline: none; }
+.sweep-progress { display: flex; flex-direction: column; gap: 6px; }
+.sweep-progress-bar { height: 6px; background: var(--f1-dark); border-radius: 3px; overflow: hidden; }
+.sweep-progress-fill { height: 100%; background: var(--accent-flow); transition: width 120ms ease; border-radius: 3px; }
+.sweep-progress-text { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 10px; color: var(--f1-dim); }
+
+/* ── 29.4 — Recording ── */
+.btn-record { position: relative; }
+.btn-record.is-recording { background: var(--accent-crit); animation: rec-pulse 1s infinite; }
+.btn-record.is-recording::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #fff; margin-right: 4px; }
+@keyframes rec-pulse { 0%,100% { opacity: 1; } 50% { opacity: .7; } }
 
 /* ── Small mobile refinements (≤ 480px) ── */
 @media (max-width: 480px) {
