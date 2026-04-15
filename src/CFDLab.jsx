@@ -55,6 +55,8 @@ const MODES = [
   { id:"pressure",    label:"Pressure",    short:"PRS", color:"#ff6600", tone:"var(--accent-warn)" },
   { id:"streamlines", label:"Streamlines", short:"STR", color:"#22ff88", tone:"var(--accent-hi)" },
   { id:"vorticity",   label:"Vorticity",   short:"VRT", color:"#eeff22", tone:"var(--accent-mid)" },
+  { id:"vectors",     label:"Vectors",     short:"VEC", color:"#ff44aa", tone:"var(--accent-crit)" },
+  { id:"schlieren",   label:"Schlieren",   short:"SCH", color:"#d4a050", tone:"var(--f1-amber)" },
   { id:"3d",          label:"3D View",     short:"3D",  color:"#00d4ff", tone:"var(--accent-flow)" },
 ];
 
@@ -65,6 +67,8 @@ const FIELD_LEGENDS = {
   pressure: "PRESSURE\nrho",
   streamlines: "VELOCITY\nm/s",
   vorticity: "VORTICITY\n1/s",
+  vectors: "VELOCITY\nm/s",
+  schlieren: "DENSITY\ngradient",
   "3d": "VELOCITY\nm/s",
 };
 
@@ -431,7 +435,9 @@ export default function CFDLab() {
         case "Digit2": changeMode("pressure"); break;
         case "Digit3": changeMode("streamlines"); break;
         case "Digit4": changeMode("vorticity"); break;
-        case "Digit5": changeMode("3d"); break;
+        case "Digit5": changeMode("vectors"); break;
+        case "Digit6": changeMode("schlieren"); break;
+        case "Digit7": changeMode("3d"); break;
         case "KeyF": toggleFS(); break;
         case "KeyS": if (!e.ctrlKey && !e.metaKey) snap(); break;
         case "KeyZ": if (!e.ctrlKey && !e.metaKey) undoShape(); break;
@@ -504,6 +510,56 @@ export default function CFDLab() {
           for (let py = y0; py < y1; py++)
             for (let px = x0; px < x1; px++) buf32[py*SIM_W+px] = solidC;
         }
+      } else if (vm === "schlieren") {
+        // 27.3 — Schlieren: density gradient |∂ρ/∂y| mapped to warm grayscale
+        const invDX = COLS/SIM_W, invDY = ROWS/SIM_H;
+        let gMx = 0;
+        for (let j = 1; j < ROWS-1; j++)
+          for (let i = 0; i < COLS; i++) {
+            const g = Math.abs(solver.rho[(j+1)*COLS+i] - solver.rho[(j-1)*COLS+i]) * 0.5;
+            if (g > gMx) gMx = g;
+          }
+        if (gMx < 1e-10) gMx = 1;
+        const invG = 1 / gMx;
+        for (let py = 0; py < SIM_H; py++) {
+          const j = Math.min(ROWS-1, Math.max(1, (py*invDY)|0)), ro = py*SIM_W;
+          for (let px = 0; px < SIM_W; px++) {
+            const i = Math.min(COLS-1, (px*invDX)|0), k = j*COLS+i;
+            if (solver.solid[k]) { buf32[ro+px] = solidC; continue; }
+            const grad = Math.abs(solver.rho[(j+1)*COLS+i] - solver.rho[(j-1)*COLS+i]) * 0.5;
+            const t = Math.min(1, grad * invG);
+            const v = 1 - t; // invert: high gradient = dark
+            // Warm shadowgraph palette: sepia-tinted
+            const r = Math.max(0, Math.min(255, (v * 240 + t * 40)|0));
+            const g = Math.max(0, Math.min(255, (v * 230 + t * 25)|0));
+            const b = Math.max(0, Math.min(255, (v * 200 + t * 15)|0));
+            buf32[ro+px] = (255<<24)|(b<<16)|(g<<8)|r;
+          }
+        }
+        frameFieldMin = 0; frameFieldMax = gMx;
+      } else if (vm === "vectors") {
+        // 27.2 — Vector field: render field as velocity background + arrows drawn after putImageData
+        const lut = TURBO;
+        let fMn = solver.spdMin, fMx = solver.spdMax;
+        if (fMn === undefined || fMx === undefined || fMn >= fMx) { fMn = 0; fMx = 1; }
+        frameFieldMin = fMn; frameFieldMax = fMx;
+        const fR = fMx - fMn;
+        if (fR < 1e-10) { buf32.fill(lut[128]); }
+        else {
+          // Dimmed velocity background
+          const invR = 255/fR, invDX = COLS/SIM_W, invDY = ROWS/SIM_H;
+          for (let py = 0; py < SIM_H; py++) {
+            const j = Math.min(ROWS-1, (py*invDY)|0), ro = py*SIM_W;
+            for (let px = 0; px < SIM_W; px++) {
+              const i = Math.min(COLS-1, (px*invDX)|0), k = j*COLS+i;
+              if (solver.solid[k]) { buf32[ro+px] = solidC; continue; }
+              const c = lut[Math.max(0, Math.min(255, ((solver.spd[k]-fMn)*invR)|0))];
+              // Dim the background to 30% opacity
+              const cr = (c & 0xff), cg = ((c>>8) & 0xff), cb = ((c>>16) & 0xff);
+              buf32[ro+px] = (255<<24)|((cb*0.3|0)<<16)|((cg*0.3|0)<<8)|(cr*0.3|0);
+            }
+          }
+        }
       } else {
         const lut = vm === "pressure" ? COOLWARM : TURBO;
         const field = vm === "velocity" ? solver.spd : vm === "pressure" ? solver.rho : solver.curl;
@@ -531,6 +587,50 @@ export default function CFDLab() {
         }
       }
       ctx.putImageData(imgData, 0, 0);
+
+      // 27.2 — Draw velocity vector arrows on top of the image
+      if (vm === "vectors") {
+        const step = 8; // sample every 8th cell
+        const arrowScale = DX * 28;
+        const maxLen = DX * 6;
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+        for (let j = step; j < ROWS - step; j += step) {
+          for (let i = step; i < COLS - step; i += step) {
+            const k = j * COLS + i;
+            if (solver.solid[k]) continue;
+            const ux = solver.ux[k], uy = solver.uy[k];
+            const mag = Math.sqrt(ux * ux + uy * uy);
+            if (mag < 1e-6) continue;
+            const px = i * DX, py = j * DY;
+            let dx = ux * arrowScale, dy = uy * arrowScale;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            if (len > maxLen) { const s = maxLen / len; dx *= s; dy *= s; }
+            // Color by velocity magnitude
+            const fMn = solver.spdMin || 0, fMx = solver.spdMax || 1;
+            const t = Math.max(0, Math.min(1, (mag - fMn) / (fMx - fMn || 1)));
+            const r = t < 0.5 ? (t * 2 * 255)|0 : 255;
+            const g = t < 0.5 ? 255 : ((1 - (t - 0.5) * 2) * 255)|0;
+            const b = t < 0.3 ? ((1 - t / 0.3) * 200)|0 : 0;
+            ctx.strokeStyle = `rgb(${r},${g},${b})`;
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + dx, py + dy);
+            ctx.stroke();
+            // Arrowhead
+            if (len > 2) {
+              const angle = Math.atan2(dy, dx);
+              const headLen = Math.min(3, len * 0.3);
+              ctx.beginPath();
+              ctx.moveTo(px + dx, py + dy);
+              ctx.lineTo(px + dx - headLen * Math.cos(angle - 0.5), py + dy - headLen * Math.sin(angle - 0.5));
+              ctx.moveTo(px + dx, py + dy);
+              ctx.lineTo(px + dx - headLen * Math.cos(angle + 0.5), py + dy - headLen * Math.sin(angle + 0.5));
+              ctx.stroke();
+            }
+          }
+        }
+      }
 
       const parts = partsRef.current, pC = p.pCount, tO = p.trailOp;
       for (let pi = 0; pi < pC && pi < parts.length; pi++) parts[pi].update(solver);
