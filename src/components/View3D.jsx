@@ -181,14 +181,20 @@ function pressureCoefficient(x, y, bounds) {
   return clamp(0.38 + nose * 0.52 + lowerLoad * 0.18 - upperAccel * 0.28 - wake * 0.18, 0, 1);
 }
 
-export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3d" }) {
+const GLTF_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js";
+const DRACO_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js";
+const DRACO_DECODER_PATH = "https://www.gstatic.com/draco/versioned/decoders/1.5.6/";
+const F1_MODEL_URL = import.meta.env.BASE_URL + "f1car.glb";
+const F1_PRESETS = new Set(["f1car", "frontwing", "rearwing"]);
+
+export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3d", preset }) {
   const mountRef = useRef(null);
   const threeRef = useRef(null);
-  const latestConfigRef = useRef({ poly, cx, cy, sx, sy, aoa, mode });
+  const latestConfigRef = useRef({ poly, cx, cy, sx, sy, aoa, mode, preset });
 
   const prevPolyRef = useRef(poly);
   useEffect(() => {
-    latestConfigRef.current = { poly, cx, cy, sx, sy, aoa, mode };
+    latestConfigRef.current = { poly, cx, cy, sx, sy, aoa, mode, preset };
     const t = threeRef.current;
     if (t?.buildProfile) t.buildProfile(latestConfigRef.current);
     // 20.3 — Camera auto-framing on shape change
@@ -196,7 +202,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       t.animateToTarget(0.12, 1.45, 7.35);
     }
     prevPolyRef.current = poly;
-  }, [poly, cx, cy, sx, sy, aoa, mode]);
+  }, [poly, cx, cy, sx, sy, aoa, mode, preset]);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -362,6 +368,75 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       let edgeMesh = null;
       let profileBounds = { width: 2.4, height: 0.9, depth: 0.86 };
 
+      /* ── F1 GLB model loading ── */
+      let f1Model = null;
+      let f1ModelLoading = false;
+      let f1ModelGroup = new THREE.Group();
+      f1ModelGroup.visible = false;
+      scene.add(f1ModelGroup);
+
+      function loadF1Model() {
+        if (f1Model || f1ModelLoading) return;
+        f1ModelLoading = true;
+
+        function doLoad() {
+          const loader = new THREE.GLTFLoader();
+          if (THREE.DRACOLoader) {
+            const draco = new THREE.DRACOLoader();
+            draco.setDecoderPath(DRACO_DECODER_PATH);
+            loader.setDRACOLoader(draco);
+          }
+          loader.load(F1_MODEL_URL, (gltf) => {
+            f1Model = gltf.scene;
+            // Compute bounding box and normalize to fit scene
+            const box = new THREE.Box3().setFromObject(f1Model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 3.2 / maxDim;
+            f1Model.scale.setScalar(scale);
+            f1Model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+            // Apply dark carbon material to all meshes
+            f1Model.traverse((child) => {
+              if (child.isMesh) {
+                child.material = new THREE.MeshPhysicalMaterial({
+                  color: new THREE.Color(0x1a1e28),
+                  metalness: 0.78,
+                  roughness: 0.30,
+                  envMap: metalEnvMap,
+                  envMapIntensity: 0.5,
+                  clearcoat: 0.5,
+                  clearcoatRoughness: 0.15,
+                  side: THREE.DoubleSide,
+                });
+              }
+            });
+            f1ModelGroup.add(f1Model);
+            f1ModelLoading = false;
+            // Trigger rebuild with current config
+            buildProfile(latestConfigRef.current);
+          }, undefined, (err) => {
+            console.warn("F1 GLB load failed:", err);
+            f1ModelLoading = false;
+          });
+        }
+
+        // Load GLTFLoader + DRACOLoader from CDN if not available
+        if (THREE.GLTFLoader) {
+          doLoad();
+        } else {
+          const script1 = document.createElement("script");
+          script1.src = DRACO_LOADER_URL;
+          script1.onload = () => {
+            const script2 = document.createElement("script");
+            script2.src = GLTF_LOADER_URL;
+            script2.onload = doLoad;
+            document.head.appendChild(script2);
+          };
+          document.head.appendChild(script1);
+        }
+      }
+
       function normalizeProfile(rawPoly, config) {
         if (!rawPoly || rawPoly.length < 3) return null;
 
@@ -410,22 +485,36 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       function buildProfile(config) {
         if (profileMesh) {
           profileGroup.remove(profileMesh);
-          // Don't dispose cached geometry — only dispose material
           disposeMaterial(profileMesh.material);
           profileMesh = null;
         }
         if (pressureShellMesh) {
           profileGroup.remove(pressureShellMesh);
-          // Shell uses a cloned geometry — dispose it
           pressureShellMesh.geometry?.dispose();
           disposeMaterial(pressureShellMesh.material);
           pressureShellMesh = null;
         }
         if (edgeMesh) {
           profileGroup.remove(edgeMesh);
-          // Edge geometry is cached — only dispose material
           disposeMaterial(edgeMesh.material);
           edgeMesh = null;
+        }
+
+        // Show F1 GLB model for F1 presets, hide extruded polygon
+        const isF1 = F1_PRESETS.has(config.preset);
+        if (isF1) {
+          loadF1Model();
+          if (f1Model) {
+            f1ModelGroup.visible = true;
+            // Car's length is along Z, rotate so it aligns with X (flow direction)
+            f1ModelGroup.rotation.set(0, Math.PI / 2, 0);
+            f1ModelGroup.position.set(0.15, -0.15, 0);
+            profileBounds = { width: 3.2, height: 1.0, depth: 1.6 };
+          }
+          // Still build the extruded polygon as fallback / for bounds
+          // but hide it when GLB is showing
+        } else {
+          f1ModelGroup.visible = false;
         }
 
         const pts = normalizeProfile(config.poly, config);
@@ -542,6 +631,13 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         );
         edgeMesh.position.copy(profileMesh.position);
         profileGroup.add(edgeMesh);
+
+        // Hide extruded polygon when F1 GLB model is loaded and active
+        if (isF1 && f1Model) {
+          profileMesh.visible = false;
+          pressureShellMesh.visible = false;
+          edgeMesh.visible = false;
+        }
       }
 
       /* ════════════════════════════════════════════════════════════════
@@ -1058,6 +1154,8 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         backgroundTexture,
         metalEnvMap,
         ro,
+        // F1 GLB model group
+        f1ModelGroup,
         // 22.1 — References for merged stream cleanup
         mergedStreamMesh,
         mergedStreamGeo,
@@ -1087,6 +1185,8 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         cancelAnimationFrame(t.animId);
         t.cleanupControls?.();
         t.ro?.disconnect();
+        // Dispose F1 GLB model
+        if (t.f1ModelGroup) disposeObject(t.f1ModelGroup);
         // 22.1 — Dispose merged streamline resources
         t.mergedStreamGeo?.dispose();
         t.mergedStreamMat?.dispose();
