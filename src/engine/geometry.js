@@ -33,6 +33,68 @@ export function simplPoly(pts, tol) {
   return res;
 }
 
+/* ── 26.1 — NACA 4-digit airfoil generator ── */
+export function generateNACA4(maxCamber, camberPos, thickness, numPoints = 40) {
+  const m = maxCamber / 100;  // max camber as fraction of chord
+  const p = camberPos / 100;  // camber position as fraction of chord
+  const t = thickness / 100;  // thickness as fraction of chord
+
+  const upper = [];
+  const lower = [];
+
+  for (let i = 0; i <= numPoints; i++) {
+    // Cosine spacing for better leading edge resolution
+    const beta = (i / numPoints) * Math.PI;
+    const x = 0.5 * (1 - Math.cos(beta));
+
+    // Thickness distribution (NACA standard)
+    const yt = 5 * t * (
+      0.2969 * Math.sqrt(x)
+      - 0.1260 * x
+      - 0.3516 * x * x
+      + 0.2843 * x * x * x
+      - 0.1015 * x * x * x * x
+    );
+
+    // Camber line
+    let yc = 0, dycdx = 0;
+    if (m > 0 && p > 0) {
+      if (x <= p) {
+        yc = (m / (p * p)) * (2 * p * x - x * x);
+        dycdx = (2 * m / (p * p)) * (p - x);
+      } else {
+        yc = (m / ((1 - p) * (1 - p))) * (1 - 2 * p + 2 * p * x - x * x);
+        dycdx = (2 * m / ((1 - p) * (1 - p))) * (p - x);
+      }
+    }
+
+    const theta = Math.atan(dycdx);
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+
+    upper.push([x - yt * sinT, yc + yt * cosT]);
+    lower.push([x + yt * sinT, yc - yt * cosT]);
+  }
+
+  // Build closed polygon: upper surface (TE→LE) + lower surface (LE→TE)
+  const poly = [];
+  for (let i = upper.length - 1; i >= 0; i--) {
+    poly.push([upper[i][0], 0.5 - upper[i][1]]);  // flip Y for screen coords, center at 0.5
+  }
+  for (let i = 1; i < lower.length; i++) {
+    poly.push([lower[i][0], 0.5 - lower[i][1]]);
+  }
+
+  return poly;
+}
+
+export function nacaDesignation(maxCamber, camberPos, thickness) {
+  const d1 = Math.round(maxCamber);
+  const d2 = Math.round(camberPos / 10);
+  const d34 = String(Math.round(thickness)).padStart(2, "0");
+  return `NACA ${d1}${d2}${d34}`;
+}
+
 /* ── Preset profiles ── */
 export function genPreset(type) {
   const p = [];
