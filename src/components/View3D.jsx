@@ -117,8 +117,9 @@ function solveFlowField(bodyPts, xMin, xMax, yMin, yMax, gridW, gridH) {
   }
 
   const dx2 = dx * dx, dy2 = dy * dy, denom = 2 * (dx2 + dy2);
-  const omega = 1.65;
-  for (let iter = 0; iter < 500; iter++) {
+  const rhoJ = 0.5 * (Math.cos(Math.PI / (gridW - 1)) + Math.cos(Math.PI / (gridH - 1)));
+  const omega = 2 / (1 + Math.sqrt(1 - rhoJ * rhoJ));
+  for (let iter = 0; iter < 800; iter++) {
     for (let j = 1; j < gridH - 1; j++) {
       for (let i = 1; i < gridW - 1; i++) {
         const idx = j * gridW + i;
@@ -154,7 +155,7 @@ function solveFlowField(bodyPts, xMin, xMax, yMin, yMax, gridW, gridH) {
     vx[(gridH - 1) * gridW + i] = vx[(gridH - 2) * gridW + i];
     vy[(gridH - 1) * gridW + i] = vy[(gridH - 2) * gridW + i];
   }
-  return { vx, vy, gridW, gridH, xMin, yMin, dx, dy, velMin: velMin || 0, velMax: velMax || 1 };
+  return { vx, vy, solid, gridW, gridH, xMin, yMin, dx, dy, velMin: velMin || 0, velMax: velMax || 1 };
 }
 
 function sampleVel(field, x, y) {
@@ -176,18 +177,48 @@ function traceStreamPath(field, x0, y0, ds, maxSteps) {
   coords.push(x, y, Math.sqrt(vx0 * vx0 + vy0 * vy0));
   const xMax = field.xMin + (field.gridW - 1) * field.dx;
   const yMax = field.yMin + (field.gridH - 1) * field.dy;
+  const hasSolid = !!field.solid;
+
+  const isSolid = (px, py) => {
+    if (!hasSolid) return false;
+    const gi = Math.round((px - field.xMin) / field.dx);
+    const gj = Math.round((py - field.yMin) / field.dy);
+    return gi >= 0 && gi < field.gridW && gj >= 0 && gj < field.gridH &&
+           field.solid[gj * field.gridW + gi] === 1;
+  };
 
   for (let step = 0; step < maxSteps; step++) {
     const [vx1, vy1] = sampleVel(field, x, y);
     const spd1 = Math.sqrt(vx1 * vx1 + vy1 * vy1);
-    if (spd1 < 0.01) break;
-    const hx = ds * vx1 / spd1, hy = ds * vy1 / spd1;
+    if (spd1 < 0.003) break;
+
+    // Adaptive step size — smaller steps near body where velocity is low
+    const localDs = ds * clamp(spd1 * 2.5, 0.2, 1.0);
+
+    // RK2 midpoint integration
+    const hx = localDs * vx1 / spd1, hy = localDs * vy1 / spd1;
     const [vx2, vy2] = sampleVel(field, x + 0.5 * hx, y + 0.5 * hy);
     const spd2 = Math.sqrt(vx2 * vx2 + vy2 * vy2);
-    if (spd2 < 0.01) break;
-    x += ds * vx2 / spd2;
-    y += ds * vy2 / spd2;
-    if (x < field.xMin || x > xMax || y < field.yMin + 0.05 || y > yMax - 0.05) break;
+    if (spd2 < 0.003) break;
+
+    let nx = x + localDs * vx2 / spd2;
+    let ny = y + localDs * vy2 / spd2;
+
+    // Body collision — binary search to find surface contact point
+    if (isSolid(nx, ny)) {
+      let validX = x, validY = y;
+      let testX = nx, testY = ny;
+      for (let bs = 0; bs < 8; bs++) {
+        const midX = (validX + testX) * 0.5, midY = (validY + testY) * 0.5;
+        if (isSolid(midX, midY)) { testX = midX; testY = midY; }
+        else { validX = midX; validY = midY; }
+      }
+      nx = validX; ny = validY;
+    }
+
+    if (nx < field.xMin || nx > xMax || ny < field.yMin + 0.05 || ny > yMax - 0.05) break;
+    x = nx;
+    y = ny;
     const [vxf, vyf] = sampleVel(field, x, y);
     coords.push(x, y, Math.sqrt(vxf * vxf + vyf * vyf));
   }
@@ -766,17 +797,17 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         if (polyHash !== cachedFlowHash) {
           cachedFlowHash = polyHash;
           const bodyWorld = pts.map(([x, y]) => [x + 0.05, y]);
-          const field = solveFlowField(bodyWorld, -5.2, 5.5, -1.9, 1.9, 200, 80);
+          const field = solveFlowField(bodyWorld, -5.2, 5.5, -1.9, 1.9, 280, 110);
           cachedFlowField = field;
           cachedVelRange = [field.velMin, field.velMax];
 
           cachedStreamPaths = [];
           for (let li = 0; li < lineCount; li++) {
-            cachedStreamPaths.push(traceStreamPath(field, xStart, streamlines[li].yBase, 0.04, 350));
+            cachedStreamPaths.push(traceStreamPath(field, xStart, streamlines[li].yBase, 0.03, 600));
           }
           cachedHeroPaths = [];
           for (let hi = 0; hi < heroLines.length; hi++) {
-            cachedHeroPaths.push(traceStreamPath(field, xStart, heroLines[hi].yBase, 0.04, 350));
+            cachedHeroPaths.push(traceStreamPath(field, xStart, heroLines[hi].yBase, 0.03, 600));
           }
         }
       }
@@ -1017,8 +1048,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
             const offset = Math.floor((time * flowSpeed + item.phase * 5) % (maxOffset + 1));
 
             const zAbs = Math.abs(item.zBase);
-            const zFactor = zAbs < bodyHalfDepth ? 1.0 :
-                            zAbs < bodyHalfDepth + 0.3 ? 1.0 - (zAbs - bodyHalfDepth) / 0.3 : 0.0;
+            const zFactor = bodyHalfDepth / Math.sqrt(item.zBase * item.zBase + bodyHalfDepth * bodyHalfDepth + 0.001);
 
             for (let p = 0; p < STREAMLINE_POINTS; p++) {
               const pi = Math.min(offset + p, pathLen - 1);
@@ -1028,9 +1058,11 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
               const y = item.yBase + (deflectedY - item.yBase) * zFactor;
               const xRel = px - 0.05;
-              const bodyInfl = Math.exp(-(xRel * xRel) / 1.5) * zFactor;
+              const bodyInfl = Math.exp(-(xRel * xRel) / 1.2);
               const zSign = item.zBase > 0 ? 1 : item.zBase < 0 ? -1 : 0;
-              const z = item.zBase + bodyInfl * 0.15 * zSign;
+              const clearance = bodyHalfDepth + 0.06;
+              const push = zAbs > 0.02 && zAbs < clearance ? (clearance - zAbs) * bodyInfl * zSign : 0;
+              const z = item.zBase + push;
 
               tmpLinePosArr[p * 3] = px;
               tmpLinePosArr[p * 3 + 1] = y;
@@ -1069,16 +1101,17 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
             const maxOff = Math.max(0, pathLen - STREAMLINE_POINTS);
             const off = Math.floor((time * flowSpeed + hero.phase * 5) % (maxOff + 1));
             const zAbs = Math.abs(hero.zBase);
-            const zF = zAbs < bodyHalfDepth ? 1.0 :
-                       zAbs < bodyHalfDepth + 0.3 ? 1.0 - (zAbs - bodyHalfDepth) / 0.3 : 0.0;
+            const zF = bodyHalfDepth / Math.sqrt(hero.zBase * hero.zBase + bodyHalfDepth * bodyHalfDepth + 0.001);
             for (let p = 0; p < STREAMLINE_POINTS; p++) {
               const pi = Math.min(off + p, pathLen - 1);
               const px = path[pi * 3], dy = path[pi * 3 + 1];
               const y = hero.yBase + (dy - hero.yBase) * zF;
               const xR = px - 0.05;
-              const bI = Math.exp(-(xR * xR) / 1.5) * zF;
+              const bI = Math.exp(-(xR * xR) / 1.2);
               const zS = hero.zBase > 0 ? 1 : hero.zBase < 0 ? -1 : 0;
-              hero.points[p].set(px, y, hero.zBase + bI * 0.15 * zS);
+              const clZ = bodyHalfDepth + 0.06;
+              const pushZ = zAbs > 0.02 && zAbs < clZ ? (clZ - zAbs) * bI * zS : 0;
+              hero.points[p].set(px, y, hero.zBase + pushZ);
             }
           });
         }
