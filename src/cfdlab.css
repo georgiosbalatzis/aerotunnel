@@ -616,6 +616,58 @@ button, input, select { font: inherit; }
 .method-list li { display: flex; gap: 12px; align-items: baseline; padding: 10px; background: var(--f1-slate); border: 1px solid var(--f1-border); font-size: 13px; color: var(--f1-silver); counter-increment: step; }
 .method-list li::before { content: counter(step, decimal-leading-zero); font-family: var(--font-mono); font-size: 10px; color: var(--accent-flow); letter-spacing: .12em; flex-shrink: 0; }
 
+/* ═══════════════════════════════════════
+   PHASE 25 — SESSION PERSISTENCE
+   ═══════════════════════════════════════ */
+
+/* 25.1 — Session restore toast */
+.session-toast {
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 400;
+  padding: 8px 20px;
+  background: var(--bg-glass-hi);
+  border: 1px solid var(--border-glass);
+  border-left: 3px solid var(--accent-flow);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-primary);
+  animation: toast-in 300ms ease-out;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* 25.2 — Session gallery */
+.session-gallery {
+  display: grid; gap: 6px; max-height: 240px; overflow-y: auto;
+}
+.session-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px;
+  background: var(--f1-slate);
+  border: 1px solid var(--f1-border);
+  transition: border-color 120ms ease;
+}
+.session-card:hover { border-color: var(--f1-border-hi); }
+.session-card__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.session-card__name {
+  font-family: var(--font-display); font-size: 13px; font-weight: 600;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.session-card__meta {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: .1em;
+  color: var(--text-dim); text-transform: uppercase;
+}
+.session-card__preset {
+  color: var(--accent-flow);
+}
+.session-card__actions { display: flex; gap: 4px; flex-shrink: 0; }
+.session-card__delete {
+  padding: 4px 8px !important; min-width: 0;
+  color: var(--f1-dim) !important;
+}
+.session-card__delete:hover { color: var(--accent-crit) !important; border-color: var(--accent-crit) !important; }
+
 /* ── ANIMATIONS ── */
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 @keyframes panel-tab-fade { from{opacity:0} to{opacity:1} }

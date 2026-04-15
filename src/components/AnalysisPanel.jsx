@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const CHART_COLORS = {
   cl: "#22ff88",
@@ -202,7 +202,17 @@ function HistoryChart({ history }) {
   );
 }
 
-export default function AnalysisPanel({ hSnap, exportCSV, stats, ldRatio, regime }) {
+function loadSavedSessions() {
+  try {
+    const raw = localStorage.getItem("aerolab-sessions");
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) { return []; }
+}
+
+export default function AnalysisPanel({ hSnap, exportCSV, stats, ldRatio, regime, onSaveSession, onLoadSession, onDeleteSession }) {
+  const [savedSessions, setSavedSessions] = useState(() => loadSavedSessions());
+  const refreshSessions = useCallback(() => setSavedSessions(loadSavedSessions()), []);
+
   const recentRows = hSnap.slice(-80).reverse();
   const sessionStart = hSnap[0]?.t ? new Date(hSnap[0].t).toLocaleTimeString([], {
     hour: "2-digit",
@@ -261,6 +271,42 @@ export default function AnalysisPanel({ hSnap, exportCSV, stats, ldRatio, regime
           </div>
         </aside>
       </div>
+
+      {/* 25.2 — Session gallery */}
+      <section className="a-panel analysis-sessions-panel">
+        <div className="a-panel__header">
+          <div>
+            <div className="a-panel__title">Sessions</div>
+            <div className="a-panel__sub">Save & restore simulation states</div>
+          </div>
+          <button className="btn-ghost" onClick={() => {
+            const name = prompt("Session name:", `${stats.cl > 0 ? `CL${stats.cl}` : "session"} ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
+            if (name != null) { onSaveSession?.(name); refreshSessions(); }
+          }}>Save Current</button>
+        </div>
+        {savedSessions.length > 0 ? (
+          <div className="session-gallery">
+            {savedSessions.map((s, i) => (
+              <div className="session-card" key={s.timestamp || i}>
+                <div className="session-card__info">
+                  <span className="session-card__name">{s.name}</span>
+                  <span className="session-card__meta">
+                    {s.preset && <span className="session-card__preset">{s.preset}</span>}
+                    {s.stats && <span>CL {s.stats.cl} · CD {s.stats.cd}</span>}
+                    <span>{new Date(s.timestamp).toLocaleDateString()} {new Date(s.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  </span>
+                </div>
+                <div className="session-card__actions">
+                  <button className="btn-ghost" onClick={() => { onLoadSession?.(s); }}>Load</button>
+                  <button className="btn-ghost session-card__delete" onClick={() => { onDeleteSession?.(i); refreshSessions(); }}>&#10005;</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="history-empty">No saved sessions. Use "Save Current" to store a snapshot.</div>
+        )}
+      </section>
 
       <div className="analysis-bottom-row">
         <div className="analysis-session-meta">

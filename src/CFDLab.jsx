@@ -15,6 +15,40 @@ import {
   TURBO, COOLWARM,
 } from "./engine/index.js";
 
+/* ── 25.1 — Session persistence ── */
+const SESSION_KEY = "aerolab-session";
+const SESSIONS_KEY = "aerolab-sessions";
+const SESSION_VERSION = 2;
+
+function saveSession(state) {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ version: SESSION_VERSION, timestamp: Date.now(), ...state }));
+  } catch (_) { /* quota exceeded — silently skip */ }
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data.version !== SESSION_VERSION) return null;
+    return data;
+  } catch (_) { return null; }
+}
+
+function loadSavedSessions() {
+  try {
+    const raw = localStorage.getItem(SESSIONS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) { return []; }
+}
+
+function saveSessions(sessions) {
+  try {
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions.slice(0, 10)));
+  } catch (_) { /* quota exceeded */ }
+}
+
 /* ── Static config ── */
 const MODES = [
   { id:"velocity",    label:"Velocity",    short:"VEL", color:"#00d4ff", tone:"var(--accent-flow)" },
@@ -129,9 +163,11 @@ export default function CFDLab() {
   const [modeTransition, setModeTransition] = useState(false);
   const [solverWarning, setSolverWarning] = useState(null);
   const [convergenceDelta, setConvergenceDelta] = useState(1);
+  const [sessionToast, setSessionToast] = useState(null);
   const solverWarningTimer = useRef(null);
   const panelOpenRef = useRef(panelOpen);
   const activeSectionRef = useRef(activeSection);
+  const sessionRestored = useRef(false);
 
   /* ── Consolidated params ref ── */
   const P = useRef({
@@ -162,6 +198,52 @@ export default function CFDLab() {
       const s = new LBM(COLS, ROWS); s.setNu(0.015); solverRef.current = s;
     }
   }, []);
+
+  // 25.1 — Restore session on mount
+  useEffect(() => {
+    if (sessionRestored.current) return;
+    sessionRestored.current = true;
+    const saved = loadSession();
+    if (!saved) return;
+    if (saved.mode) setMode(saved.mode);
+    if (saved.preset) setPreset(saved.preset);
+    if (saved.poly) setPoly(saved.poly);
+    if (saved.cx != null) setCx(saved.cx);
+    if (saved.cy != null) setCy(saved.cy);
+    if (saved.sx != null) setSx(saved.sx);
+    if (saved.sy != null) setSy(saved.sy);
+    if (saved.aoa != null) setAoa(saved.aoa);
+    if (saved.vel != null) setVel(saved.vel);
+    if (saved.turb != null) setTurb(saved.turb);
+    if (saved.nu != null) setNu(saved.nu);
+    if (saved.simplify != null) setSimplify(saved.simplify);
+    if (saved.pCount != null) setPCount(saved.pCount);
+    if (saved.trailOp != null) setTrailOp(saved.trailOp);
+    if (saved.simSpd != null) setSimSpd(saved.simSpd);
+    // Restore history
+    if (saved.history?.length) {
+      histRef.current = saved.history;
+      setHistSnap([...saved.history]);
+    }
+    // Don't auto-run — let user review state
+    setAutoRun(false);
+    const timeStr = new Date(saved.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setSessionToast(`Session restored · ${timeStr}`);
+    setTimeout(() => setSessionToast(null), 3000);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 25.1 — Auto-save every 5 seconds
+  useEffect(() => {
+    const id = setInterval(() => {
+      saveSession({
+        mode, preset, poly, cx, cy, sx, sy, aoa,
+        vel, turb, nu, simplify,
+        pCount, trailOp, simSpd,
+        history: histRef.current.slice(-200),
+      });
+    }, 5000);
+    return () => clearInterval(id);
+  }, [mode, preset, poly, cx, cy, sx, sy, aoa, vel, turb, nu, simplify, pCount, trailOp, simSpd, histRef]);
 
   const rebuild = useCallback(() => {
     const p = P.current;
@@ -229,6 +311,55 @@ export default function CFDLab() {
     const a = document.createElement("a"); a.href = u; a.download = `aerolab-${Date.now()}.csv`; a.click();
     URL.revokeObjectURL(u);
   }, [histRef]);
+
+  // 25.2 — Session gallery callbacks
+  const saveCurrentSession = useCallback((name) => {
+    const sessions = loadSavedSessions();
+    const entry = {
+      name: name || `${preset} ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+      timestamp: Date.now(),
+      preset, mode, poly, cx, cy, sx, sy, aoa,
+      vel, turb, nu, simplify,
+      pCount, trailOp, simSpd,
+      stats: { cl: stats.cl, cd: stats.cd, re: stats.re },
+      history: histRef.current.slice(-200),
+    };
+    sessions.unshift(entry);
+    saveSessions(sessions);
+    setSessionToast("Session saved");
+    setTimeout(() => setSessionToast(null), 2000);
+  }, [preset, mode, poly, cx, cy, sx, sy, aoa, vel, turb, nu, simplify, pCount, trailOp, simSpd, stats, histRef]);
+
+  const loadSavedSession = useCallback((session) => {
+    if (session.mode) setMode(session.mode);
+    if (session.preset) setPreset(session.preset);
+    if (session.poly) setPoly(session.poly);
+    if (session.cx != null) setCx(session.cx);
+    if (session.cy != null) setCy(session.cy);
+    if (session.sx != null) setSx(session.sx);
+    if (session.sy != null) setSy(session.sy);
+    if (session.aoa != null) setAoa(session.aoa);
+    if (session.vel != null) setVel(session.vel);
+    if (session.turb != null) setTurb(session.turb);
+    if (session.nu != null) setNu(session.nu);
+    if (session.simplify != null) setSimplify(session.simplify);
+    if (session.pCount != null) setPCount(session.pCount);
+    if (session.trailOp != null) setTrailOp(session.trailOp);
+    if (session.simSpd != null) setSimSpd(session.simSpd);
+    if (session.history?.length) {
+      histRef.current = session.history;
+      setHistSnap([...session.history]);
+    }
+    setAutoRun(false);
+    setSessionToast(`Loaded: ${session.name}`);
+    setTimeout(() => setSessionToast(null), 2000);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const deleteSavedSession = useCallback((index) => {
+    const sessions = loadSavedSessions();
+    sessions.splice(index, 1);
+    saveSessions(sessions);
+  }, []);
 
   const undoShape = useCallback(() => {
     if (prevPoly) { setPoly(prevPoly); setPrevPoly(null); }
@@ -641,7 +772,7 @@ export default function CFDLab() {
             </div>
           </section>
         )}
-        {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} />}
+        {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} stats={stats} ldRatio={ldRatio} regime={regime} onSaveSession={saveCurrentSession} onLoadSession={loadSavedSession} onDeleteSession={deleteSavedSession} />}
         {view==="about" && <AboutPanel />}
       </main>
 
@@ -689,6 +820,11 @@ export default function CFDLab() {
             <span className="floating-metrics-compact__value">{hasRun?ldRatio:"—"}</span>
           </span>
         </div>
+      )}
+
+      {/* 25.1 — Session restore toast */}
+      {sessionToast && (
+        <div className="session-toast" role="status">{sessionToast}</div>
       )}
 
       {/* 20.5 — Screenshot watermark */}
