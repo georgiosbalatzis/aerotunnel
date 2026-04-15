@@ -1,0 +1,30 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export const __wbg_lbm_free: (a: number, b: number) => void;
+export const lbm_build_solid: (a: number, b: number, c: number, d: number) => void;
+export const lbm_clear_diverged: (a: number) => void;
+export const lbm_get_cols: (a: number) => number;
+export const lbm_get_convergence_delta: (a: number) => number;
+export const lbm_get_curl_max: (a: number) => number;
+export const lbm_get_curl_min: (a: number) => number;
+export const lbm_get_curl_ptr: (a: number) => number;
+export const lbm_get_diverged: (a: number) => number;
+export const lbm_get_n: (a: number) => number;
+export const lbm_get_overflow_count: (a: number) => number;
+export const lbm_get_rho_max: (a: number) => number;
+export const lbm_get_rho_min: (a: number) => number;
+export const lbm_get_rho_ptr: (a: number) => number;
+export const lbm_get_rows: (a: number) => number;
+export const lbm_get_solid_ptr: (a: number) => number;
+export const lbm_get_spd_max: (a: number) => number;
+export const lbm_get_spd_min: (a: number) => number;
+export const lbm_get_spd_ptr: (a: number) => number;
+export const lbm_get_ux_ptr: (a: number) => number;
+export const lbm_get_uy_ptr: (a: number) => number;
+export const lbm_new: (a: number, b: number) => number;
+export const lbm_set_nu: (a: number, b: number) => void;
+export const lbm_step: (a: number, b: number, c: number) => void;
+export const __wbindgen_externrefs: WebAssembly.Table;
+export const __wbindgen_malloc: (a: number, b: number) => number;
+export const __wbindgen_start: () => void;

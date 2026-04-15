@@ -1,0 +1,15 @@
+{
+  "name": "aerolab-lbm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "aerolab_lbm_bg.wasm",
+    "aerolab_lbm.js",
+    "aerolab_lbm.d.ts"
+  ],
+  "main": "aerolab_lbm.js",
+  "types": "aerolab_lbm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

@@ -13,6 +13,7 @@ import {
   LBM, createPool, resizePool,
   xformPoly, simplPoly, genPreset,
   TURBO, COOLWARM,
+  initWasmSolver, createSolver, isWasmAvailable,
 } from "./engine/index.js";
 
 /* ── 25.1 — Session persistence ── */
@@ -197,10 +198,30 @@ export default function CFDLab() {
     }
   }, [running, mode, vel, turb, nu, pCount, trailOp, simSpd, cx, cy, sx, sy, aoa, simplify, poly]);
 
+  const [wasmReady, setWasmReady] = useState(false);
   useEffect(() => {
+    let cancelled = false;
+    initWasmSolver().then(ok => {
+      if (cancelled) return;
+      setWasmReady(ok);
+      if (ok) {
+        const s = createSolver(COLS, ROWS);
+        s.setNu(P.current.nu);
+        solverRef.current = s;
+        // Rebuild solid geometry on the new WASM solver
+        const p = P.current;
+        if (p.poly) {
+          const sh = p.simplify > 0 ? simplPoly(p.poly, p.simplify * 0.005) : p.poly;
+          s.buildSolid(xformPoly(sh, p.cx, p.cy, p.sx, p.sy, p.aoa));
+        }
+        console.log("[AeroLab] Using WASM solver");
+      }
+    });
+    // Immediate JS fallback so rendering starts without waiting for WASM
     if (!solverRef.current) {
       const s = new LBM(COLS, ROWS); s.setNu(0.015); solverRef.current = s;
     }
+    return () => { cancelled = true; };
   }, []);
 
   // 25.1 — Restore session on mount
@@ -269,7 +290,7 @@ export default function CFDLab() {
   }, [running, hasRun]);
 
   const resetSolver = useCallback(() => {
-    const s = new LBM(COLS, ROWS); s.setNu(P.current.nu); solverRef.current = s; rebuild();
+    const s = createSolver(COLS, ROWS); s.setNu(P.current.nu); solverRef.current = s; rebuild();
   }, [rebuild]);
 
   const toggleFS = useCallback(() => {
