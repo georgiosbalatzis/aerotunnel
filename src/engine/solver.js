@@ -26,6 +26,10 @@ export class LBM {
     this.overflowCount = 0;
     // 21.3 — Convergence delta (L2 norm of velocity change)
     this.convergenceDelta = 1;
+    // 23.2 — Cached field ranges (updated during step)
+    this.spdMin = 0; this.spdMax = 0;
+    this.rhoMin = 1; this.rhoMax = 1;
+    this.curlMin = 0; this.curlMax = 0;
     this._prevUx = new Float32Array(this.N);
     this._prevUy = new Float32Array(this.N);
     this._init(0.12);
@@ -87,6 +91,8 @@ export class LBM {
     // Macroscopic quantities + 21.1 NaN sentinel + 21.2 velocity limiter
     let overflow = 0;
     const MAX_U = 0.25; // lattice velocity limit (|u| << c_s ≈ 0.577)
+    // 23.2 — Track field ranges incrementally
+    let spdMn = 1e9, spdMx = -1e9, rhoMn = 1e9, rhoMx = -1e9;
     for (let k = 0; k < N; k++) {
       if (solid[k]) { ux[k]=0; uy[k]=0; rho[k]=1; this.spd[k]=0; continue; }
       const b = k * 9;
@@ -110,9 +116,15 @@ export class LBM {
         overflow++;
       }
       rho[k] = r; ux[k] = uvx; uy[k] = uvy;
-      this.spd[k] = Math.sqrt(uvx * uvx + uvy * uvy);
+      const sp = Math.sqrt(uvx * uvx + uvy * uvy);
+      this.spd[k] = sp;
+      // 23.2 — Update field ranges
+      if (sp < spdMn) spdMn = sp; if (sp > spdMx) spdMx = sp;
+      if (r < rhoMn) rhoMn = r; if (r > rhoMx) rhoMx = r;
     }
     this.overflowCount = overflow;
+    this.spdMin = spdMn; this.spdMax = spdMx;
+    this.rhoMin = rhoMn; this.rhoMax = rhoMx;
 
     // Zou-He inlet BC with turbulence perturbation
     const ps = turb * 0.004;
@@ -166,12 +178,16 @@ export class LBM {
     this._prevUx.set(ux);
     this._prevUy.set(uy);
 
-    // Curl (vorticity)
+    // Curl (vorticity) + 23.2 — track curl range
+    let curlMn = 1e9, curlMx = -1e9;
     for (let j = 1; j < R-1; j++)
       for (let i = 1; i < C-1; i++) {
         const k = j*C+i;
-        this.curl[k] = (uy[k+1]-uy[k-1])*0.5 - (ux[k+C]-ux[k-C])*0.5;
+        const cv = (uy[k+1]-uy[k-1])*0.5 - (ux[k+C]-ux[k-C])*0.5;
+        this.curl[k] = cv;
+        if (cv < curlMn) curlMn = cv; if (cv > curlMx) curlMx = cv;
       }
+    this.curlMin = curlMn; this.curlMax = curlMx;
   }
 }
 
