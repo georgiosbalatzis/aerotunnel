@@ -376,10 +376,14 @@ export default function CFDLab() {
       } else {
         const lut = vm === "pressure" ? COOLWARM : TURBO;
         const field = vm === "velocity" ? solver.spd : vm === "pressure" ? solver.rho : solver.curl;
-        let fMn = 1e9, fMx = -1e9;
-        for (let k = 0; k < solver.N; k++) {
-          if (solver.solid[k]) continue;
-          const v = field[k]; if (v < fMn) fMn = v; if (v > fMx) fMx = v;
+        // 23.2 — Use cached field ranges from solver (no per-frame scan)
+        let fMn, fMx;
+        if (vm === "velocity") { fMn = solver.spdMin; fMx = solver.spdMax; }
+        else if (vm === "pressure") { fMn = solver.rhoMin; fMx = solver.rhoMax; }
+        else { fMn = solver.curlMin; fMx = solver.curlMax; }
+        // Fallback if solver hasn't computed ranges yet
+        if (fMn === undefined || fMx === undefined || fMn >= fMx) {
+          fMn = 0; fMx = 1;
         }
         frameFieldMin = fMn; frameFieldMax = fMx;
         const fR = fMx - fMn;
@@ -427,6 +431,7 @@ export default function CFDLab() {
         }
       }
 
+      // 23.1 — Body outline: replace expensive shadowBlur with double-stroke glow
       const outline = p._outline;
       if (outline) {
         ctx.beginPath();
@@ -435,9 +440,12 @@ export default function CFDLab() {
           i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
         });
         ctx.closePath();
+        // Pass 1: wide soft glow (cheap approximation of shadow)
+        ctx.strokeStyle = "rgba(0,212,255,0.15)"; ctx.lineWidth = 6;
+        ctx.stroke();
+        // Pass 2: crisp outline on top
         ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2;
-        ctx.shadowColor = "#00d4ff"; ctx.shadowBlur = 12;
-        ctx.stroke(); ctx.shadowBlur = 0;
+        ctx.stroke();
       }
 
       if (p.running && frameRef.current % 15 === 0) {
