@@ -565,9 +565,23 @@ export default function CFDLab() {
         />
       )}
 
-      {/* Mode pills — floating top-center */}
+      {/* Mode pills — floating top-center + 24.2 swipe mode switch */}
       {view==="tunnel" && (
-        <div className="floating-mode-bar" aria-label="Visualization modes">
+        <div className="floating-mode-bar" aria-label="Visualization modes"
+          onTouchStart={e => { e.currentTarget._swipeX = e.touches[0].clientX; }}
+          onTouchEnd={e => {
+            const startX = e.currentTarget._swipeX;
+            if (startX == null) return;
+            const endX = e.changedTouches[0].clientX;
+            const dx = endX - startX;
+            if (Math.abs(dx) < 60) return;
+            const idx = MODES.findIndex(m => m.id === mode);
+            const next = dx < 0 ? Math.min(idx + 1, MODES.length - 1) : Math.max(idx - 1, 0);
+            if (next !== idx) {
+              changeMode(MODES[next].id);
+              try { navigator.vibrate?.(10); } catch (_) {}
+            }
+          }}>
           {MODES.map((m,i) => (
             <button key={m.id} className={`floating-mode-pill ${mode===m.id?"is-active":""}`}
               aria-label={`Switch visualization mode to ${m.label}`}
@@ -654,6 +668,26 @@ export default function CFDLab() {
               <span className="floating-metric-pill__value">{m.value}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 24.1 — Compact metric bar for mobile */}
+      {view==="tunnel" && (
+        <div className={`floating-metrics-compact ${!hasRun?"is-waiting":""}`}>
+          <span className="floating-metrics-compact__item">
+            <span className="floating-metrics-compact__label">CL</span>
+            <span className="floating-metrics-compact__value">{hasRun?stats.cl:"—"}</span>
+          </span>
+          <span className="floating-metrics-compact__sep">&middot;</span>
+          <span className="floating-metrics-compact__item">
+            <span className="floating-metrics-compact__label">CD</span>
+            <span className="floating-metrics-compact__value">{hasRun?stats.cd:"—"}</span>
+          </span>
+          <span className="floating-metrics-compact__sep">&middot;</span>
+          <span className="floating-metrics-compact__item">
+            <span className="floating-metrics-compact__label">L/D</span>
+            <span className="floating-metrics-compact__value">{hasRun?ldRatio:"—"}</span>
+          </span>
         </div>
       )}
 

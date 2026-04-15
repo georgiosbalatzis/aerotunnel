@@ -269,8 +269,45 @@ export default function ControlPanel({
     return renderShape();
   };
 
+  // 24.3 — Drag-to-dismiss for mobile bottom sheet
+  const dragRef = useRef(null);
+  const dragStartY = useRef(null);
+
+  const onDragStart = event => {
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    dragStartY.current = clientY;
+  };
+  const onDragMove = event => {
+    if (dragStartY.current == null) return;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    const dy = clientY - dragStartY.current;
+    const panel = dragRef.current;
+    if (panel && dy > 0) {
+      panel.style.transform = `translateY(${dy}px)`;
+      panel.style.transition = "none";
+    }
+  };
+  const onDragEnd = event => {
+    if (dragStartY.current == null) return;
+    const clientY = event.changedTouches ? event.changedTouches[0].clientY : event.clientY;
+    const dy = clientY - dragStartY.current;
+    dragStartY.current = null;
+    const panel = dragRef.current;
+    if (panel) {
+      panel.style.transform = "";
+      panel.style.transition = "";
+    }
+    if (dy > 80) onClose();
+  };
+
   return (
-    <aside className={`control-panel ${isOpen ? "is-open" : ""}`} aria-hidden={!isOpen}>
+    <aside ref={dragRef} className={`control-panel ${isOpen ? "is-open" : ""}`} aria-hidden={!isOpen}>
+      {/* 24.3 — Drag handle for mobile bottom sheet */}
+      <div className="control-panel__drag-handle"
+        onTouchStart={onDragStart} onTouchMove={onDragMove} onTouchEnd={onDragEnd}
+        onMouseDown={onDragStart} onMouseMove={onDragMove} onMouseUp={onDragEnd}>
+        <div className="control-panel__drag-handle-pill" />
+      </div>
       <div className="control-panel__header">
         <span>{title}</span>
         <button aria-label="Close control panel" onClick={onClose}>&times;</button>

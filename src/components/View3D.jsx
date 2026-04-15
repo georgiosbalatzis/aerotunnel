@@ -933,11 +933,49 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         orbit.radius = clamp(orbit.radius + event.deltaY * 0.004, 3.4, 9.2);
       };
 
+      // 24.2 — Pinch-zoom + two-finger pan touch gestures
+      let lastTouchDist = 0;
+      let lastTouchMid = { x: 0, y: 0 };
+      let isTouchPanning = false;
+
+      const onTouchStart = event => {
+        if (event.touches.length === 2) {
+          event.preventDefault();
+          isTouchPanning = true;
+          const t0 = event.touches[0], t1 = event.touches[1];
+          lastTouchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+          lastTouchMid = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+          lastInteractionTime = performance.now() / 1000;
+        }
+      };
+      const onTouchMove = event => {
+        if (event.touches.length === 2 && isTouchPanning) {
+          event.preventDefault();
+          lastInteractionTime = performance.now() / 1000;
+          const t0 = event.touches[0], t1 = event.touches[1];
+          const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+          const mid = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+          // Pinch → zoom
+          const dDist = dist - lastTouchDist;
+          orbit.radius = clamp(orbit.radius - dDist * 0.01, 3.4, 9.2);
+          // Two-finger pan → orbit
+          orbit.theta -= (mid.x - lastTouchMid.x) * 0.004;
+          orbit.phi -= (mid.y - lastTouchMid.y) * 0.004;
+          orbit.phi = clamp(orbit.phi, 0.45, Math.PI - 0.35);
+          lastTouchDist = dist;
+          lastTouchMid = mid;
+        }
+      };
+      const onTouchEnd = () => { isTouchPanning = false; };
+
       domEl.addEventListener("pointerdown", onPointerDown);
       domEl.addEventListener("pointermove", onPointerMove);
       domEl.addEventListener("pointerup", onPointerUp);
       domEl.addEventListener("pointercancel", onPointerUp);
       domEl.addEventListener("wheel", onWheel, { passive: true });
+      domEl.addEventListener("touchstart", onTouchStart, { passive: false });
+      domEl.addEventListener("touchmove", onTouchMove, { passive: false });
+      domEl.addEventListener("touchend", onTouchEnd);
 
       let animId = 0;
       const clock = new THREE.Clock();
@@ -1033,6 +1071,9 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           domEl.removeEventListener("pointerup", onPointerUp);
           domEl.removeEventListener("pointercancel", onPointerUp);
           domEl.removeEventListener("wheel", onWheel);
+          domEl.removeEventListener("touchstart", onTouchStart);
+          domEl.removeEventListener("touchmove", onTouchMove);
+          domEl.removeEventListener("touchend", onTouchEnd);
         },
       };
     }

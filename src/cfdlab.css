@@ -703,6 +703,20 @@ button, input, select { font: inherit; }
   .analysis-bottom-row { grid-template-columns: 1fr; }
 }
 
+/* ═══════════════════════════════════════
+   PHASE 24 — MOBILE-FIRST UX OVERHAUL
+   ═══════════════════════════════════════ */
+
+/* 24.1 — Compact metric bar on mobile */
+.floating-metrics-compact {
+  display: none;
+}
+
+/* 24.3 — Bottom sheet drag handle */
+.control-panel__drag-handle {
+  display: none;
+}
+
 /* ── 19.2 MOBILE (≤ 720px) ── */
 @media (max-width: 720px) {
   /* Icon rail: moves to bottom as horizontal toolbar */
@@ -721,21 +735,67 @@ button, input, select { font: inherit; }
   .floating-rail-btn.is-active { box-shadow: inset 0 -2px 0 var(--accent-flow); }
   .floating-rail-action { width: 34px; height: 34px; }
 
-  /* Metrics pills: hide entirely */
+  /* 24.1 — Replace hidden desktop metrics with compact single-line strip */
   .floating-metrics { display: none; }
+  .floating-metrics-compact {
+    position: fixed; bottom: 44px; left: 0; right: 0; z-index: 200;
+    display: flex; justify-content: center; align-items: center; gap: 12px;
+    height: 28px;
+    background: var(--bg-glass);
+    border-top: 1px solid var(--border-glass);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  }
+  .floating-metrics-compact.is-waiting { opacity: .45; }
+  .floating-metrics-compact__item {
+    display: flex; align-items: center; gap: 4px;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: .08em;
+  }
+  .floating-metrics-compact__label {
+    color: var(--text-dim); text-transform: uppercase; font-size: 8px; letter-spacing: 1px;
+  }
+  .floating-metrics-compact__value {
+    color: var(--text-primary);
+  }
+  .floating-metrics-compact__sep {
+    color: rgba(255,255,255,.15); font-size: 10px;
+  }
 
   /* Mode pills: compress to icons only (no text labels) */
   .floating-mode-pill__label { max-width: 3ch; overflow: hidden; text-overflow: clip; }
   .floating-mode-bar { gap: 2px; padding: 3px; }
   .floating-mode-pill { padding: 0 8px; font-size: 9px; letter-spacing: .8px; }
 
-  /* Control panel: slides up from bottom as half-sheet drawer */
+  /* 24.3 — Bottom sheet with drag handle + snap points */
   .control-panel {
     left: 0; right: 0; top: auto; bottom: 44px;
     width: 100%; max-height: 50vh;
     transform: translateY(20px); border: 1px solid rgba(255,255,255,.06);
+    transition: transform .22s ease-out, opacity .18s ease-out, max-height .22s ease-out;
   }
   .control-panel.is-open { transform: translateY(0); }
+  .control-panel.is-full { max-height: 85vh; }
+
+  /* Drag handle visible on mobile */
+  .control-panel__drag-handle {
+    display: flex; justify-content: center; align-items: center;
+    padding: 8px 0 4px; cursor: grab; touch-action: none;
+  }
+  .control-panel__drag-handle:active { cursor: grabbing; }
+  .control-panel__drag-handle-pill {
+    width: 32px; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,.2);
+  }
+
+  /* 24.3 — Enlarged touch targets for sliders */
+  .slider-input::-webkit-slider-thumb {
+    width: 16px; height: 16px; margin-top: 2px;
+  }
+  .slider-input::-moz-range-thumb {
+    width: 16px; height: 16px;
+  }
+  /* 24.3 — Preset buttons: min-height 48px for Apple HIG touch targets */
+  .preset-btn { min-height: 48px; }
 
   /* Coordinate gizmo: hide */
   .view-3d-axis-gizmo { display: none; }
@@ -751,6 +811,47 @@ button, input, select { font: inherit; }
   .about-features { grid-template-columns: 1fr; }
   .about-title { font-size: 36px; }
   .analysis-kpi-grid { grid-template-columns: 1fr; }
+
+  /* Solver warning: position above compact metrics */
+  .solver-warning { bottom: 80px; }
+}
+
+/* ── 24.4 — Landscape mode on mobile ── */
+@media (max-width: 720px) and (orientation: landscape) {
+  /* Move icon rail to left (vertical), like desktop */
+  .floating-rail {
+    position: fixed; left: 0; right: auto; bottom: auto; top: 50%;
+    transform: translateY(-50%); flex-direction: column;
+    width: auto; height: auto; padding: 6px;
+  }
+  .floating-rail__group,
+  .floating-rail__actions {
+    flex-direction: column; gap: 0;
+  }
+  .floating-rail__separator { width: 24px; height: 1px; margin: 4px 0; }
+
+  /* Mode bar: top-left, below title chip */
+  .floating-mode-bar { left: 60px; transform: none; top: 8px; }
+
+  /* Compact metrics: inline at top-right */
+  .floating-metrics-compact {
+    position: fixed; top: 8px; right: 60px; left: auto; bottom: auto;
+    height: 28px; border-top: none;
+    border: 1px solid var(--border-glass);
+    padding: 0 10px;
+  }
+
+  /* Control panel: side drawer instead of bottom sheet */
+  .control-panel {
+    left: 52px; right: auto; bottom: auto; top: 50%;
+    transform: translateY(-50%) translateX(-20px);
+    width: 240px; max-height: 80vh;
+  }
+  .control-panel.is-open { transform: translateY(-50%) translateX(0); }
+  .control-panel__drag-handle { display: none; }
+
+  /* Canvas gets full height */
+  .canvas-area { min-height: 100vh; }
 }
 
 /* ── Small mobile refinements (≤ 480px) ── */
