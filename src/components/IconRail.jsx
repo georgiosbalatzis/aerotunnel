@@ -62,6 +62,31 @@ function RailIcon({ icon }) {
       </svg>
     );
   }
+  if (icon === "compare") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden>
+        <path d="M12 4v16" />
+        <rect x="3" y="6" width="7" height="12" rx="1" />
+        <rect x="14" y="6" width="7" height="12" rx="1" />
+      </svg>
+    );
+  }
+  if (icon === "undo") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden>
+        <path d="M5 8a7 7 0 0 1 14 0 7 7 0 0 1-7 7H5" />
+        <path d="M5 4v4h4" />
+      </svg>
+    );
+  }
+  if (icon === "redo") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden>
+        <path d="M19 8a7 7 0 0 0-14 0 7 7 0 0 0 7 7h7" />
+        <path d="M19 4v4h-4" />
+      </svg>
+    );
+  }
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
       <path d="M19 8a7 7 0 1 0 1 7" />
@@ -79,6 +104,12 @@ export default function IconRail({
   currentView = "tunnel",
   panelOpen = false,
   onViewChange,
+  onCompareToggle,
+  compareMode = false,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
 }) {
   const controlItems = CONTROL_SECTIONS.filter(section => FLOATING_CONTROL_IDS.has(section.id)).map(section => ({
     id: `control-${section.id}`,
@@ -90,6 +121,15 @@ export default function IconRail({
     onClick: () => onSectionChange(section.id),
   }));
   const viewItems = [
+    {
+      id: "compare",
+      className: `floating-rail-btn ${compareMode ? "is-active" : ""}`,
+      ariaLabel: compareMode ? "Exit comparison mode" : "Enter comparison mode",
+      tooltip: "Compare",
+      icon: "compare",
+      isActive: compareMode,
+      onClick: onCompareToggle,
+    },
     {
       id: "analysis",
       className: `floating-rail-btn ${currentView === "analysis" ? "is-active" : ""}`,
@@ -115,6 +155,22 @@ export default function IconRail({
       tooltip: "Reset",
       icon: "reset",
       onClick: onReset,
+    },
+    {
+      id: "undo",
+      className: `floating-rail-btn ${!canUndo ? "is-disabled" : ""}`,
+      ariaLabel: "Undo shape change",
+      tooltip: "Undo",
+      icon: "undo",
+      onClick: onUndo,
+    },
+    {
+      id: "redo",
+      className: `floating-rail-btn ${!canRedo ? "is-disabled" : ""}`,
+      ariaLabel: "Redo shape change",
+      tooltip: "Redo",
+      icon: "redo",
+      onClick: onRedo,
     },
   ];
   const railItems = [...controlItems, ...viewItems, ...actionItems];
