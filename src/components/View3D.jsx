@@ -78,6 +78,122 @@ function disposeObject(object) {
   });
 }
 
+/* ── Potential flow solver for physics-based streamlines ── */
+
+function pointInPoly(px, py, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1];
+    const xj = poly[j][0], yj = poly[j][1];
+    if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi)
+      inside = !inside;
+  }
+  return inside;
+}
+
+function solveFlowField(bodyPts, xMin, xMax, yMin, yMax, gridW, gridH) {
+  const dx = (xMax - xMin) / (gridW - 1);
+  const dy = (yMax - yMin) / (gridH - 1);
+  const N = gridW * gridH;
+  const psi = new Float64Array(N);
+  const solid = new Uint8Array(N);
+
+  let sumY = 0, cnt = 0;
+  for (let j = 0; j < gridH; j++) {
+    const y = yMin + j * dy;
+    for (let i = 0; i < gridW; i++) {
+      const x = xMin + i * dx;
+      const idx = j * gridW + i;
+      if (pointInPoly(x, y, bodyPts)) { solid[idx] = 1; sumY += y; cnt++; }
+    }
+  }
+  const psiBody = cnt > 0 ? sumY / cnt : 0;
+
+  for (let j = 0; j < gridH; j++) {
+    const y = yMin + j * dy;
+    for (let i = 0; i < gridW; i++) {
+      psi[j * gridW + i] = solid[j * gridW + i] ? psiBody : y;
+    }
+  }
+
+  const dx2 = dx * dx, dy2 = dy * dy, denom = 2 * (dx2 + dy2);
+  const omega = 1.65;
+  for (let iter = 0; iter < 500; iter++) {
+    for (let j = 1; j < gridH - 1; j++) {
+      for (let i = 1; i < gridW - 1; i++) {
+        const idx = j * gridW + i;
+        if (solid[idx]) continue;
+        const avg = (dy2 * (psi[idx - 1] + psi[idx + 1]) +
+                     dx2 * (psi[idx - gridW] + psi[idx + gridW])) / denom;
+        psi[idx] += omega * (avg - psi[idx]);
+      }
+    }
+    for (let j = 0; j < gridH; j++) psi[j * gridW + gridW - 1] = psi[j * gridW + gridW - 2];
+  }
+
+  const vx = new Float32Array(N), vy = new Float32Array(N);
+  let velMin = 1e9, velMax = -1e9;
+  for (let j = 1; j < gridH - 1; j++) {
+    for (let i = 1; i < gridW - 1; i++) {
+      const idx = j * gridW + i;
+      if (solid[idx]) continue;
+      vx[idx] = (psi[(j + 1) * gridW + i] - psi[(j - 1) * gridW + i]) / (2 * dy);
+      vy[idx] = -(psi[j * gridW + i + 1] - psi[j * gridW + i - 1]) / (2 * dx);
+      const spd = Math.sqrt(vx[idx] * vx[idx] + vy[idx] * vy[idx]);
+      if (spd < velMin) velMin = spd;
+      if (spd > velMax) velMax = spd;
+    }
+  }
+  for (let j = 0; j < gridH; j++) {
+    vx[j * gridW] = 1; vy[j * gridW] = 0;
+    vx[j * gridW + gridW - 1] = vx[j * gridW + gridW - 2];
+    vy[j * gridW + gridW - 1] = vy[j * gridW + gridW - 2];
+  }
+  for (let i = 0; i < gridW; i++) {
+    vx[i] = vx[gridW + i]; vy[i] = vy[gridW + i];
+    vx[(gridH - 1) * gridW + i] = vx[(gridH - 2) * gridW + i];
+    vy[(gridH - 1) * gridW + i] = vy[(gridH - 2) * gridW + i];
+  }
+  return { vx, vy, gridW, gridH, xMin, yMin, dx, dy, velMin: velMin || 0, velMax: velMax || 1 };
+}
+
+function sampleVel(field, x, y) {
+  const fi = (x - field.xMin) / field.dx, fj = (y - field.yMin) / field.dy;
+  const i = Math.floor(fi), j = Math.floor(fj);
+  if (i < 0 || i >= field.gridW - 1 || j < 0 || j >= field.gridH - 1) return [1, 0];
+  const s = fi - i, t = fj - j;
+  const idx = j * field.gridW + i, i01 = idx + 1, i10 = idx + field.gridW, i11 = i10 + 1;
+  return [
+    (1 - s) * (1 - t) * field.vx[idx] + s * (1 - t) * field.vx[i01] + (1 - s) * t * field.vx[i10] + s * t * field.vx[i11],
+    (1 - s) * (1 - t) * field.vy[idx] + s * (1 - t) * field.vy[i01] + (1 - s) * t * field.vy[i10] + s * t * field.vy[i11],
+  ];
+}
+
+function traceStreamPath(field, x0, y0, ds, maxSteps) {
+  const coords = [];
+  let x = x0, y = y0;
+  const [vx0, vy0] = sampleVel(field, x, y);
+  coords.push(x, y, Math.sqrt(vx0 * vx0 + vy0 * vy0));
+  const xMax = field.xMin + (field.gridW - 1) * field.dx;
+  const yMax = field.yMin + (field.gridH - 1) * field.dy;
+
+  for (let step = 0; step < maxSteps; step++) {
+    const [vx1, vy1] = sampleVel(field, x, y);
+    const spd1 = Math.sqrt(vx1 * vx1 + vy1 * vy1);
+    if (spd1 < 0.01) break;
+    const hx = ds * vx1 / spd1, hy = ds * vy1 / spd1;
+    const [vx2, vy2] = sampleVel(field, x + 0.5 * hx, y + 0.5 * hy);
+    const spd2 = Math.sqrt(vx2 * vx2 + vy2 * vy2);
+    if (spd2 < 0.01) break;
+    x += ds * vx2 / spd2;
+    y += ds * vy2 / spd2;
+    if (x < field.xMin || x > xMax || y < field.yMin + 0.05 || y > yMax - 0.05) break;
+    const [vxf, vyf] = sampleVel(field, x, y);
+    coords.push(x, y, Math.sqrt(vxf * vxf + vyf * vyf));
+  }
+  return new Float32Array(coords);
+}
+
 function buildBackgroundTexture(THREE) {
   const canvas = document.createElement("canvas");
   canvas.width = 16;
@@ -470,6 +586,13 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       let cachedExtrudeGeo = null;
       let cachedEdgeGeo = null;
 
+      // Flow field cache for physics-based streamlines
+      let cachedFlowField = null;
+      let cachedStreamPaths = null;
+      let cachedHeroPaths = null;
+      let cachedVelRange = [0.5, 1.5];
+      let cachedFlowHash = null;
+
       function hashPoly(poly) {
         if (!poly || !poly.length) return "";
         let h = "";
@@ -506,8 +629,8 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           loadF1Model();
           if (f1Model) {
             f1ModelGroup.visible = true;
-            // Car's length is along Z, rotate so it aligns with X (flow direction)
-            f1ModelGroup.rotation.set(0, Math.PI / 2, 0);
+            // Car's length is along Z, rotate so nose faces into the flow (-X)
+            f1ModelGroup.rotation.set(0, -Math.PI / 2, 0);
             f1ModelGroup.position.set(0.15, -0.15, 0);
             profileBounds = { width: 3.2, height: 1.0, depth: 1.6 };
           }
@@ -637,6 +760,24 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           profileMesh.visible = false;
           pressureShellMesh.visible = false;
           edgeMesh.visible = false;
+        }
+
+        // Compute potential flow field and trace streamlines
+        if (polyHash !== cachedFlowHash) {
+          cachedFlowHash = polyHash;
+          const bodyWorld = pts.map(([x, y]) => [x + 0.05, y]);
+          const field = solveFlowField(bodyWorld, -5.2, 5.5, -1.9, 1.9, 200, 80);
+          cachedFlowField = field;
+          cachedVelRange = [field.velMin, field.velMax];
+
+          cachedStreamPaths = [];
+          for (let li = 0; li < lineCount; li++) {
+            cachedStreamPaths.push(traceStreamPath(field, xStart, streamlines[li].yBase, 0.04, 350));
+          }
+          cachedHeroPaths = [];
+          for (let hi = 0; hi < heroLines.length; hi++) {
+            cachedHeroPaths.push(traceStreamPath(field, xStart, heroLines[hi].yBase, 0.04, 350));
+          }
         }
       }
 
@@ -768,8 +909,12 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           for (let v = 0; v < tubePosAttr.count; v++) {
             const vx = tubePosAttr.getX(v);
             const vy = tubePosAttr.getY(v);
-            const vz = tubePosAttr.getZ(v);
-            const vel = localVelocity(vx, vy, vz, profileBounds, null);
+            let vel = 0.5;
+            if (cachedFlowField) {
+              const [fvx, fvy] = sampleVel(cachedFlowField, vx, vy);
+              const spd = Math.sqrt(fvx * fvx + fvy * fvy);
+              vel = clamp((spd - cachedVelRange[0]) / ((cachedVelRange[1] - cachedVelRange[0]) || 1), 0, 1);
+            }
             const [r, g, b] = jetColormap(vel);
             tubeColors[v * 3] = r;
             tubeColors[v * 3 + 1] = g;
@@ -846,156 +991,123 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       const tmpLinePosArr = new Float32Array(STREAMLINE_POINTS * 3);
       const tmpLineColArr = new Float32Array(STREAMLINE_POINTS * 3);
 
-      function updateStreamlines(time, solver) {
-        const flow = solver?.ux ? clamp(Math.abs(solver.ux[(solver.ux.length / 2) | 0] || 0.12), 0.04, 0.24) : 0.12;
-        const travel = (time * (0.22 + flow * 0.85)) % 1;
-        const bodyH = Math.max(profileBounds.height, 0.52);
-        const halfBodyH = bodyH * 0.5;
-
-        // 22.1 — Update all streamlines into merged buffer
+      function updateStreamlines(time) {
         const mPos = mergedStreamGeo.attributes.position.array;
         const mCol = mergedStreamGeo.attributes.color.array;
+        const bodyHalfDepth = profileBounds.depth * 0.5;
+        const flowSpeed = 15;
+        const velRange = cachedVelRange;
+        const velSpan = (velRange[1] - velRange[0]) || 1;
 
         for (let li = 0; li < lineCount; li++) {
           const item = streamlines[li];
-          const centerBand = Math.max(0, halfBodyH + 0.24 - Math.abs(item.yBase));
-          const ySign = item.yBase >= 0 ? 1 : -1;
-          const centerSign = ySign || (item.rowT > 0.5 ? 1 : -1);
-          const lineXStart = item.xStartLocal;
-          const lineXEnd = xEnd;
+          const path = cachedStreamPaths ? cachedStreamPaths[li] : null;
 
-          // Compute points into temp buffer
-          for (let point = 0; point < STREAMLINE_POINTS; point++) {
-            const pointT = point / (STREAMLINE_POINTS - 1);
-            const shiftedT = (pointT + travel + item.phase * 0.006) % 1;
-            const x = lineXStart + pointT * (lineXEnd - lineXStart);
-            const localX = x - 0.05;
-            const noseInfluence = Math.exp(-((localX + 0.42) * (localX + 0.42)) / 1.8);
-            const bodyInfluence = Math.exp(-(localX * localX) / 1.25);
-            const wakeInfluence = smoothstep(-0.15, 2.85, localX) * Math.exp(-Math.max(localX, 0) * 0.22);
-            const wrap = centerBand * centerSign * (0.52 * bodyInfluence + 0.26 * noseInfluence);
-            const wake = Math.sin(localX * 4.3 - time * 2.3 + item.phase) * wakeInfluence * (0.02 + centerBand * 0.11);
-            const ripple = Math.sin(shiftedT * Math.PI * 2 + item.phase) * 0.018;
-            const y = item.yBase + wrap + wake + ripple;
-            const zWrap = (item.zBase >= 0 ? 1 : -1) * centerBand * 0.24 * bodyInfluence;
-            const zWake = Math.cos(localX * 3.1 - time * 1.65 + item.phase) * wakeInfluence * 0.035;
-            const z = item.zBase + zWrap + zWake;
+          if (!path || path.length < STREAMLINE_POINTS * 3) {
+            for (let p = 0; p < STREAMLINE_POINTS; p++) {
+              const t = p / (STREAMLINE_POINTS - 1);
+              tmpLinePosArr[p * 3] = xStart + t * (xEnd - xStart);
+              tmpLinePosArr[p * 3 + 1] = item.yBase;
+              tmpLinePosArr[p * 3 + 2] = item.zBase;
+              tmpLineColArr[p * 3] = 0.1; tmpLineColArr[p * 3 + 1] = 0.4; tmpLineColArr[p * 3 + 2] = 0.7;
+            }
+          } else {
+            const pathLen = path.length / 3;
+            const maxOffset = Math.max(0, pathLen - STREAMLINE_POINTS);
+            const offset = Math.floor((time * flowSpeed + item.phase * 5) % (maxOffset + 1));
 
-            tmpLinePosArr[point * 3] = x;
-            tmpLinePosArr[point * 3 + 1] = y;
-            tmpLinePosArr[point * 3 + 2] = z;
+            const zAbs = Math.abs(item.zBase);
+            const zFactor = zAbs < bodyHalfDepth ? 1.0 :
+                            zAbs < bodyHalfDepth + 0.3 ? 1.0 - (zAbs - bodyHalfDepth) / 0.3 : 0.0;
 
-            const vel = localVelocity(x, y, z, profileBounds, solver);
-            const [r, g, b] = jetColormap(vel);
-            tmpLineColArr[point * 3] = r;
-            tmpLineColArr[point * 3 + 1] = g;
-            tmpLineColArr[point * 3 + 2] = b;
+            for (let p = 0; p < STREAMLINE_POINTS; p++) {
+              const pi = Math.min(offset + p, pathLen - 1);
+              const px = path[pi * 3];
+              const deflectedY = path[pi * 3 + 1];
+              const speed = path[pi * 3 + 2];
+
+              const y = item.yBase + (deflectedY - item.yBase) * zFactor;
+              const xRel = px - 0.05;
+              const bodyInfl = Math.exp(-(xRel * xRel) / 1.5) * zFactor;
+              const zSign = item.zBase > 0 ? 1 : item.zBase < 0 ? -1 : 0;
+              const z = item.zBase + bodyInfl * 0.15 * zSign;
+
+              tmpLinePosArr[p * 3] = px;
+              tmpLinePosArr[p * 3 + 1] = y;
+              tmpLinePosArr[p * 3 + 2] = z;
+
+              const nv = clamp((speed - velRange[0]) / velSpan, 0, 1);
+              const [r, g, b] = jetColormap(nv);
+              tmpLineColArr[p * 3] = r;
+              tmpLineColArr[p * 3 + 1] = g;
+              tmpLineColArr[p * 3 + 2] = b;
+            }
           }
 
-          // Copy to streamPositions for particle lookups
           const spBase = li * STREAMLINE_POINTS * 3;
           streamPositions.set(tmpLinePosArr, spBase);
 
-          // Write line segments (pairs of adjacent points) into merged buffer
-          const segBase = li * segmentsPerLine * 6; // 6 floats per segment (2 verts × 3)
+          const segBase = li * segmentsPerLine * 6;
           for (let s = 0; s < segmentsPerLine; s++) {
             const dst = segBase + s * 6;
             const s0 = s * 3, s1 = (s + 1) * 3;
-            // Vertex A (start of segment)
-            mPos[dst]     = tmpLinePosArr[s0];
-            mPos[dst + 1] = tmpLinePosArr[s0 + 1];
-            mPos[dst + 2] = tmpLinePosArr[s0 + 2];
-            // Vertex B (end of segment)
-            mPos[dst + 3] = tmpLinePosArr[s1];
-            mPos[dst + 4] = tmpLinePosArr[s1 + 1];
-            mPos[dst + 5] = tmpLinePosArr[s1 + 2];
-            // Colors
-            mCol[dst]     = tmpLineColArr[s0];
-            mCol[dst + 1] = tmpLineColArr[s0 + 1];
-            mCol[dst + 2] = tmpLineColArr[s0 + 2];
-            mCol[dst + 3] = tmpLineColArr[s1];
-            mCol[dst + 4] = tmpLineColArr[s1 + 1];
-            mCol[dst + 5] = tmpLineColArr[s1 + 2];
+            mPos[dst]     = tmpLinePosArr[s0];     mPos[dst + 1] = tmpLinePosArr[s0 + 1]; mPos[dst + 2] = tmpLinePosArr[s0 + 2];
+            mPos[dst + 3] = tmpLinePosArr[s1];     mPos[dst + 4] = tmpLinePosArr[s1 + 1]; mPos[dst + 5] = tmpLinePosArr[s1 + 2];
+            mCol[dst]     = tmpLineColArr[s0];     mCol[dst + 1] = tmpLineColArr[s0 + 1]; mCol[dst + 2] = tmpLineColArr[s0 + 2];
+            mCol[dst + 3] = tmpLineColArr[s1];     mCol[dst + 4] = tmpLineColArr[s1 + 1]; mCol[dst + 5] = tmpLineColArr[s1 + 2];
           }
         }
         mergedStreamGeo.attributes.position.needsUpdate = true;
         mergedStreamGeo.attributes.color.needsUpdate = true;
 
-        // Update hero tube positions (same physics, different yBase range)
-        heroLines.forEach(hero => {
-          const centerBand = Math.max(0, halfBodyH + 0.24 - Math.abs(hero.yBase));
-          const ySign = hero.yBase >= 0 ? 1 : -1;
-          const centerSign = ySign || (hero.rowT > 0.5 ? 1 : -1);
-
-          for (let point = 0; point < STREAMLINE_POINTS; point++) {
-            const pointT = point / (STREAMLINE_POINTS - 1);
-            const shiftedT = (pointT + travel + hero.phase * 0.006) % 1;
-            const x = xStart + pointT * (xEnd - xStart);
-            const localX = x - 0.05;
-            const noseInfluence = Math.exp(-((localX + 0.42) * (localX + 0.42)) / 1.8);
-            const bodyInfluence = Math.exp(-(localX * localX) / 1.25);
-            const wakeInfluence = smoothstep(-0.15, 2.85, localX) * Math.exp(-Math.max(localX, 0) * 0.22);
-            const wrap = centerBand * centerSign * (0.52 * bodyInfluence + 0.26 * noseInfluence);
-            const wake = Math.sin(localX * 4.3 - time * 2.3 + hero.phase) * wakeInfluence * (0.02 + centerBand * 0.11);
-            const ripple = Math.sin(shiftedT * Math.PI * 2 + hero.phase) * 0.018;
-            const y = hero.yBase + wrap + wake + ripple;
-            const zWrap = (hero.zBase >= 0 ? 1 : -1) * centerBand * 0.24 * bodyInfluence;
-            const zWake = Math.cos(localX * 3.1 - time * 1.65 + hero.phase) * wakeInfluence * 0.035;
-            const z = hero.zBase + zWrap + zWake;
-
-            hero.points[point].set(x, y, z);
-          }
-        });
-
-        // 22.4 — Hero tube rebuild throttle: every 12 frames, skip when paused
-        const solverRunning = solver?.ux && solver.ux[(solver.ux.length / 2) | 0] !== undefined;
-        if (solverRunning) {
-          heroRebuildTimer++;
-          if (heroRebuildTimer >= 12) {
-            heroRebuildTimer = 0;
-            rebuildHeroTubes(THREE);
-          }
+        // Hero tube update from precomputed paths
+        if (cachedHeroPaths) {
+          heroLines.forEach((hero, hi) => {
+            const path = cachedHeroPaths[hi];
+            if (!path || path.length < STREAMLINE_POINTS * 3) return;
+            const pathLen = path.length / 3;
+            const maxOff = Math.max(0, pathLen - STREAMLINE_POINTS);
+            const off = Math.floor((time * flowSpeed + hero.phase * 5) % (maxOff + 1));
+            const zAbs = Math.abs(hero.zBase);
+            const zF = zAbs < bodyHalfDepth ? 1.0 :
+                       zAbs < bodyHalfDepth + 0.3 ? 1.0 - (zAbs - bodyHalfDepth) / 0.3 : 0.0;
+            for (let p = 0; p < STREAMLINE_POINTS; p++) {
+              const pi = Math.min(off + p, pathLen - 1);
+              const px = path[pi * 3], dy = path[pi * 3 + 1];
+              const y = hero.yBase + (dy - hero.yBase) * zF;
+              const xR = px - 0.05;
+              const bI = Math.exp(-(xR * xR) / 1.5) * zF;
+              const zS = hero.zBase > 0 ? 1 : hero.zBase < 0 ? -1 : 0;
+              hero.points[p].set(px, y, hero.zBase + bI * 0.15 * zS);
+            }
+          });
         }
 
-        // 12.5 — Update flow particles
+        heroRebuildTimer++;
+        if (heroRebuildTimer >= 12) {
+          heroRebuildTimer = 0;
+          rebuildHeroTubes(THREE);
+        }
+
+        // Flow particles
         const pPositions = particleSystem.geometry.attributes.position.array;
         const pColors = particleSystem.geometry.attributes.color.array;
-
         for (let i = 0; i < particleCount; i++) {
           const ps = particleState[i];
           if (ps.streamIdx >= lineCount) continue;
-
-          // 22.1 — Read from cached streamPositions instead of per-line geometry
           const spBase = ps.streamIdx * STREAMLINE_POINTS * 3;
-          const idx = Math.min(Math.floor(ps.t * (STREAMLINE_POINTS - 1)), STREAMLINE_POINTS - 1);
-          const px = streamPositions[spBase + idx * 3];
-          const py = streamPositions[spBase + idx * 3 + 1];
-          const pz = streamPositions[spBase + idx * 3 + 2];
-
-          const vel = localVelocity(px, py, pz, profileBounds, solver);
-          ps.t += (0.003 + vel * 0.008);
-
-          if (ps.t >= 1.0) {
-            ps.t = 0.0;
-            ps.streamIdx = Math.floor(Math.random() * lineCount);
-          }
-
-          // Interpolate position on streamline
+          ps.t += 0.006;
+          if (ps.t >= 1.0) { ps.t = 0.0; ps.streamIdx = Math.floor(Math.random() * lineCount); }
           const frac = ps.t * (STREAMLINE_POINTS - 1);
           const i0 = Math.min(Math.floor(frac), STREAMLINE_POINTS - 2);
-          const i1 = i0 + 1;
           const blend = frac - i0;
-          const b0 = spBase + i0 * 3, b1 = spBase + i1 * 3;
-
-          pPositions[i * 3] = streamPositions[b0] * (1 - blend) + streamPositions[b1] * blend;
+          const b0 = spBase + i0 * 3, b1 = spBase + (i0 + 1) * 3;
+          pPositions[i * 3]     = streamPositions[b0]     * (1 - blend) + streamPositions[b1]     * blend;
           pPositions[i * 3 + 1] = streamPositions[b0 + 1] * (1 - blend) + streamPositions[b1 + 1] * blend;
           pPositions[i * 3 + 2] = streamPositions[b0 + 2] * (1 - blend) + streamPositions[b1 + 2] * blend;
-
-          // Particle color — white-tinted version of local velocity color
+          const vel = clamp(ps.t * 0.8 + 0.2, 0, 1);
           const [cr, cg, cb] = jetColormap(vel);
-          pColors[i * 3] = 0.5 + cr * 0.5;
-          pColors[i * 3 + 1] = 0.5 + cg * 0.5;
-          pColors[i * 3 + 2] = 0.5 + cb * 0.5;
+          pColors[i * 3] = 0.5 + cr * 0.5; pColors[i * 3 + 1] = 0.5 + cg * 0.5; pColors[i * 3 + 2] = 0.5 + cb * 0.5;
         }
         particleSystem.geometry.attributes.position.needsUpdate = true;
         particleSystem.geometry.attributes.color.needsUpdate = true;
@@ -1123,7 +1235,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         camera.lookAt(focus);
 
         profileGroup.rotation.y = Math.sin(elapsed * 0.28) * 0.035;
-        updateStreamlines(elapsed, solverRef?.current);
+        updateStreamlines(elapsed);
         renderer.render(scene, camera);
         if (gizmoGroup) {
           gizmoGroup.quaternion.copy(camera.quaternion).invert();
@@ -1132,7 +1244,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       }
 
       buildProfile(latestConfigRef.current);
-      updateStreamlines(0, solverRef?.current);
+      updateStreamlines(0);
       animate();
 
       const ro = new ResizeObserver(() => {
