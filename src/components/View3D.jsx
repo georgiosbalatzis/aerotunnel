@@ -91,7 +91,7 @@ function pointInPoly(px, py, poly) {
   return inside;
 }
 
-function solveFlowField(bodyPts, xMin, xMax, yMin, yMax, gridW, gridH) {
+function solveFlowField(bodyPts, xMin, xMax, yMin, yMax, gridW, gridH, groundY) {
   const dx = (xMax - xMin) / (gridW - 1);
   const dy = (yMax - yMin) / (gridH - 1);
   const N = gridW * gridH;
@@ -113,6 +113,20 @@ function solveFlowField(bodyPts, xMin, xMax, yMin, yMax, gridW, gridH) {
     const y = yMin + j * dy;
     for (let i = 0; i < gridW; i++) {
       psi[j * gridW + i] = solid[j * gridW + i] ? psiBody : y;
+    }
+  }
+
+  // Ground plane — cells at or below groundY become solid walls
+  if (groundY !== undefined) {
+    for (let j = 0; j < gridH; j++) {
+      const y = yMin + j * dy;
+      if (y <= groundY) {
+        for (let i = 0; i < gridW; i++) {
+          const idx = j * gridW + i;
+          solid[idx] = 1;
+          psi[idx] = groundY;
+        }
+      }
     }
   }
 
@@ -685,7 +699,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           height: maxY - minY || 1,
           depth: 0.88,
         };
-        profileBounds = bounds;
+        if (!(isF1 && f1Model)) profileBounds = bounds;
 
         // 22.3 — Reuse cached geometry if polygon unchanged
         const polyHash = hashPoly(config.poly);
@@ -796,18 +810,41 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         // Compute potential flow field and trace streamlines
         if (polyHash !== cachedFlowHash) {
           cachedFlowHash = polyHash;
-          const bodyWorld = pts.map(([x, y]) => [x + 0.05, y]);
-          const field = solveFlowField(bodyWorld, -5.2, 5.5, -1.9, 1.9, 280, 110);
+          let bodyWorld = pts.map(([x, y]) => [x + 0.05, y]);
+          let fxMin = -5.2, fxMax = 5.5, fyMin = -1.9, fyMax = 1.9;
+          let fW = 280, fH = 110;
+          let groundHeight;
+
+          // F1 car: scale body polygon to match 3D model, add ground plane
+          if (isF1 && f1Model) {
+            const sx = profileBounds.width / (bounds.width || 1);
+            const sy = profileBounds.height / (bounds.height || 1);
+            bodyWorld = bodyWorld.map(([x, y]) => [
+              (x - 0.05) * sx + 0.15,
+              y * sy - 0.15,
+            ]);
+            fxMin = -6.5; fxMax = 7.5; fyMin = -2.5; fyMax = 2.5;
+            fW = 320; fH = 130;
+            groundHeight = -0.15 - profileBounds.height * 0.5 - 0.06;
+          }
+
+          const field = solveFlowField(bodyWorld, fxMin, fxMax, fyMin, fyMax, fW, fH, groundHeight);
           cachedFlowField = field;
           cachedVelRange = [field.velMin, field.velMax];
 
           cachedStreamPaths = [];
           for (let li = 0; li < lineCount; li++) {
-            cachedStreamPaths.push(traceStreamPath(field, xStart, streamlines[li].yBase, 0.03, 600));
+            const seedY = groundHeight !== undefined
+              ? Math.max(streamlines[li].yBase, groundHeight + field.dy * 2)
+              : streamlines[li].yBase;
+            cachedStreamPaths.push(traceStreamPath(field, xStart, seedY, 0.03, 600));
           }
           cachedHeroPaths = [];
           for (let hi = 0; hi < heroLines.length; hi++) {
-            cachedHeroPaths.push(traceStreamPath(field, xStart, heroLines[hi].yBase, 0.03, 600));
+            const seedY = groundHeight !== undefined
+              ? Math.max(heroLines[hi].yBase, groundHeight + field.dy * 2)
+              : heroLines[hi].yBase;
+            cachedHeroPaths.push(traceStreamPath(field, xStart, seedY, 0.03, 600));
           }
         }
       }
@@ -1056,13 +1093,33 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
               const deflectedY = path[pi * 3 + 1];
               const speed = path[pi * 3 + 2];
 
-              const y = item.yBase + (deflectedY - item.yBase) * zFactor;
+              let y = item.yBase + (deflectedY - item.yBase) * zFactor;
               const xRel = px - 0.05;
               const bodyInfl = Math.exp(-(xRel * xRel) / 1.2);
               const zSign = item.zBase > 0 ? 1 : item.zBase < 0 ? -1 : 0;
               const clearance = bodyHalfDepth + 0.06;
               const push = zAbs > 0.02 && zAbs < clearance ? (clearance - zAbs) * bodyInfl * zSign : 0;
-              const z = item.zBase + push;
+              let z = item.zBase + push;
+
+              // 3D body collision — push points inside solid volume to nearest surface
+              if (cachedFlowField?.solid && Math.abs(z) < bodyHalfDepth + 0.08) {
+                const cf = cachedFlowField;
+                const gi = Math.round((px - cf.xMin) / cf.dx);
+                const gj = Math.round((y - cf.yMin) / cf.dy);
+                if (gi >= 0 && gi < cf.gridW && gj >= 0 && gj < cf.gridH && cf.solid[gj * cf.gridW + gi]) {
+                  for (let d = 1; d <= 20; d++) {
+                    let pushed = false;
+                    for (const dir of [1, -1]) {
+                      const jT = gj + d * dir;
+                      if (jT >= 0 && jT < cf.gridH && !cf.solid[jT * cf.gridW + gi]) {
+                        y = cf.yMin + jT * cf.dy + cf.dy * 0.25 * dir;
+                        pushed = true; break;
+                      }
+                    }
+                    if (pushed) break;
+                  }
+                }
+              }
 
               tmpLinePosArr[p * 3] = px;
               tmpLinePosArr[p * 3 + 1] = y;
@@ -1105,13 +1162,33 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
             for (let p = 0; p < STREAMLINE_POINTS; p++) {
               const pi = Math.min(off + p, pathLen - 1);
               const px = path[pi * 3], dy = path[pi * 3 + 1];
-              const y = hero.yBase + (dy - hero.yBase) * zF;
+              let heroY = hero.yBase + (dy - hero.yBase) * zF;
               const xR = px - 0.05;
               const bI = Math.exp(-(xR * xR) / 1.2);
               const zS = hero.zBase > 0 ? 1 : hero.zBase < 0 ? -1 : 0;
               const clZ = bodyHalfDepth + 0.06;
               const pushZ = zAbs > 0.02 && zAbs < clZ ? (clZ - zAbs) * bI * zS : 0;
-              hero.points[p].set(px, y, hero.zBase + pushZ);
+              const heroZ = hero.zBase + pushZ;
+              // 3D body collision for hero tubes
+              if (cachedFlowField?.solid && Math.abs(heroZ) < bodyHalfDepth + 0.08) {
+                const cf = cachedFlowField;
+                const gi = Math.round((px - cf.xMin) / cf.dx);
+                const gj = Math.round((heroY - cf.yMin) / cf.dy);
+                if (gi >= 0 && gi < cf.gridW && gj >= 0 && gj < cf.gridH && cf.solid[gj * cf.gridW + gi]) {
+                  for (let d = 1; d <= 20; d++) {
+                    let pushed = false;
+                    for (const dir of [1, -1]) {
+                      const jT = gj + d * dir;
+                      if (jT >= 0 && jT < cf.gridH && !cf.solid[jT * cf.gridW + gi]) {
+                        heroY = cf.yMin + jT * cf.dy + cf.dy * 0.25 * dir;
+                        pushed = true; break;
+                      }
+                    }
+                    if (pushed) break;
+                  }
+                }
+              }
+              hero.points[p].set(px, heroY, heroZ);
             }
           });
         }
