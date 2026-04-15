@@ -143,7 +143,9 @@ export default function CFDLab() {
   const [mode,      setMode]      = useState("velocity");
   const [preset,    setPreset]    = useState("f1car");
   const [poly,      setPoly]      = useState(() => genPreset("f1car"));
-  const [prevPoly,  setPrevPoly]  = useState(null);
+  /* 30.2 — Undo/Redo stacks */
+  const undoStack = useRef([]);
+  const redoStack = useRef([]);
   const [simplify,  setSimplify]  = useState(0);
   const [stats,     setStats]     = useState({ cl: 0, cd: 0, re: 0, maxV: 0 });
   const [fieldRange, setFieldRange] = useState({ min: 0, max: 1 });
@@ -545,6 +547,27 @@ export default function CFDLab() {
   const recordCount = useRef(0);
   const MAX_RECORD_FRAMES = 300;
 
+  /* ── 30.1 — Split-screen comparison mode ── */
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareFieldA, setCompareFieldA] = useState("velocity");
+  const [compareFieldB, setCompareFieldB] = useState("pressure");
+  const [showDiff, setShowDiff] = useState(false);
+  const compareDivider = useRef(0.5);
+  const compareModeRef = useRef(false);
+  const compareFieldsRef = useRef({ a: "velocity", b: "pressure", diff: false, div: 0.5 });
+
+  const toggleCompare = useCallback(() => {
+    setCompareMode(v => {
+      const next = !v;
+      compareModeRef.current = next;
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    compareFieldsRef.current = { a: compareFieldA, b: compareFieldB, diff: showDiff, div: compareDivider.current };
+  }, [compareFieldA, compareFieldB, showDiff]);
+
   const startRecording = useCallback(() => {
     recordFrames.current = [];
     recordCount.current = 0;
@@ -575,9 +598,26 @@ export default function CFDLab() {
     setTimeout(() => setSessionToast(null), 3000);
   }, []);
 
+  /* 30.2 — Undo / Redo */
   const undoShape = useCallback(() => {
-    if (prevPoly) { setPoly(prevPoly); setPrevPoly(null); }
-  }, [prevPoly]);
+    if (!undoStack.current.length) return;
+    const prev = undoStack.current.pop();
+    redoStack.current.push({ poly, preset, cx, cy, sx, sy, aoa, simplify });
+    if (redoStack.current.length > 20) redoStack.current.shift();
+    setPoly(prev.poly); setPreset(prev.preset);
+    setCx(prev.cx); setCy(prev.cy); setSx(prev.sx); setSy(prev.sy);
+    setAoa(prev.aoa); setSimplify(prev.simplify);
+  }, [poly, preset, cx, cy, sx, sy, aoa, simplify]);
+
+  const redoShape = useCallback(() => {
+    if (!redoStack.current.length) return;
+    const next = redoStack.current.pop();
+    undoStack.current.push({ poly, preset, cx, cy, sx, sy, aoa, simplify });
+    if (undoStack.current.length > 20) undoStack.current.shift();
+    setPoly(next.poly); setPreset(next.preset);
+    setCx(next.cx); setCy(next.cy); setSx(next.sx); setSy(next.sy);
+    setAoa(next.aoa); setSimplify(next.simplify);
+  }, [poly, preset, cx, cy, sx, sy, aoa, simplify]);
 
   const applyPoly = useCallback((p) => {
     if (!p) return;
@@ -609,9 +649,12 @@ export default function CFDLab() {
       solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 5000);
       // Warn but don't block — still apply the geometry
     }
-    setPrevPoly(poly);
+    // 30.2 — Push to undo stack
+    undoStack.current.push({ poly, preset, cx, cy, sx, sy, aoa, simplify });
+    if (undoStack.current.length > 20) undoStack.current.shift();
+    redoStack.current = [];
     setPoly(p);
-  }, [poly]);
+  }, [poly, preset, cx, cy, sx, sy, aoa, simplify]);
 
   const closeControlPanel = useCallback(() => {
     panelOpenRef.current = false;
@@ -650,12 +693,15 @@ export default function CFDLab() {
         case "Digit7": changeMode("3d"); break;
         case "KeyF": toggleFS(); break;
         case "KeyS": if (!e.ctrlKey && !e.metaKey) snap(); break;
-        case "KeyZ": if (!e.ctrlKey && !e.metaKey) undoShape(); break;
+        case "KeyZ":
+          if (e.ctrlKey || e.metaKey) { e.shiftKey ? redoShape() : undoShape(); e.preventDefault(); }
+          else undoShape();
+          break;
       }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [resetSolver, changeMode, toggleFS, snap, undoShape]);
+  }, [resetSolver, changeMode, toggleFS, snap, undoShape, redoShape]);
 
   const fpsF = useRef(0), fpsT = useRef(0);
 
@@ -669,6 +715,14 @@ export default function CFDLab() {
     buf32Ref.current = buf32;
     const DX = SIM_W / COLS, DY = SIM_H / ROWS;
     fpsT.current = performance.now();
+
+    /* 30.1 — Helper: resolve field data for a given mode string */
+    const getFieldInfo = (solver, modeStr) => {
+      if (modeStr === "velocity") return { field: solver.spd, fMn: solver.spdMin, fMx: solver.spdMax, lut: TURBO };
+      if (modeStr === "pressure") return { field: solver.rho, fMn: solver.rhoMin, fMx: solver.rhoMax, lut: COOLWARM };
+      if (modeStr === "vorticity") return { field: solver.curl, fMn: solver.curlMin, fMx: solver.curlMax, lut: TURBO };
+      return { field: solver.spd, fMn: solver.spdMin, fMx: solver.spdMax, lut: TURBO };
+    };
 
     const loop = () => {
       rafRef.current = requestAnimationFrame(loop);
@@ -710,7 +764,63 @@ export default function CFDLab() {
       const solidC = (255<<24)|(44<<16)|(44<<8)|52;
       const bgC = (255<<24)|(3<<16)|(3<<8)|5;
 
-      if (vm === "streamlines" || vm === "3d") {
+      /* ── 30.1 — Split-screen comparison render ── */
+      if (compareModeRef.current && vm !== "streamlines" && vm !== "3d" && vm !== "vectors") {
+        const cf = compareFieldsRef.current;
+        const splitX = Math.round(SIM_W * cf.div);
+        const a = getFieldInfo(solver, cf.a);
+        const b = getFieldInfo(solver, cf.b);
+        const fRA = (a.fMx - a.fMn) || 1, fRB = (b.fMx - b.fMn) || 1;
+        const invRA = 255 / fRA, invRB = 255 / fRB;
+        const invDX = COLS / SIM_W, invDY = ROWS / SIM_H;
+
+        for (let py = 0; py < SIM_H; py++) {
+          const j = Math.min(ROWS - 1, (py * invDY) | 0), ro = py * SIM_W;
+          for (let px = 0; px < SIM_W; px++) {
+            const i = Math.min(COLS - 1, (px * invDX) | 0), k = j * COLS + i;
+            if (solver.solid[k]) { buf32[ro + px] = solidC; continue; }
+            if (px < splitX) {
+              buf32[ro + px] = a.lut[Math.max(0, Math.min(255, ((a.field[k] - a.fMn) * invRA) | 0))];
+            } else {
+              buf32[ro + px] = b.lut[Math.max(0, Math.min(255, ((b.field[k] - b.fMn) * invRB) | 0))];
+            }
+          }
+        }
+
+        // 30.3 — Diff overlay (semi-transparent red)
+        if (cf.diff) {
+          const maxRange = Math.max(fRA, fRB) || 1;
+          for (let py = 0; py < SIM_H; py++) {
+            const j = Math.min(ROWS - 1, (py * invDY) | 0), ro = py * SIM_W;
+            for (let px = 0; px < SIM_W; px++) {
+              const i = Math.min(COLS - 1, (px * invDX) | 0), k = j * COLS + i;
+              if (solver.solid[k]) continue;
+              const va = (a.field[k] - a.fMn) / fRA;
+              const vb = (b.field[k] - b.fMn) / fRB;
+              const diff = Math.abs(va - vb);
+              if (diff < 0.02) continue;
+              const alpha = Math.min(0.6, diff * 1.5);
+              const c = buf32[ro + px];
+              const cr = c & 0xFF, cg = (c >> 8) & 0xFF, cb = (c >> 16) & 0xFF;
+              const nr = Math.min(255, cr + (255 - cr) * alpha | 0);
+              const ng = Math.max(0, cg - cg * alpha * 0.7 | 0);
+              const nb = Math.max(0, cb - cb * alpha * 0.7 | 0);
+              buf32[ro + px] = (255 << 24) | (nb << 16) | (ng << 8) | nr;
+            }
+          }
+        }
+
+        // Divider line
+        for (let py = 0; py < SIM_H; py++) {
+          const ro = py * SIM_W;
+          if (splitX > 0 && splitX < SIM_W) buf32[ro + splitX] = 0xFFFFFFFF;
+          if (splitX > 1) buf32[ro + splitX - 1] = 0xFF888888;
+          if (splitX < SIM_W - 1) buf32[ro + splitX + 1] = 0xFF888888;
+        }
+
+        frameFieldMin = a.fMn; frameFieldMax = a.fMx;
+      }
+      else if (vm === "streamlines" || vm === "3d") {
         buf32.fill(bgC);
         for (let k = 0; k < solver.N; k++) {
           if (!solver.solid[k]) continue;
@@ -996,6 +1106,12 @@ export default function CFDLab() {
         currentView={view}
         panelOpen={panelOpen}
         onViewChange={changeRailView}
+        onCompareToggle={toggleCompare}
+        compareMode={compareMode}
+        onUndo={undoShape}
+        onRedo={redoShape}
+        canUndo={undoStack.current.length > 0}
+        canRedo={redoStack.current.length > 0}
       />
 
       {/* 14.3 — Floating control panel drawer */}
@@ -1093,6 +1209,30 @@ export default function CFDLab() {
                   <div className="hud-waiting"><span>&#9654; PRESS RUN &middot; SPACE</span></div>
                 )}
               </div>
+              {/* 30.1 — Compare mode controls */}
+              {compareMode && !is3D && (
+                <div className="compare-bar">
+                  <div className="compare-bar__side">
+                    <span className="compare-bar__label">A</span>
+                    <select className="compare-bar__select" value={compareFieldA} onChange={e => setCompareFieldA(e.target.value)}>
+                      <option value="velocity">Velocity</option>
+                      <option value="pressure">Pressure</option>
+                      <option value="vorticity">Vorticity</option>
+                    </select>
+                  </div>
+                  <button className={`compare-bar__diff ${showDiff ? "is-active" : ""}`} onClick={() => setShowDiff(d => !d)}>
+                    Show &Delta;
+                  </button>
+                  <div className="compare-bar__side">
+                    <select className="compare-bar__select" value={compareFieldB} onChange={e => setCompareFieldB(e.target.value)}>
+                      <option value="velocity">Velocity</option>
+                      <option value="pressure">Pressure</option>
+                      <option value="vorticity">Vorticity</option>
+                    </select>
+                    <span className="compare-bar__label">B</span>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}
