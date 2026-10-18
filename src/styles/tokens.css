@@ -1,0 +1,112 @@
+/* Canonical core: f1StoriesPage/styles/editorial.css and docs/design-tokens.md.
+   Control boundaries follow Tyres/src/styles/tokens.css. Theme state stays in ThemeContext. */
+:root {
+  color-scheme: dark;
+  --bg-base: #1b1a19;
+  --bg-surface: #242321;
+  --bg-surface-alt: #2e2c29;
+  --text-primary: #eee8db;
+  --text-secondary: #b6bbac;
+  --text-tertiary: var(--text-secondary);
+  --border: #4b5146;
+  --border-control: #7d8275;
+  --accent: #ff775f;
+  --accent-readable: var(--accent);
+  --accent-hover: #ff947f;
+  --accent-contrast: #20251f;
+  --accent-muted: #ed4c3214;
+  --signal: #ed4c32;
+  --signal-ink: #17191b;
+  --paper: #e9e3d6;
+  --ink: #20251f;
+  --text-inverse-secondary: #c0bfb2;
+  --border-inverse: rgba(233, 227, 214, .18);
+
+  --font-body: 'IBM Plex Sans', 'IBM Plex Sans Fallback', sans-serif;
+  --font-display: var(--font-body);
+  --font-editorial: var(--font-body);
+  --font-brand: 'Barlow Condensed', var(--font-body);
+  --font-mono: var(--font-body); /* Compatibility: numerals use tabular figures, not a terminal font. */
+  --text-xs: .75rem;
+  --text-sm: .875rem;
+  --text-md: 1rem;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 36px;
+  --space-2xl: 56px;
+  --gutter: 48px;
+  --radius-control: 2px;
+  --radius-media: 4px;
+  --control-height-md: 44px;
+  --duration-fast: 140ms;
+  --ease-out: cubic-bezier(.2, .7, .1, 1);
+  --focus-ring: var(--accent);
+  --shadow-sm: none;
+  --shadow-md: none;
+
+  /* Fixed scientific colors, independent of the UI theme and brand signal. */
+  --cfd-bg: #06080c;
+  --cfd-text: #eee8db;
+  --cfd-text-secondary: #c0bfb2;
+  --cfd-flow: #00d4ff;
+  --cfd-lift: #22ff88;
+  --cfd-drag: #ff6600;
+  --cfd-reynolds: #eeff22;
+  --cfd-critical: #ff0022;
+
+  /* Temporary aliases: migrate consumers incrementally; these are not another palette. */
+  --bg-void: var(--bg-base);
+  --bg-root: var(--bg-base);
+  --bg-glass: var(--bg-surface);
+  --bg-glass-hi: var(--bg-surface);
+  --border-glass: var(--border);
+  --border-hover: var(--border-control);
+  --text-dim: var(--text-secondary);
+  --text-muted: var(--text-secondary);
+  --text-faint: var(--text-secondary);
+  --text-heading: var(--text-primary);
+  --accent-flow: var(--accent);
+  --accent-hi: var(--accent);
+  --accent-mid: var(--accent);
+  --accent-warn: var(--accent);
+  --accent-crit: var(--accent);
+  --f1-void: var(--bg-base);
+  --f1-base: var(--bg-base);
+  --f1-dark: var(--bg-base);
+  --f1-black: var(--bg-base);
+  --f1-carbon: var(--bg-surface);
+  --f1-slate: var(--bg-surface);
+  --f1-border: var(--border);
+  --f1-border-hi: var(--border-control);
+  --f1-edge: var(--border);
+  --f1-white: var(--text-primary);
+  --f1-silver: var(--text-secondary);
+  --f1-dim: var(--text-secondary);
+  --f1-ghost: var(--border-control);
+  --f1-red: var(--accent-readable);
+  --f1-red-dim: var(--accent-muted);
+  --f1-green: var(--accent);
+  --f1-blue: var(--accent);
+  --f1-amber: var(--accent);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-base: #f2eee4;
+  --bg-surface: #e9e3d6;
+  --bg-surface-alt: #dfd9ca;
+  --text-primary: #20251f;
+  --text-secondary: #5b6256;
+  --border: #c8c8b9;
+  --border-control: #73766a;
+  --accent: #a82e1c;
+  --accent-hover: #8e281a;
+  --accent-contrast: #f2eee4;
+}
+
+@media (max-width: 1199px) { :root { --gutter: 32px; } }
+@media (max-width: 767px) { :root { --gutter: 22px; } }
+@media (max-width: 359px) { :root { --gutter: 17px; } }

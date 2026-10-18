@@ -1,0 +1,291 @@
+{
+  "screenshots": [
+    "docs/redesign/screenshots/phase-02-dark-desktop.png",
+    "docs/redesign/screenshots/phase-02-dark-mobile.png",
+    "docs/redesign/screenshots/phase-02-light-desktop.png",
+    "docs/redesign/screenshots/phase-02-light-mobile.png",
+    "docs/redesign/screenshots/phase-02-light-analysis-desktop.png"
+  ],
+  "themes": {
+    "dark": {
+      "tokens": {
+        "--bg-base": "#1b1a19",
+        "--bg-surface": "#242321",
+        "--bg-surface-alt": "#2e2c29",
+        "--text-primary": "#eee8db",
+        "--text-secondary": "#b6bbac",
+        "--border": "#4b5146",
+        "--border-control": "#7d8275",
+        "--accent": "#ff775f",
+        "--accent-hover": "#ff947f",
+        "--accent-contrast": "#20251f",
+        "--signal": "#ed4c32",
+        "--signal-ink": "#17191b",
+        "--cfd-flow": "#00d4ff",
+        "--cfd-lift": "#2f8",
+        "--cfd-drag": "#f60"
+      },
+      "body": {
+        "background": "rgb(27, 26, 25)",
+        "color": "rgb(238, 232, 219)",
+        "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+        "fontSize": "14px",
+        "numerals": "normal"
+      },
+      "panel": {
+        "background": "rgb(36, 35, 33)",
+        "color": "rgb(238, 232, 219)",
+        "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+        "fontSize": "14px",
+        "numerals": "normal"
+      },
+      "metric": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(238, 232, 219)",
+        "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+        "fontSize": "12px",
+        "numerals": "lining-nums tabular-nums"
+      },
+      "scanline": "none",
+      "inlinePalette": [],
+      "contrast": {
+        "primary/base": 14.235,
+        "secondary/surface": 7.995,
+        "accent/surface-alt": 5.341,
+        "accent fill": 5.986,
+        "signal fill": 4.768,
+        "control boundary/surface": 3.979,
+        "focus/surface": 6.024
+      },
+      "focusPreset": {
+        "visible": true,
+        "style": "solid",
+        "width": "2px",
+        "offset": "-3px",
+        "color": "rgb(255, 119, 95)"
+      },
+      "focusFilledAction": {
+        "visible": true,
+        "color": "rgb(32, 37, 31)",
+        "background": "rgb(255, 119, 95)",
+        "width": "2px"
+      },
+      "mobileRects": {
+        "title": {
+          "x": 8,
+          "y": 8,
+          "width": 96.765625,
+          "height": 30,
+          "top": 8,
+          "right": 104.765625,
+          "bottom": 38,
+          "left": 8
+        },
+        "modes": {
+          "x": 13.3359375,
+          "y": 48,
+          "width": 363.328125,
+          "height": 38,
+          "top": 48,
+          "right": 376.6640625,
+          "bottom": 86,
+          "left": 13.3359375
+        },
+        "panel": {
+          "x": 0,
+          "y": 378,
+          "width": 390,
+          "height": 422,
+          "top": 378,
+          "right": 390,
+          "bottom": 800,
+          "left": 0
+        }
+      }
+    },
+    "light": {
+      "tokens": {
+        "--bg-base": "#f2eee4",
+        "--bg-surface": "#e9e3d6",
+        "--bg-surface-alt": "#dfd9ca",
+        "--text-primary": "#20251f",
+        "--text-secondary": "#5b6256",
+        "--border": "#c8c8b9",
+        "--border-control": "#73766a",
+        "--accent": "#a82e1c",
+        "--accent-hover": "#8e281a",
+        "--accent-contrast": "#f2eee4",
+        "--signal": "#ed4c32",
+        "--signal-ink": "#17191b",
+        "--cfd-flow": "#00d4ff",
+        "--cfd-lift": "#2f8",
+        "--cfd-drag": "#f60"
+      },
+      "body": {
+        "background": "rgb(242, 238, 228)",
+        "color": "rgb(32, 37, 31)",
+        "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+        "fontSize": "14px",
+        "numerals": "normal"
+      },
+      "panel": {
+        "background": "rgb(233, 227, 214)",
+        "color": "rgb(32, 37, 31)",
+        "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+        "fontSize": "14px",
+        "numerals": "normal"
+      },
+      "metric": {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "rgb(32, 37, 31)",
+        "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+        "fontSize": "12px",
+        "numerals": "lining-nums tabular-nums"
+      },
+      "scanline": "none",
+      "inlinePalette": [],
+      "contrast": {
+        "primary/base": 13.468,
+        "secondary/surface": 4.937,
+        "accent/surface-alt": 4.854,
+        "accent fill": 5.899,
+        "signal fill": 4.768,
+        "control boundary/surface": 3.627,
+        "focus/surface": 5.345
+      },
+      "focusPreset": {
+        "visible": true,
+        "style": "solid",
+        "width": "2px",
+        "offset": "-3px",
+        "color": "rgb(168, 46, 28)"
+      },
+      "focusFilledAction": {
+        "visible": true,
+        "color": "rgb(242, 238, 228)",
+        "background": "rgb(168, 46, 28)",
+        "width": "2px"
+      },
+      "mobileRects": {
+        "title": {
+          "x": 8,
+          "y": 8,
+          "width": 96.765625,
+          "height": 30,
+          "top": 8,
+          "right": 104.765625,
+          "bottom": 38,
+          "left": 8
+        },
+        "modes": {
+          "x": 13.3359375,
+          "y": 48,
+          "width": 363.328125,
+          "height": 38,
+          "top": 48,
+          "right": 376.6640625,
+          "bottom": 86,
+          "left": 13.3359375
+        },
+        "panel": {
+          "x": 0,
+          "y": 378,
+          "width": 390,
+          "height": 422,
+          "top": 378,
+          "right": 390,
+          "bottom": 800,
+          "left": 0
+        }
+      }
+    }
+  },
+  "pageErrors": [],
+  "failedRequests": [],
+  "themeBehavior": {
+    "theme": "dark",
+    "stored": "dark"
+  },
+  "scientificLegendGradient": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+  "greekPlatformFonts": [
+    {
+      "familyName": "IBM Plex Sans",
+      "postScriptName": "IBMPlexSans-Medium",
+      "isCustomFont": true,
+      "glyphCount": 22
+    }
+  ],
+  "fontRequests": [
+    "http://127.0.0.1:5174/aerotunnel/assets/barlow-condensed-700-DDMez4TK.woff2",
+    "http://127.0.0.1:5174/aerotunnel/assets/ibm-plex-sans-400-600-BD64o3ke.woff2",
+    "http://127.0.0.1:5174/aerotunnel/assets/ibm-plex-sans-400-600-greek-Cuw1d432.woff2"
+  ],
+  "chartLegend": [
+    "rgb(34, 255, 136)",
+    "rgb(255, 102, 0)"
+  ],
+  "persistenceAfterCssThemeChecks": "dark",
+  "threeDSmoke": {
+    "canvases": 2,
+    "pageErrors": []
+  },
+  "staticChecks": {
+    "lintErrorsBefore": 19,
+    "lintErrorsAfter": 19,
+    "identicalDiagnostics": true,
+    "protectedFilesUnchanged": [
+      "src/engine/solver.js",
+      "src/engine/solver-wrapper.js",
+      "src/engine/lut.js",
+      "src/engine/parsers.js",
+      "src/engine/geometry.js",
+      "src/engine/particles.js",
+      "vite.config.js"
+    ],
+    "exporterUnchangedFromPhase01": true,
+    "cfdLabOnlyEquivalentColorRefs": true
+  },
+  "fontProvenance": {
+    "sourceCheckout": "/Users/giorgos/WebstormProjects/f1StoriesPage",
+    "revision": "dd1671e07eddc4ee06ec3ef667b8b8f00c500206",
+    "sha256": {
+      "barlow-condensed-700.woff2": "e3e520cb7468f2efd60bc2ce96694567c3312f4ef414fffbe605e3ad146b24e6",
+      "ibm-plex-sans-400-600-arrows.woff2": "4acc92316cd09ecad326dcc408e2dd7497d604dfe6435066690c49ebd42f774e",
+      "ibm-plex-sans-400-600-greek.woff2": "a29d4e6345cdb7e2b6daabf4961a6dcafcbc7ed1eac26186ca4a004cd32d64d8",
+      "ibm-plex-sans-400-600-latin-ext.woff2": "ae1d854fefa1167a79071f1afe01d4d51b60c5840c1be36dd74bd5fe7375b405",
+      "ibm-plex-sans-400-600.woff2": "056e4e2459f57a0033c8c9c844ff19d6e42ac8602027803d4345823bcc939818"
+    }
+  },
+  "mechanicalDetector": [
+    {
+      "antipattern": "side-tab",
+      "name": "Side-tab accent border",
+      "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+      "severity": "warning",
+      "category": "slop",
+      "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+      "line": 120,
+      "snippet": "border-left: 3px solid var(--accent-crit)"
+    },
+    {
+      "antipattern": "side-tab",
+      "name": "Side-tab accent border",
+      "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+      "severity": "warning",
+      "category": "slop",
+      "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+      "line": 558,
+      "snippet": "border-left: 4px solid var(--tone, var(--accent-flow))"
+    },
+    {
+      "antipattern": "side-tab",
+      "name": "Side-tab accent border",
+      "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+      "severity": "warning",
+      "category": "slop",
+      "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+      "line": 646,
+      "snippet": "border-left: 3px solid var(--accent-flow)"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "app": "aerolab",
+  "version": 2,
+  "geometry": {
+    "poly": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0.8,
+        1
+      ],
+      [
+        0.2,
+        0.8
+      ]
+    ],
+    "preset": "custom",
+    "cx": 100,
+    "cy": 50,
+    "sx": 60,
+    "sy": 40,
+    "aoa": 7,
+    "simplify": 0
+  },
+  "solver": {
+    "vel": 0.095,
+    "nu": 0.02,
+    "turb": 0.15
+  },
+  "display": {
+    "mode": "pressure",
+    "pCount": 420,
+    "trailOp": 0.65,
+    "simSpd": 2
+  },
+  "metadata": {
+    "name": "Legacy control fixture"
+  },
+  "history": []
+}

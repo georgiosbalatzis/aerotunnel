@@ -1,0 +1,1492 @@
+{
+  "samples": [
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "velocity",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555557,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.8,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 1004.5580000000001,
+        "ScriptDuration": 949.183,
+        "LayoutDuration": 5.789,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "velocity",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8849999999998,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 1013.3859999999999,
+        "ScriptDuration": 952.192,
+        "LayoutDuration": 7.967999999999999,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "velocity",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000273,
+        "over25ms": 0,
+        "wallMs": 2999.9,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 932.5649999999999,
+        "ScriptDuration": 876.1679999999999,
+        "LayoutDuration": 6.391,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "velocity",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.88,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 945.4560000000001,
+        "ScriptDuration": 884.221,
+        "LayoutDuration": 8.089,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "velocity",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.799999999999727,
+        "over25ms": 0,
+        "wallMs": 2999.9,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 980.8050000000001,
+        "ScriptDuration": 923.9730000000001,
+        "LayoutDuration": 7.356,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "velocity",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8849999999998,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 902.5479999999999,
+        "ScriptDuration": 841.739,
+        "LayoutDuration": 7.473,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "streamlines",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555553,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.800000000000182,
+        "over25ms": 0,
+        "wallMs": 2999.7999999999997,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 868.423,
+        "ScriptDuration": 800.803,
+        "LayoutDuration": 6.33,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "streamlines",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666000000000004,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8800000000006,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 889.257,
+        "ScriptDuration": 828.4730000000001,
+        "LayoutDuration": 7.108,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "streamlines",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555557,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.799999999999727,
+        "over25ms": 0,
+        "wallMs": 2999.8,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 856.442,
+        "ScriptDuration": 788.6469999999999,
+        "LayoutDuration": 4.837,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "streamlines",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665999999999997,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8799999999997,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 938.832,
+        "ScriptDuration": 865.856,
+        "LayoutDuration": 8.065,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "streamlines",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000273,
+        "over25ms": 0,
+        "wallMs": 2999.9,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 900.029,
+        "ScriptDuration": 833.998,
+        "LayoutDuration": 5.377,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "streamlines",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665999999999997,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8799999999997,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 885.1510000000001,
+        "ScriptDuration": 821.8299999999999,
+        "LayoutDuration": 6.928,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "3d",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.8999999999996,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.6605555554231,
+          "p95Ms": 24.700000047683716
+        }
+      },
+      "costs": {
+        "TaskDuration": 954.4319999999999,
+        "ScriptDuration": 874.947,
+        "LayoutDuration": 5.181,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "3d",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.88,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.667055555846957,
+          "p95Ms": 24.865000009536743
+        }
+      },
+      "costs": {
+        "TaskDuration": 963.834,
+        "ScriptDuration": 874.5659999999999,
+        "LayoutDuration": 5.973,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "3d",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555557,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.8,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.671111111508477,
+          "p95Ms": 24.100000023841858
+        }
+      },
+      "costs": {
+        "TaskDuration": 941.879,
+        "ScriptDuration": 862.4079999999999,
+        "LayoutDuration": 4.765000000000001,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "3d",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.885,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.665416667196485,
+          "p95Ms": 24.695000052452087
+        }
+      },
+      "costs": {
+        "TaskDuration": 955.082,
+        "ScriptDuration": 872.7510000000001,
+        "LayoutDuration": 5.702999999999999,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "3d",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.799999999999727,
+        "over25ms": 0,
+        "wallMs": 2999.9,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.666111110978655,
+          "p95Ms": 25.300000071525574
+        }
+      },
+      "costs": {
+        "TaskDuration": 1008.823,
+        "ScriptDuration": 925.8499999999999,
+        "LayoutDuration": 5.191999999999999,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "3d",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8849999999998,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.659583332803514,
+          "p95Ms": 24.764999985694885
+        }
+      },
+      "costs": {
+        "TaskDuration": 963.595,
+        "ScriptDuration": 870.911,
+        "LayoutDuration": 6.5329999999999995,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 1440,
+      "kind": "comparison",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555553,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.7999999999997,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 1095.135,
+        "ScriptDuration": 1053.11,
+        "LayoutDuration": 4.452,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 1440,
+      "kind": "comparison",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 40500,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 420,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.885,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 1073.028,
+        "ScriptDuration": 1026.477,
+        "LayoutDuration": 6.851999999999999,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "velocity",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.8999999999996,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 793.592,
+        "ScriptDuration": 725.862,
+        "LayoutDuration": 4.293,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "velocity",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665999999999997,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8799999999997,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 660.266,
+        "ScriptDuration": 581.4789999999999,
+        "LayoutDuration": 7.678,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "velocity",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.9,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 846.3050000000001,
+        "ScriptDuration": 760.181,
+        "LayoutDuration": 3.9179999999999997,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "velocity",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.88,
+        "uiFps": "60 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 826.615,
+        "ScriptDuration": 738.349,
+        "LayoutDuration": 8.551,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "velocity",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.8999999999996,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 878.0720000000001,
+        "ScriptDuration": 791.1329999999999,
+        "LayoutDuration": 4.391,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "velocity",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8849999999998,
+        "uiFps": "61 fps \u00b7 \u0394 1.2e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 787.41,
+        "ScriptDuration": 704.207,
+        "LayoutDuration": 8.003,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "streamlines",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555553,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.800000000000182,
+        "over25ms": 0,
+        "wallMs": 2999.7999999999997,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 671.121,
+        "ScriptDuration": 560.4209999999999,
+        "LayoutDuration": 5.526,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "streamlines",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665999999999997,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8799999999997,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 668.9820000000001,
+        "ScriptDuration": 557.6790000000001,
+        "LayoutDuration": 9.199,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "streamlines",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.799999999999727,
+        "over25ms": 0,
+        "wallMs": 2999.8999999999996,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 576.52,
+        "ScriptDuration": 488.4,
+        "LayoutDuration": 3.742,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "streamlines",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665999999999997,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8799999999997,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 665.264,
+        "ScriptDuration": 553.812,
+        "LayoutDuration": 9.261999999999999,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "streamlines",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555557,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.799999999999727,
+        "over25ms": 0,
+        "wallMs": 2999.8,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 638.947,
+        "ScriptDuration": 536.158,
+        "LayoutDuration": 4.509,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "streamlines",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.885,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 634.258,
+        "ScriptDuration": 532.135,
+        "LayoutDuration": 8.88,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "3d",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555553,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.799999999999727,
+        "over25ms": 0,
+        "wallMs": 2999.7999999999997,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.666111110978655,
+          "p95Ms": 22.399999976158142
+        }
+      },
+      "costs": {
+        "TaskDuration": 928.366,
+        "ScriptDuration": 846.6550000000001,
+        "LayoutDuration": 4.4590000000000005,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "3d",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666027777777778,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.885,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.668111111058128,
+          "p95Ms": 22.304999947547913
+        }
+      },
+      "costs": {
+        "TaskDuration": 905.486,
+        "ScriptDuration": 815.972,
+        "LayoutDuration": 6.953,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "3d",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.66611111111111,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.800000000000182,
+        "over25ms": 0,
+        "wallMs": 2999.9,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.667222222354678,
+          "p95Ms": 22.5
+        }
+      },
+      "costs": {
+        "TaskDuration": 932.1160000000001,
+        "ScriptDuration": 841.6439999999999,
+        "LayoutDuration": 4.05,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "3d",
+      "pair": 2,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665999999999997,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8799999999997,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.667972222301696,
+          "p95Ms": 22.4650000333786
+        }
+      },
+      "costs": {
+        "TaskDuration": 893.37,
+        "ScriptDuration": 798.643,
+        "LayoutDuration": 6.885,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "3d",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665555555555557,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.8,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.6605555554231,
+          "p95Ms": 22.100000023841858
+        }
+      },
+      "costs": {
+        "TaskDuration": 939.6020000000001,
+        "ScriptDuration": 852.41,
+        "LayoutDuration": 4.564,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "3d",
+      "pair": 3,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.88,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": {
+          "calls": 181,
+          "meanMs": 16.671916666295793,
+          "p95Ms": 21.5349999666214
+        }
+      },
+      "costs": {
+        "TaskDuration": 905.279,
+        "ScriptDuration": 818.0039999999999,
+        "LayoutDuration": 6.248,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "before",
+      "width": 375,
+      "kind": "comparison",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.666111111111114,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.700000000000728,
+        "over25ms": 0,
+        "wallMs": 2999.9000000000005,
+        "uiFps": "61 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 985.6859999999999,
+        "ScriptDuration": 932.4559999999999,
+        "LayoutDuration": 4.037,
+        "RecalcStyleDuration": 0
+      }
+    },
+    {
+      "edition": "after",
+      "width": 375,
+      "kind": "comparison",
+      "pair": 1,
+      "settings": {
+        "backend": "WASM",
+        "N": 21632,
+        "vel": 0.12,
+        "nu": 0.015,
+        "turb": 0,
+        "particles": 220,
+        "steps": 1
+      },
+      "cadence": {
+        "meanMs": 16.665999999999997,
+        "medianMs": 16.664999999999964,
+        "p95Ms": 16.670000000000073,
+        "over25ms": 0,
+        "wallMs": 2999.8799999999997,
+        "uiFps": "60 fps \u00b7 \u0394 1.1e-3",
+        "actual3D": null
+      },
+      "costs": {
+        "TaskDuration": 1018.9319999999999,
+        "ScriptDuration": 959.468,
+        "LayoutDuration": 7.747999999999999,
+        "RecalcStyleDuration": 0
+      }
+    }
+  ],
+  "errors": [],
+  "method": {
+    "warmupFrames": 60,
+    "measuredIntervals": 180,
+    "corePairs": 3,
+    "comparisonPairs": 1,
+    "dpr": 1,
+    "geometry": "Cylinder",
+    "velocity": 0.12,
+    "viscosity": 0.015,
+    "turbulence": 0,
+    "stepsPerFrame": 1,
+    "theme": "light"
+  },
+  "summary": [
+    {
+      "width": 1440,
+      "mode": "velocity",
+      "before": {
+        "n": 3,
+        "meanFrameMs": 16.66611111111111,
+        "p95FrameMaxMs": 16.799999999999727,
+        "over25ms": 0,
+        "taskMedianMs": 980.8050000000001,
+        "taskMinMs": 932.5649999999999,
+        "taskMaxMs": 1004.5580000000001,
+        "rendererCalls": []
+      },
+      "after": {
+        "n": 3,
+        "meanFrameMs": 16.666027777777778,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 945.4560000000001,
+        "taskMinMs": 902.5479999999999,
+        "taskMaxMs": 1013.3859999999999,
+        "rendererCalls": []
+      },
+      "taskMedianChangePercent": -3.6040803217764927
+    },
+    {
+      "width": 1440,
+      "mode": "streamlines",
+      "before": {
+        "n": 3,
+        "meanFrameMs": 16.665555555555557,
+        "p95FrameMaxMs": 16.800000000000182,
+        "over25ms": 0,
+        "taskMedianMs": 868.423,
+        "taskMinMs": 856.442,
+        "taskMaxMs": 900.029,
+        "rendererCalls": []
+      },
+      "after": {
+        "n": 3,
+        "meanFrameMs": 16.665999999999997,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 889.257,
+        "taskMinMs": 885.1510000000001,
+        "taskMaxMs": 938.832,
+        "rendererCalls": []
+      },
+      "taskMedianChangePercent": 2.3990612869534633
+    },
+    {
+      "width": 1440,
+      "mode": "3d",
+      "before": {
+        "n": 3,
+        "meanFrameMs": 16.66611111111111,
+        "p95FrameMaxMs": 16.799999999999727,
+        "over25ms": 0,
+        "taskMedianMs": 954.4319999999999,
+        "taskMinMs": 941.879,
+        "taskMaxMs": 1008.823,
+        "rendererCalls": [
+          181,
+          181,
+          181
+        ]
+      },
+      "after": {
+        "n": 3,
+        "meanFrameMs": 16.666027777777778,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 963.595,
+        "taskMinMs": 955.082,
+        "taskMaxMs": 963.834,
+        "rendererCalls": [
+          181,
+          181,
+          181
+        ]
+      },
+      "taskMedianChangePercent": 0.9600474418292926
+    },
+    {
+      "width": 1440,
+      "mode": "comparison",
+      "before": {
+        "n": 1,
+        "meanFrameMs": 16.665555555555553,
+        "p95FrameMaxMs": 16.700000000000728,
+        "over25ms": 0,
+        "taskMedianMs": 1095.135,
+        "taskMinMs": 1095.135,
+        "taskMaxMs": 1095.135,
+        "rendererCalls": []
+      },
+      "after": {
+        "n": 1,
+        "meanFrameMs": 16.666027777777778,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 1073.028,
+        "taskMinMs": 1073.028,
+        "taskMaxMs": 1073.028,
+        "rendererCalls": []
+      },
+      "taskMedianChangePercent": -2.018655234286182
+    },
+    {
+      "width": 375,
+      "mode": "velocity",
+      "before": {
+        "n": 3,
+        "meanFrameMs": 16.66611111111111,
+        "p95FrameMaxMs": 16.700000000000728,
+        "over25ms": 0,
+        "taskMedianMs": 846.3050000000001,
+        "taskMinMs": 793.592,
+        "taskMaxMs": 878.0720000000001,
+        "rendererCalls": []
+      },
+      "after": {
+        "n": 3,
+        "meanFrameMs": 16.666,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 787.41,
+        "taskMinMs": 660.266,
+        "taskMaxMs": 826.615,
+        "rendererCalls": []
+      },
+      "taskMedianChangePercent": -6.959075037959139
+    },
+    {
+      "width": 375,
+      "mode": "streamlines",
+      "before": {
+        "n": 3,
+        "meanFrameMs": 16.665555555555557,
+        "p95FrameMaxMs": 16.800000000000182,
+        "over25ms": 0,
+        "taskMedianMs": 638.947,
+        "taskMinMs": 576.52,
+        "taskMaxMs": 671.121,
+        "rendererCalls": []
+      },
+      "after": {
+        "n": 3,
+        "meanFrameMs": 16.665999999999997,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 665.264,
+        "taskMinMs": 634.258,
+        "taskMaxMs": 668.9820000000001,
+        "rendererCalls": []
+      },
+      "taskMedianChangePercent": 4.1188079762484175
+    },
+    {
+      "width": 375,
+      "mode": "3d",
+      "before": {
+        "n": 3,
+        "meanFrameMs": 16.665555555555557,
+        "p95FrameMaxMs": 16.800000000000182,
+        "over25ms": 0,
+        "taskMedianMs": 932.1160000000001,
+        "taskMinMs": 928.366,
+        "taskMaxMs": 939.6020000000001,
+        "rendererCalls": [
+          181,
+          181,
+          181
+        ]
+      },
+      "after": {
+        "n": 3,
+        "meanFrameMs": 16.666,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 905.279,
+        "taskMinMs": 893.37,
+        "taskMaxMs": 905.486,
+        "rendererCalls": [
+          181,
+          181,
+          181
+        ]
+      },
+      "taskMedianChangePercent": -2.8791480888644916
+    },
+    {
+      "width": 375,
+      "mode": "comparison",
+      "before": {
+        "n": 1,
+        "meanFrameMs": 16.666111111111114,
+        "p95FrameMaxMs": 16.700000000000728,
+        "over25ms": 0,
+        "taskMedianMs": 985.6859999999999,
+        "taskMinMs": 985.6859999999999,
+        "taskMaxMs": 985.6859999999999,
+        "rendererCalls": []
+      },
+      "after": {
+        "n": 1,
+        "meanFrameMs": 16.665999999999997,
+        "p95FrameMaxMs": 16.670000000000073,
+        "over25ms": 0,
+        "taskMedianMs": 1018.9319999999999,
+        "taskMinMs": 1018.9319999999999,
+        "taskMaxMs": 1018.9319999999999,
+        "rendererCalls": []
+      },
+      "taskMedianChangePercent": 3.3728793956696146
+    }
+  ],
+  "limitations": [
+    "Local headless Chromium, DPR1, light UI and WASM only for timed samples.",
+    "Refresh-limited cadence; CDP task duration is not GPU time or spare capacity.",
+    "40 samples: 3 pairs per core workload/width, one pair for comparison.",
+    "3D geometry/bevel/camera changes intentionally affect presentation: matched workflow, not identical graphics scene.",
+    "Samples precede final explanatory wording and shell-background corrections; no numerical loop or dimension changes followed.",
+    "No physical-device, energy or numerical-accuracy performance claim."
+  ]
+}

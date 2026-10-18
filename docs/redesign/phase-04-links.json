@@ -1,0 +1,72 @@
+{
+  "verifiedAt": "2026-10-16T18:23:48.942912+00:00",
+  "method": "Direct HTTP GET; no publication or remote modification",
+  "links": [
+    {
+      "url": "https://f1-stories.gr/",
+      "status": 200,
+      "finalUrl": "https://f1-stories.gr/",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://f1-stories.gr/blog-module/blog/index.html",
+      "status": 200,
+      "finalUrl": "https://f1-stories.gr/blog-module/blog/index.html",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://www.youtube.com/@f1_stories_original",
+      "status": 200,
+      "finalUrl": "https://www.youtube.com/@f1_stories_original?cbrd=1&ucbcb=1",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://f1-stories.gr/standings/",
+      "status": 200,
+      "finalUrl": "https://f1-stories.gr/standings/",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://f1-stories.gr/standings/?tab=tyre-pace",
+      "status": 200,
+      "finalUrl": "https://f1-stories.gr/standings/?tab=tyre-pace",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://f1-stories.gr/authors/",
+      "status": 200,
+      "finalUrl": "https://f1-stories.gr/authors/",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/BetCastVisualisation/",
+      "status": 200,
+      "finalUrl": "https://georgiosbalatzis.github.io/BetCastVisualisation/",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+      "status": 200,
+      "finalUrl": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/ghostcar/",
+      "status": 200,
+      "finalUrl": "https://georgiosbalatzis.github.io/ghostcar/",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/Tyres/",
+      "status": 200,
+      "finalUrl": "https://georgiosbalatzis.github.io/Tyres/",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/aerotunnel/",
+      "status": 200,
+      "finalUrl": "https://georgiosbalatzis.github.io/aerotunnel/",
+      "contentType": "text/html; charset=utf-8"
+    }
+  ]
+}

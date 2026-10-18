@@ -1,19 +1,34 @@
+import SiteMasthead from "./components/SiteMasthead.jsx";
+import RaceDeskNav from "./components/RaceDeskNav.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FieldLegend from "./components/FieldLegend.jsx";
+import VisualizationModes from "./components/VisualizationModes.jsx";
+import { comparisonAvailable } from "./visualization/fields.js";
 import View3D from "./components/View3D";
 import AnalysisPanel from "./components/AnalysisPanel";
+import PublishingDialog from "./components/PublishingDialog.jsx";
+import ExportActions from "./components/ExportActions.jsx";
+import { canvasBlob, composeFigure, downloadImage, freezeCanvas } from "./publishing/figure.js";
 import AboutPanel from "./components/AboutPanel";
 import CommandBar from "./components/CommandBar";
 import ControlPanel from "./components/ControlPanel";
 import IconRail from "./components/IconRail";
 import "./cfdlab.css";
+import "./styles/workspace.css";
+import "./styles/controls.css";
+import "./styles/visualization.css";
+import "./styles/analysis.css";
+import "./styles/publishing.css";
+import { SETUP_FIELDS, csvIssue, sameSetup, proxyRatio, formatRatio } from "./analysis/presentation.js";
+import { geometryIssue, GEOMETRY_ERRORS, sessionIssue } from "./controls/validation.js";
 
 import {
   SIM_W, SIM_H, COLS, ROWS,
-  DEFAULT_PARTICLES, TRAIL_LEN, IS_MOBILE,
+  DEFAULT_PARTICLES, TRAIL_LEN,
   LBM, createPool, resizePool,
   xformPoly, simplPoly, genPreset,
   TURBO, COOLWARM,
-  initWasmSolver, createSolver, isWasmAvailable,
+  initWasmSolver, createSolver,
   exportSessionJSON, parseSessionJSON, exportBinarySTL, buildZip,
 } from "./engine/index.js";
 
@@ -21,11 +36,12 @@ import {
 const SESSION_KEY = "aerolab-session";
 const SESSIONS_KEY = "aerolab-sessions";
 const SESSION_VERSION = 2;
+const EMBED_MODE = new URLSearchParams(window.location.search).get("embed") === "1";
 
 function saveSession(state) {
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify({ version: SESSION_VERSION, timestamp: Date.now(), ...state }));
-  } catch (_) { /* quota exceeded — silently skip */ }
+  } catch { /* quota exceeded — silently skip */ }
 }
 
 function loadSession() {
@@ -35,53 +51,35 @@ function loadSession() {
     const data = JSON.parse(raw);
     if (data.version !== SESSION_VERSION) return null;
     return data;
-  } catch (_) { return null; }
+  } catch { return null; }
 }
 
 function loadSavedSessions() {
   try {
     const raw = localStorage.getItem(SESSIONS_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch (_) { return []; }
+  } catch { return []; }
 }
 
 function saveSessions(sessions) {
   try {
     localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions.slice(0, 10)));
-  } catch (_) { /* quota exceeded */ }
+    return true;
+  } catch { return false; }
 }
 
 /* ── Static config ── */
 const MODES = [
-  { id:"velocity",    label:"Velocity",    short:"VEL", color:"#00d4ff", tone:"var(--accent-flow)" },
-  { id:"pressure",    label:"Pressure",    short:"PRS", color:"#ff6600", tone:"var(--accent-warn)" },
-  { id:"streamlines", label:"Streamlines", short:"STR", color:"#22ff88", tone:"var(--accent-hi)" },
-  { id:"vorticity",   label:"Vorticity",   short:"VRT", color:"#eeff22", tone:"var(--accent-mid)" },
-  { id:"vectors",     label:"Vectors",     short:"VEC", color:"#ff44aa", tone:"var(--accent-crit)" },
-  { id:"schlieren",   label:"Schlieren",   short:"SCH", color:"#d4a050", tone:"var(--f1-amber)" },
-  { id:"3d",          label:"3D View",     short:"3D",  color:"#00d4ff", tone:"var(--accent-flow)" },
+  { id:"velocity",    label:"Velocity",    short:"VEL", color:"#00d4ff", tone:"var(--cfd-flow)" },
+  { id:"pressure",    label:"Pressure",    short:"PRS", color:"#ff6600", tone:"var(--cfd-drag)" },
+  { id:"streamlines", label:"Streamlines", short:"STR", color:"#22ff88", tone:"var(--cfd-lift)" },
+  { id:"vorticity",   label:"Vorticity",   short:"VRT", color:"#eeff22", tone:"var(--cfd-reynolds)" },
+  { id:"vectors",     label:"Vectors",     short:"VEC", color:"#ff44aa", tone:"var(--cfd-critical)" },
+  { id:"schlieren",   label:"Schlieren",   short:"SCH", color:"#d4a050", tone:"var(--cfd-drag)" },
+  { id:"3d",          label:"3D View",     short:"3D",  color:"#00d4ff", tone:"var(--cfd-flow)" },
 ];
 
-const COLORBAR_TICKS = [0, 0.25, 0.5, 0.75, 1];
-const CFD_JET_GRADIENT = "linear-gradient(to top,#001fff 0%,#00d4ff 32%,#22ff88 50%,#eeff22 68%,#ff6600 84%,#ff0022 100%)";
-const FIELD_LEGENDS = {
-  velocity: "VELOCITY\nm/s",
-  pressure: "PRESSURE\nrho",
-  streamlines: "VELOCITY\nm/s",
-  vorticity: "VORTICITY\n1/s",
-  vectors: "VELOCITY\nm/s",
-  schlieren: "DENSITY\ngradient",
-  "3d": "VELOCITY\nm/s",
-};
 
-function formatFieldValue(value) {
-  if (!Number.isFinite(value)) return "0";
-  const abs = Math.abs(value);
-  if (abs >= 1000) return `${(value / 1000).toFixed(1)}k`;
-  if (abs >= 10) return value.toFixed(1);
-  if (abs >= 1) return value.toFixed(2);
-  return value.toFixed(3);
-}
 
 /* ── Hooks ── */
 function useHistory(maxLen = 1000) {
@@ -127,17 +125,27 @@ function checkSelfIntersection(poly) {
    ═══════════════════════════════════════ */
 export default function CFDLab() {
   const solverRef  = useRef(null);
-  const partsRef   = useRef(createPool());
+  // Keep the live pool stable; telemetry renders must not allocate discarded trails.
+  const [particlePool] = useState(createPool);
+  const partsRef   = useRef(particlePool);
   const canvasRef  = useRef(null);
   const wrapRef    = useRef(null);
   const miniRef    = useRef(null);
+  const captureRequestRef = useRef(null);
+  const cancelCaptureRef = useRef(null);
+  const imageBusyRef = useRef(false);
+  const publicationWarningRef = useRef(null);
+  const publishingRef = useRef(null);
+  const sessionInputRef = useRef(null);
   const rafRef     = useRef(null);
   const frameRef   = useRef(0);
   const imgRef     = useRef(null);
   const buf32Ref   = useRef(null);
-  const fieldRangeRef = useRef({ min: 0, max: 1 });
+  const fieldRangeRef = useRef({ key: "", fields: [] });
 
   /* ── State ── */
+  const [workspaceStarted, setWorkspaceStarted] = useState(false);
+  const [introExpanded, setIntroExpanded] = useState(false);
   const [view,      setView]      = useState("tunnel");
   const [running,   setRunning]   = useState(false);
   const [mode,      setMode]      = useState("velocity");
@@ -148,7 +156,8 @@ export default function CFDLab() {
   const redoStack = useRef([]);
   const [simplify,  setSimplify]  = useState(0);
   const [stats,     setStats]     = useState({ cl: 0, cd: 0, re: 0, maxV: 0 });
-  const [fieldRange, setFieldRange] = useState({ min: 0, max: 1 });
+  const [analysisSample, setAnalysisSample] = useState(null);
+  const [legendFrame, setLegendFrame] = useState({ mode: null, fields: [] });
   const [hasRun,    setHasRun]    = useState(false);
   const [pCount,    setPCount]    = useState(DEFAULT_PARTICLES);
   const [trailOp,   setTrailOp]   = useState(1);
@@ -165,13 +174,14 @@ export default function CFDLab() {
   const [histRef, pushHist] = useHistory(1000);
   const [histSnap,  setHistSnap]  = useState([]);
   const [autoRun,   setAutoRun]   = useState(true);
-  const [panelOpen, setPanelOpen] = useState(!IS_MOBILE);
+  const [panelOpen, setPanelOpen] = useState(() => window.innerWidth >= 1024);
   const [activeSection, setActiveSection] = useState("shape");
-  const [screenshotMode, setScreenshotMode] = useState(false);
-  const [modeTransition, setModeTransition] = useState(false);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageError, setImageError] = useState("");
   const [solverWarning, setSolverWarning] = useState(null);
   const [convergenceDelta, setConvergenceDelta] = useState(1);
   const [sessionToast, setSessionToast] = useState(null);
+  useEffect(() => { publicationWarningRef.current = solverWarning; }, [solverWarning]);
   const solverWarningTimer = useRef(null);
   const panelOpenRef = useRef(panelOpen);
   const activeSectionRef = useRef(activeSection);
@@ -190,7 +200,7 @@ export default function CFDLab() {
     p.running = running; p.mode = mode; p.vel = vel; p.turb = turb; p.nu = nu;
     p.pCount = pCount; p.trailOp = trailOp; p.simSpd = simSpd;
     p.cx = cx; p.cy = cy; p.sx = sx; p.sy = sy; p.aoa = aoa;
-    p.simplify = simplify; p.poly = poly;
+    p.simplify = simplify; p.poly = poly; p.preset = preset;
     if (solverRef.current) solverRef.current.setNu(nu);
     resizePool(partsRef.current, pCount);
     if (poly) {
@@ -199,14 +209,12 @@ export default function CFDLab() {
     } else {
       p._outline = null;
     }
-  }, [running, mode, vel, turb, nu, pCount, trailOp, simSpd, cx, cy, sx, sy, aoa, simplify, poly]);
+  }, [running, mode, vel, turb, nu, pCount, trailOp, simSpd, cx, cy, sx, sy, aoa, simplify, poly, preset]);
 
-  const [wasmReady, setWasmReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
     initWasmSolver().then(ok => {
       if (cancelled) return;
-      setWasmReady(ok);
       if (ok) {
         const s = createSolver(COLS, ROWS);
         s.setNu(P.current.nu);
@@ -229,7 +237,7 @@ export default function CFDLab() {
 
   // 25.1 — Restore session on mount
   useEffect(() => {
-    if (sessionRestored.current) return;
+    if (EMBED_MODE || sessionRestored.current) return;
     sessionRestored.current = true;
     const saved = loadSession();
     if (!saved) return;
@@ -260,8 +268,9 @@ export default function CFDLab() {
     setTimeout(() => setSessionToast(null), 3000);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 25.1 — Auto-save every 5 seconds
+  // 25.1 — Auto-save every 5 seconds; article embeds are ephemeral.
   useEffect(() => {
+    if (EMBED_MODE) return;
     const id = setInterval(() => {
       saveSession({
         mode, preset, poly, cx, cy, sx, sy, aoa,
@@ -282,10 +291,10 @@ export default function CFDLab() {
 
   useEffect(() => { rebuild(); }, [cx, cy, sx, sy, aoa, simplify, poly, rebuild]);
   useEffect(() => {
-    if (!poly || !autoRun) return;
+    if (!poly || !autoRun || !workspaceStarted) return;
     const frame = requestAnimationFrame(() => setRunning(true));
     return () => cancelAnimationFrame(frame);
-  }, [poly, autoRun]);
+  }, [poly, autoRun, workspaceStarted]);
   useEffect(() => {
     if (!running || hasRun) return;
     const frame = requestAnimationFrame(() => setHasRun(true));
@@ -293,6 +302,7 @@ export default function CFDLab() {
   }, [running, hasRun]);
 
   const resetSolver = useCallback(() => {
+    setAnalysisSample(null);
     const s = createSolver(COLS, ROWS); s.setNu(P.current.nu); solverRef.current = s; rebuild();
   }, [rebuild]);
 
@@ -302,41 +312,45 @@ export default function CFDLab() {
     else document.exitFullscreen?.();
   }, []);
 
-  const snap = useCallback(() => {
-    // 20.5 — Screenshot mode: fade UI, capture at 2×, restore
-    setScreenshotMode(true);
-    setTimeout(() => {
-      const is3D = P.current.mode === "3d";
-      const el = wrapRef.current;
-      if (is3D && el) {
-        // Capture 3D canvas at 2× resolution
-        const threeCanvas = el.querySelector('.view-3d-stage canvas:not(.view-3d-axis-gizmo)');
-        if (threeCanvas) {
-          const a = document.createElement("a");
-          a.download = `aerolab-${Date.now()}.png`;
-          a.href = threeCanvas.toDataURL("image/png");
-          a.click();
-        }
-      } else {
-        const c = canvasRef.current;
-        if (c) {
-          const a = document.createElement("a");
-          a.download = `aerolab-${Date.now()}.png`;
-          a.href = c.toDataURL("image/png");
-          a.click();
-        }
-      }
-      setTimeout(() => setScreenshotMode(false), 100);
-    }, 250);
-  }, []);
+  const snap = useCallback(async (options = { format: "publication", theme: "light", legend: true, method: true }) => {
+    if (imageBusyRef.current) return;
+    if (view !== "tunnel") { setImageError("Open Simulation to capture the selected visualization."); setSessionToast("Image export failed: Open Simulation to capture the selected visualization."); return; }
+    imageBusyRef.current = true; setImageBusy(true); setImageError("");
+    try {
+      const captured = await new Promise((resolve, reject) => {
+        const cancel = () => { captureRequestRef.current = null; cancelCaptureRef.current = null; clearTimeout(timer); reject(new Error("The visualization is not ready. Wait for it to load and try again.")); };
+        const timer = setTimeout(cancel, 8000);
+        cancelCaptureRef.current = cancel;
+        captureRequestRef.current = (source, frame) => {
+          captureRequestRef.current = null; cancelCaptureRef.current = null; clearTimeout(timer);
+          try {
+            const p = P.current;
+            resolve({ canvas: freezeCanvas(source), frame: { preset, aoa: p.aoa, vel: p.vel, nu: p.nu, running: p.running, at: Date.now(), warning: GEOMETRY_ERRORS[publicationWarningRef.current] || ({ diverged: "Solver diverged — reduce velocity or increase viscosity", overflow: "Velocity overflow — review solver settings", "geom-intersect": "Self-intersecting profile — results may be inaccurate" })[publicationWarningRef.current] || publicationWarningRef.current, ...frame } });
+          } catch (error) { reject(error); }
+        };
+      });
+      const canvas = options.format === "native" ? captured.canvas : await composeFigure(captured.canvas, captured.frame, options);
+      downloadImage(await canvasBlob(canvas));
+      setSessionToast("Image download requested.");
+      setTimeout(() => setSessionToast(null), 3000);
+    } catch (error) { const message = error.message || "Try again."; setImageError(message); setSessionToast(`Image export failed: ${message}`); }
+    finally { imageBusyRef.current = false; setImageBusy(false); }
+  }, [view, preset]);
+
+  useEffect(() => () => cancelCaptureRef.current?.(), []);
+  const openPublishing = () => {
+    if (!publishingRef.current?.open) publishingRef.current?.showModal();
+  };
 
   const exportCSV = useCallback(() => {
-    const d = histRef.current; if (!d.length) return;
+    const d = histRef.current;
+    const issue = csvIssue(d);
+    if (issue) { setSessionToast(issue); return; }
     const header = "timestamp,cl,cd,re,maxV\n";
     const rows = d.map(r => `${new Date(r.t).toISOString()},${r.cl},${r.cd},${r.re},${r.maxV}`).join("\n");
     const b = new Blob([header + rows], { type: "text/csv" });
     const u = URL.createObjectURL(b);
-    const a = document.createElement("a"); a.href = u; a.download = `aerolab-${Date.now()}.csv`; a.click();
+    const a = document.createElement("a"); a.href = u; a.download = `aerotunnel-${Date.now()}.csv`; a.click();
     URL.revokeObjectURL(u);
   }, [histRef]);
 
@@ -352,13 +366,16 @@ export default function CFDLab() {
       stats: { cl: stats.cl, cd: stats.cd, re: stats.re },
       history: histRef.current.slice(-200),
     };
+    if (!Array.isArray(sessions)) return false;
     sessions.unshift(entry);
-    saveSessions(sessions);
+    if (!saveSessions(sessions)) return false;
     setSessionToast("Session saved");
     setTimeout(() => setSessionToast(null), 2000);
+    return true;
   }, [preset, mode, poly, cx, cy, sx, sy, aoa, vel, turb, nu, simplify, pCount, trailOp, simSpd, stats, histRef]);
 
   const loadSavedSession = useCallback((session) => {
+    setAnalysisSample(null);
     if (session.mode) setMode(session.mode);
     if (session.preset) setPreset(session.preset);
     if (session.poly) setPoly(session.poly);
@@ -385,8 +402,9 @@ export default function CFDLab() {
 
   const deleteSavedSession = useCallback((index) => {
     const sessions = loadSavedSessions();
+    if (!Array.isArray(sessions)) return false;
     sessions.splice(index, 1);
-    saveSessions(sessions);
+    return saveSessions(sessions);
   }, []);
 
   /* ── 29.1 — JSON Session Export ── */
@@ -401,6 +419,10 @@ export default function CFDLab() {
 
   /* ── 29.1 — JSON Session Import (drag & drop) ── */
   const importSession = useCallback((data) => {
+    const issue = sessionIssue(data);
+    if (issue) { setSessionToast(`Import failed: ${issue}`); return false; }
+    if (data.history !== undefined && !Array.isArray(data.history)) { setSessionToast("Import failed: session history must be an array."); return false; }
+    setAnalysisSample(null);
     if (data.geometry) {
       if (data.geometry.poly) setPoly(data.geometry.poly);
       if (data.geometry.preset) setPreset(data.geometry.preset);
@@ -431,20 +453,28 @@ export default function CFDLab() {
     setTimeout(() => setSessionToast(null), 3000);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleAppDrop = useCallback((e) => {
-    e.preventDefault();
-    const file = e.dataTransfer?.files?.[0];
+  const readSessionFile = useCallback((file) => {
     if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".json")) {
+      setSessionToast("Use Geometry to import SVG, STL, DXF or images. Drop a JSON session here.");
+      return;
+    }
     if (file.name.toLowerCase().endsWith(".json")) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         const data = parseSessionJSON(ev.target.result);
         if (data) importSession(data);
-        else setSessionToast("Not a valid AeroLab session file");
+        else setSessionToast("Import failed: choose a valid AeroTunnel JSON session.");
       };
+      reader.onerror = () => setSessionToast("Import failed: the session file could not be read. Choose it again.");
       reader.readAsText(file);
     }
   }, [importSession]);
+
+  const handleAppDrop = useCallback(e => {
+    e.preventDefault();
+    if (!EMBED_MODE) readSessionFile(e.dataTransfer?.files?.[0]);
+  }, [readSessionFile]);
 
   /* ── 29.2 — STL Export ── */
   const exportSTL = useCallback(() => {
@@ -454,10 +484,12 @@ export default function CFDLab() {
 
   /* ── 29.3 — Parametric Sweep ── */
   const [sweepState, setSweepState] = useState(null); // { param, min, max, steps, current, results }
+  const [sweepReport, setSweepReport] = useState(null);
   const sweepRef = useRef(null);
 
   const startSweep = useCallback((param, min, max, steps) => {
     const state = { param, min, max, steps, current: 0, results: [] };
+    setSweepReport(null);
     setSweepState(state);
     sweepRef.current = state;
 
@@ -471,12 +503,13 @@ export default function CFDLab() {
       if (!sw || sw.current >= sw.steps) {
         // Done — export CSV and restore original values
         if (sw && sw.results.length) {
+          setSweepReport({ ...sw, results: sw.results.slice(), status: "complete" });
           const header = `${sw.param},cl,cd,ld_ratio,regime\n`;
           const rows = sw.results.map(r => `${r.value},${r.cl},${r.cd},${r.ld},${r.regime}`).join("\n");
           const blob = new Blob([header + rows], { type: "text/csv" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
-          a.href = url; a.download = `aerolab-sweep-${sw.param}-${Date.now()}.csv`; a.click();
+          a.href = url; a.download = `aerotunnel-sweep-${sw.param}-${Date.now()}.csv`; a.click();
           URL.revokeObjectURL(url);
         }
         // Restore
@@ -536,12 +569,16 @@ export default function CFDLab() {
   }, [aoa, vel, nu]);
 
   const cancelSweep = useCallback(() => {
+    const sw = sweepRef.current;
+    if (sw) setSweepReport({ ...sw, results: sw.results.slice(), status: "cancelled" });
     sweepRef.current = null;
     setSweepState(null);
   }, []);
 
   /* ── 29.4 — PNG Sequence Recording ── */
   const [recording, setRecording] = useState(false);
+  const [recordFrameCount, setRecordFrameCount] = useState(0);
+  const [recordingExport, setRecordingExport] = useState({ status: "ready", frames: 0 });
   const recordingRef = useRef(false);
   const recordFrames = useRef([]);
   const recordCount = useRef(0);
@@ -569,8 +606,10 @@ export default function CFDLab() {
   }, [compareFieldA, compareFieldB, showDiff]);
 
   const startRecording = useCallback(() => {
+    setRecordingExport({ status: "ready", frames: 0 });
     recordFrames.current = [];
     recordCount.current = 0;
+    setRecordFrameCount(0);
     recordingRef.current = true;
     setRecording(true);
   }, []);
@@ -579,23 +618,27 @@ export default function CFDLab() {
     recordingRef.current = false;
     setRecording(false);
     const frames = recordFrames.current;
-    if (!frames.length) return;
-    setSessionToast(`Packaging ${frames.length} frames...`);
+    if (!frames.length) { setRecordingExport({ status: "empty", frames: 0 }); return; }
+    setRecordingExport({ status: "packaging", frames: frames.length });
+    try {
+      setSessionToast(`Packaging ${frames.length} frames...`);
 
-    // Convert blobs to zip entries
-    const files = [];
-    for (let i = 0; i < frames.length; i++) {
-      const data = new Uint8Array(await frames[i].arrayBuffer());
-      files.push({ name: `aerolab-${String(i + 1).padStart(4, "0")}.png`, data });
-    }
-    const zip = buildZip(files);
-    const url = URL.createObjectURL(zip);
-    const a = document.createElement("a");
-    a.href = url; a.download = `aerolab-frames-${Date.now()}.zip`; a.click();
-    URL.revokeObjectURL(url);
-    recordFrames.current = [];
-    setSessionToast(`Exported ${frames.length} frames`);
-    setTimeout(() => setSessionToast(null), 3000);
+      // Convert blobs to zip entries
+      const files = [];
+      for (let i = 0; i < frames.length; i++) {
+        const data = new Uint8Array(await frames[i].arrayBuffer());
+        files.push({ name: `aerotunnel-${String(i + 1).padStart(4, "0")}.png`, data });
+      }
+      const zip = buildZip(files);
+      const url = URL.createObjectURL(zip);
+      const a = document.createElement("a");
+      a.href = url; a.download = `aerotunnel-frames-${Date.now()}.zip`; a.click();
+      URL.revokeObjectURL(url);
+      recordFrames.current = [];
+      setRecordingExport({ status: "exported", frames: frames.length });
+      setSessionToast(`Exported ${frames.length} frames`);
+      setTimeout(() => setSessionToast(null), 3000);
+    } catch { setRecordingExport({ status: "error", frames: frames.length }); }
   }, []);
 
   /* 30.2 — Undo / Redo */
@@ -620,27 +663,14 @@ export default function CFDLab() {
   }, [poly, preset, cx, cy, sx, sy, aoa, simplify]);
 
   const applyPoly = useCallback((p) => {
-    if (!p) return;
-    // 21.4 — Geometry validation
-    if (p.length < 3) {
-      setSolverWarning("geom-points");
+    const issue = geometryIssue(p);
+    if (issue) {
+      setSolverWarning(issue);
       if (solverWarningTimer.current) clearTimeout(solverWarningTimer.current);
       solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 4000);
-      return;
+      return false;
     }
-    // Bounding box area check
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for (const pt of p) {
-      const x = pt[0] ?? pt.x ?? 0, y = pt[1] ?? pt.y ?? 0;
-      if (x < minX) minX = x; if (x > maxX) maxX = x;
-      if (y < minY) minY = y; if (y > maxY) maxY = y;
-    }
-    if ((maxX - minX) * (maxY - minY) < 1e-6) {
-      setSolverWarning("geom-area");
-      if (solverWarningTimer.current) clearTimeout(solverWarningTimer.current);
-      solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 4000);
-      return;
-    }
+    setSolverWarning(current => current?.startsWith("geom-") ? null : current);
     // Self-intersection check (O(n²) edge pairs)
     const selfIntersects = checkSelfIntersection(p);
     if (selfIntersects) {
@@ -654,9 +684,20 @@ export default function CFDLab() {
     if (undoStack.current.length > 20) undoStack.current.shift();
     redoStack.current = [];
     setPoly(p);
+    return true;
   }, [poly, preset, cx, cy, sx, sy, aoa, simplify]);
 
+  const resetGeometry = useCallback(() => {
+    if (!applyPoly(genPreset("f1car"))) return;
+    setPreset("f1car");
+    setCx(COLS * .35); setCy(ROWS / 2); setSx(COLS * .25); setSy(ROWS * .45);
+    setAoa(0); setSimplify(0);
+  }, [applyPoly]);
+
   const closeControlPanel = useCallback(() => {
+    if (document.querySelector('.control-panel')?.contains(document.activeElement)) {
+      document.querySelector(`[data-control-section="${activeSectionRef.current}"]`)?.focus();
+    }
     panelOpenRef.current = false;
     setPanelOpen(false);
   }, []);
@@ -667,22 +708,16 @@ export default function CFDLab() {
   }, []);
 
   const changeMode = useCallback(nextMode => {
-    // 20.2 — Mode transition crossfade
-    setModeTransition(true);
-    setTimeout(() => {
-      setMode(nextMode);
-      if (nextMode === "3d") {
-        closeControlPanel();
-      }
-      setTimeout(() => setModeTransition(false), 50);
-    }, 150);
+    setMode(nextMode);
+    if (nextMode === "3d") closeControlPanel();
   }, [closeControlPanel]);
 
   useEffect(() => {
     const h = e => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (EMBED_MODE && !["Space", "KeyF"].includes(e.code)) return;
+      if (publishingRef.current?.open || e.defaultPrevented || e.target.closest?.("a, button, input, select, textarea, summary, dialog, [role=dialog], [contenteditable]:not([contenteditable='false'])")) return;
       switch (e.code) {
-        case "Space": e.preventDefault(); setRunning(r => !r); break;
+        case "Space": e.preventDefault(); setWorkspaceStarted(true); setIntroExpanded(false); setRunning(r => !r); break;
         case "KeyR": resetSolver(); break;
         case "Digit1": changeMode("velocity"); break;
         case "Digit2": changeMode("pressure"); break;
@@ -737,6 +772,7 @@ export default function CFDLab() {
         if (solver.diverged) {
           solver.diverged = false;
           setRunning(false);
+          publicationWarningRef.current = "diverged";
           setSolverWarning("diverged");
           if (solverWarningTimer.current) clearTimeout(solverWarningTimer.current);
           solverWarningTimer.current = setTimeout(() => setSolverWarning(null), 5000);
@@ -744,6 +780,7 @@ export default function CFDLab() {
         // 21.2 — Overflow warning (>5% of fluid cells clamped)
         else if (solver.overflowCount > solver.N * 0.05) {
           if (!solverWarningTimer.current) {
+            publicationWarningRef.current = "overflow";
             setSolverWarning("overflow");
             solverWarningTimer.current = setTimeout(() => { setSolverWarning(null); solverWarningTimer.current = null; }, 3000);
           }
@@ -761,6 +798,7 @@ export default function CFDLab() {
 
       const vm = p.mode;
       let frameFieldMin = null, frameFieldMax = null;
+      let comparisonFields = null, fallbackScale = false;
       const solidC = (255<<24)|(44<<16)|(44<<8)|52;
       const bgC = (255<<24)|(3<<16)|(3<<8)|5;
 
@@ -789,7 +827,6 @@ export default function CFDLab() {
 
         // 30.3 — Diff overlay (semi-transparent red)
         if (cf.diff) {
-          const maxRange = Math.max(fRA, fRB) || 1;
           for (let py = 0; py < SIM_H; py++) {
             const j = Math.min(ROWS - 1, (py * invDY) | 0), ro = py * SIM_W;
             for (let px = 0; px < SIM_W; px++) {
@@ -819,6 +856,7 @@ export default function CFDLab() {
         }
 
         frameFieldMin = a.fMn; frameFieldMax = a.fMx;
+        comparisonFields = [{ mode: cf.a, min: a.fMn, max: a.fMx }, { mode: cf.b, min: b.fMn, max: b.fMx }];
       }
       else if (vm === "streamlines" || vm === "3d") {
         buf32.fill(bgC);
@@ -839,10 +877,10 @@ export default function CFDLab() {
             const g = Math.abs(solver.rho[(j+1)*COLS+i] - solver.rho[(j-1)*COLS+i]) * 0.5;
             if (g > gMx) gMx = g;
           }
-        if (gMx < 1e-10) gMx = 1;
+        if (gMx < 1e-10) { gMx = 1; fallbackScale = true; }
         const invG = 1 / gMx;
         for (let py = 0; py < SIM_H; py++) {
-          const j = Math.min(ROWS-1, Math.max(1, (py*invDY)|0)), ro = py*SIM_W;
+          const j = Math.min(ROWS-2, Math.max(1, (py*invDY)|0)), ro = py*SIM_W;
           for (let px = 0; px < SIM_W; px++) {
             const i = Math.min(COLS-1, (px*invDX)|0), k = j*COLS+i;
             if (solver.solid[k]) { buf32[ro+px] = solidC; continue; }
@@ -861,7 +899,7 @@ export default function CFDLab() {
         // 27.2 — Vector field: render field as velocity background + arrows drawn after putImageData
         const lut = TURBO;
         let fMn = solver.spdMin, fMx = solver.spdMax;
-        if (fMn === undefined || fMx === undefined || fMn >= fMx) { fMn = 0; fMx = 1; }
+        if (fMn === undefined || fMx === undefined || fMn >= fMx) { fMn = 0; fMx = 1; fallbackScale = true; }
         frameFieldMin = fMn; frameFieldMax = fMx;
         const fR = fMx - fMn;
         if (fR < 1e-10) { buf32.fill(lut[128]); }
@@ -890,7 +928,7 @@ export default function CFDLab() {
         else { fMn = solver.curlMin; fMx = solver.curlMax; }
         // Fallback if solver hasn't computed ranges yet
         if (fMn === undefined || fMx === undefined || fMn >= fMx) {
-          fMn = 0; fMx = 1;
+          fMn = 0; fMx = 1; fallbackScale = true;
         }
         frameFieldMin = fMn; frameFieldMax = fMx;
         const fR = fMx - fMn;
@@ -982,7 +1020,7 @@ export default function CFDLab() {
         }
       }
 
-      // 23.1 — Body outline: replace expensive shadowBlur with double-stroke glow
+      // Geometry boundary, independent of field normalization.
       const outline = p._outline;
       if (outline) {
         ctx.beginPath();
@@ -991,11 +1029,7 @@ export default function CFDLab() {
           i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
         });
         ctx.closePath();
-        // Pass 1: wide soft glow (cheap approximation of shadow)
-        ctx.strokeStyle = "rgba(0,212,255,0.15)"; ctx.lineWidth = 6;
-        ctx.stroke();
-        // Pass 2: crisp outline on top
-        ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2;
+        ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 1.25;
         ctx.stroke();
       }
 
@@ -1012,19 +1046,25 @@ export default function CFDLab() {
         const cd = cnt>0 ? tFx/cnt*0.5+0.008 : 0;
         const ns = { cl:+cl.toFixed(4), cd:+cd.toFixed(4), re:Math.round(re), maxV: inV>0?+(mV/inV).toFixed(3):0 };
         setStats(ns); pushHist(ns);
-        if (Number.isFinite(frameFieldMin) && Number.isFinite(frameFieldMax)) {
-          const current = fieldRangeRef.current;
-          const currentSpan = Math.max(Math.abs(current.max - current.min), 1e-6);
-          const nextSpan = Math.max(Math.abs(frameFieldMax - frameFieldMin), 1e-6);
-          const shifted = Math.abs(frameFieldMin - current.min) / currentSpan > 0.05
-            || Math.abs(frameFieldMax - current.max) / currentSpan > 0.05
-            || Math.abs(nextSpan - currentSpan) / currentSpan > 0.05;
-          if (shifted) {
-            const nextRange = { min: frameFieldMin, max: frameFieldMax };
-            fieldRangeRef.current = nextRange;
-            setFieldRange(nextRange);
-          }
+        setAnalysisSample({ values: ns, fluidCells: cnt, at: histRef.current.at(-1)?.t, setup: Object.fromEntries(SETUP_FIELDS.map(key => [key, p[key]])) });
+
+      }
+
+      const comparing = comparisonFields !== null;
+      const key = comparing ? `${vm}/${comparisonFields.map(field => field.mode).join("/")}` : vm;
+      if (frameRef.current % 15 === 0 || fieldRangeRef.current.key !== key) {
+        const fields = comparisonFields || (Number.isFinite(frameFieldMin) && Number.isFinite(frameFieldMax) ? [{ mode: vm, min: frameFieldMin, max: frameFieldMax, fallback: fallbackScale }] : []);
+        const previous = fieldRangeRef.current;
+        if (previous.key !== key || fields.some((field, index) => field.min !== previous.fields[index]?.min || field.max !== previous.fields[index]?.max || field.fallback !== previous.fields[index]?.fallback)) {
+          const next = { key, mode: vm, comparing, fields };
+          fieldRangeRef.current = next;
+          setLegendFrame(next);
         }
+      }
+
+      if (p.mode !== "3d" && captureRequestRef.current) {
+        captureRequestRef.current(canvas, { preset: p.preset, mode: vm, comparing, difference: comparing && compareFieldsRef.current.diff,
+          fields: comparisonFields || (Number.isFinite(frameFieldMin) && Number.isFinite(frameFieldMax) ? [{ mode: vm, min: frameFieldMin, max: frameFieldMax, fallback: fallbackScale }] : []) });
       }
 
       const mc = miniRef.current;
@@ -1045,33 +1085,20 @@ export default function CFDLab() {
 
     rafRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [pushHist]);
+  }, [pushHist, histRef]);
 
-  const regime = useMemo(() => {
-    if (stats.re < 2300) return { label:"LAMINAR", col:"var(--f1-green)" };
-    if (stats.re < 4000) return { label:"TRANS.", col:"var(--f1-amber)" };
-    return { label:"TURB.", col:"var(--accent-crit)" };
-  }, [stats.re]);
-  const ldRatio = useMemo(() => stats.cd > 0 ? (stats.cl/stats.cd).toFixed(2) : "—", [stats.cl, stats.cd]);
+  const ldRatio = useMemo(() => formatRatio(proxyRatio(stats)), [stats]);
   const is3D = mode === "3d";
-  const fieldLegendTitle = FIELD_LEGENDS[mode] || FIELD_LEGENDS.velocity;
-  const colorbarTicks = useMemo(() => {
-    const min = Number.isFinite(fieldRange.min) ? fieldRange.min : 0;
-    const max = Number.isFinite(fieldRange.max) ? fieldRange.max : 1;
-    const span = max - min || 1;
-    return COLORBAR_TICKS.map(position => ({
-      position: `${position * 100}%`,
-      value: formatFieldValue(max - span * position),
-    }));
-  }, [fieldRange]);
 
-  useEffect(() => { const iv = setInterval(() => setHistSnap([...histRef.current]), 500); return () => clearInterval(iv); }, [histRef]);
+  useEffect(() => { const iv = setInterval(() => { setHistSnap([...histRef.current]); setRecordFrameCount(recordCount.current); }, 500); return () => clearInterval(iv); }, [histRef]);
 
+  const metricsFresh = sameSetup(analysisSample?.setup, { poly, cx, cy, sx, sy, aoa, simplify, vel, turb, nu });
+  const fluidMetricsReady = metricsFresh && analysisSample.fluidCells > 0;
   const metrics = [
-    { label:"CL",   value:hasRun?stats.cl:"—",  tone:"var(--accent-hi)" },
-    { label:"CD",   value:hasRun?stats.cd:"—",  tone:"var(--accent-warn)" },
-    { label:"L/D",  value:hasRun?ldRatio:"—",   tone:"var(--accent-flow)" },
-    { label:"FLOW", value:hasRun?regime.label:"—", tone:hasRun?regime.col:"var(--f1-dim)" },
+    { label:"CL proxy",   value:fluidMetricsReady && Number.isFinite(stats.cl)?stats.cl:"—",  tone:"var(--cfd-lift)" },
+    { label:"CD proxy",   value:fluidMetricsReady && Number.isFinite(stats.cd)?stats.cd:"—",  tone:"var(--cfd-drag)" },
+    { label:"L/D proxy",  value:fluidMetricsReady?ldRatio:"—",   tone:"var(--cfd-flow)" },
+    { label:"Re*", value:metricsFresh && Number.isFinite(stats.re)?stats.re.toLocaleString():"—", tone:"var(--cfd-reynolds)" },
   ];
 
   const openControlPanel = useCallback(section => {
@@ -1086,21 +1113,38 @@ export default function CFDLab() {
     setView(nextView);
     closeControlPanel();
   }, [closeControlPanel]);
-  const toggleRunning = useCallback(() => setRunning(r => !r), []);
+  const toggleRunning = useCallback(() => {
+    setWorkspaceStarted(true);
+    setIntroExpanded(false);
+    setRunning(r => !r);
+  }, []);
+  const startWorkspace = () => {
+    setWorkspaceStarted(true);
+    setIntroExpanded(false);
+    setView("tunnel");
+    setRunning(true);
+    requestAnimationFrame(() => document.getElementById("aerotunnel-main")?.focus({ preventScroll: true }));
+  };
 
+  const exportActions = { onCSV: exportCSV, onJSON: exportSession, onLoad: () => sessionInputRef.current?.click(), onSTL: exportSTL, csvProblem: csvIssue(histSnap), hasGeometry: !!poly };
+  const frameActions = { recording, count: recordFrameCount, state: recordingExport, onStart: startRecording, onStop: stopRecording };
   return (
-    <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""} ${screenshotMode ? "is-screenshot" : ""}`} ref={wrapRef}
+    <div className={`lab-shell ${is3D ? "is-3d-takeover" : ""} ${EMBED_MODE ? "is-embed" : ""}`} ref={wrapRef}
       onDrop={handleAppDrop} onDragOver={e => e.preventDefault()}>
-      <div className="lab-shell__scanline" />
-
-      {/* 14.1 — Floating title chip */}
-      <CommandBar running={running} fps={fps} convergenceDelta={convergenceDelta} solverWarning={solverWarning} />
-
-      {/* 14.2 — Floating icon rail toolbar */}
-      <IconRail
+      {!EMBED_MODE ? <><SiteMasthead /><RaceDeskNav /></> : <header className="embed-header">
+        <a href="https://f1-stories.gr/" target="_blank" rel="noopener noreferrer">F1 STORIES · <strong>AEROTUNNEL</strong></a>
+        <button type="button" onClick={toggleRunning}>{running ? "Pause" : workspaceStarted ? "Resume" : "Start Simulation"}</button>
+        <button type="button" onClick={toggleFS}>Fullscreen</button>
+        <a href={import.meta.env.BASE_URL} target="_blank" rel="noopener noreferrer">Open full workspace</a>
+      </header>}
+      <div className="app-workspace editorial-workspace" data-view={view} data-started={workspaceStarted || hasRun}>
+      {!EMBED_MODE && <CommandBar started={(workspaceStarted || hasRun) && !introExpanded} running={running} fps={fps}
+        convergenceDelta={convergenceDelta} onStart={startWorkspace} onShowIntro={() => setIntroExpanded(true)} hasStarted={workspaceStarted || hasRun} onMinimizeIntro={() => setIntroExpanded(false)} />}
+      {!EMBED_MODE && <IconRail
         activeSection={activeSection}
         onSectionChange={openControlPanel}
         running={running}
+        started={workspaceStarted || hasRun}
         onRunToggle={toggleRunning}
         onReset={resetSolver}
         currentView={view}
@@ -1112,19 +1156,17 @@ export default function CFDLab() {
         onRedo={redoShape}
         canUndo={undoStack.current.length > 0}
         canRedo={redoStack.current.length > 0}
-      />
+      />}
 
-      {/* 14.3 — Floating control panel drawer */}
-      {view==="tunnel" && (
+      <div className={`workspace-grid ${view==="tunnel" && panelOpen && !EMBED_MODE ? "has-controls" : ""}`}>
         <ControlPanel
-          key={activeSection}
-          isOpen={panelOpen}
+          isOpen={!EMBED_MODE && view === "tunnel" && panelOpen}
           section={activeSection}
           onSectionChange={changeActiveSection}
           onClose={closeControlPanel}
-          preset={preset}
-          onPresetSelect={(nextPreset, nextPoly) => { setPreset(nextPreset); applyPoly(nextPoly); }}
-          onShapeImport={applyPoly}
+          preset={preset} poly={poly} onResetGeometry={resetGeometry} onOpenAnalysis={() => changeRailView("analysis")}
+          onPresetSelect={(nextPreset, nextPoly) => { if (applyPoly(nextPoly)) setPreset(nextPreset); }}
+          onShapeImport={nextPoly => { if (!applyPoly(nextPoly)) return false; setPreset("custom"); return true; }}
           cx={cx} setCx={setCx} cy={cy} setCy={setCy}
           sx={sx} setSx={setSx} sy={sy} setSy={setSy}
           aoa={aoa} setAoa={setAoa} simplify={simplify} setSimplify={setSimplify}
@@ -1134,97 +1176,28 @@ export default function CFDLab() {
           autoRun={autoRun} setAutoRun={setAutoRun}
           mode={mode} onExportSTL={exportSTL} onImportSession={importSession}
         />
-      )}
 
-      {/* Mode pills — floating top-center + 24.2 swipe mode switch */}
-      {view==="tunnel" && (
-        <div className="floating-mode-bar" aria-label="Visualization modes"
-          onTouchStart={e => { e.currentTarget._swipeX = e.touches[0].clientX; }}
-          onTouchEnd={e => {
-            const startX = e.currentTarget._swipeX;
-            if (startX == null) return;
-            const endX = e.changedTouches[0].clientX;
-            const dx = endX - startX;
-            if (Math.abs(dx) < 60) return;
-            const idx = MODES.findIndex(m => m.id === mode);
-            const next = dx < 0 ? Math.min(idx + 1, MODES.length - 1) : Math.max(idx - 1, 0);
-            if (next !== idx) {
-              changeMode(MODES[next].id);
-              try { navigator.vibrate?.(10); } catch (_) {}
-            }
-          }}>
-          {MODES.map((m,i) => (
-            <button key={m.id} className={`floating-mode-pill ${mode===m.id?"is-active":""}`}
-              aria-label={`Switch visualization mode to ${m.label}`}
-              style={{"--tone":m.tone}} title={`${m.label} [${i+1}]`} onClick={() => changeMode(m.id)}>
-              <span className="floating-mode-pill__label">{IS_MOBILE?m.short:m.label}</span>
-              <sup className="floating-mode-pill__key">{i+1}</sup>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {view==="tunnel" && (
-        <>
-          <aside className="cfd-colorbar" aria-label={`${fieldLegendTitle} field legend`}>
-            <div className="cfd-colorbar__scale">
-              <div className="cfd-colorbar__bar" style={{background: CFD_JET_GRADIENT}} />
-              <div className="cfd-colorbar__ticks">
-                {colorbarTicks.map(tick => (
-                  <span className="cfd-colorbar__tick" style={{"--tick": tick.position}} key={tick.position}>
-                    <b>{tick.value}</b><i />
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="cfd-colorbar__title">{fieldLegendTitle}</div>
-          </aside>
-
-          <aside className="wind-indicator" aria-label={`Freestream angle of attack ${aoa.toFixed(1)} degrees`}>
-            <svg className="wind-indicator__arrow" viewBox="0 0 48 16" aria-hidden style={{"--aoa": `${-aoa}deg`}}>
-              <path d="M4 8h34" />
-              <path d="m33 3 7 5-7 5" />
-            </svg>
-            <span>AoA: {aoa.toFixed(1)}&deg;</span>
-          </aside>
-        </>
-      )}
-
-      {/* Main canvas area — full viewport */}
-      <main className={`lab-canvas-zone lab-canvas-zone--${view}`}>
-        {view==="tunnel" && (
-          <section className="canvas-area" aria-label="Simulation canvas area">
-            <div className={`canvas-wrapper ${running ? "is-live" : ""}`} style={modeTransition ? {opacity: 0, transition: 'opacity 150ms ease'} : {opacity: 1, transition: 'opacity 150ms ease'}} onPointerDown={closeControlPanel}>
-              <canvas
-                ref={canvasRef}
-                width={SIM_W}
-                height={SIM_H}
-                className="stage-canvas"
-                role="img"
-                aria-label="CFD wind tunnel simulation."
-                style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"fill"}} />
-              {is3D && <View3D poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} mode={mode} preset={preset} />}
-              <div className="canvas-hud">
-                {!hasRun && !running && (
-                  <div className="hud-waiting"><span>&#9654; PRESS RUN &middot; SPACE</span></div>
-                )}
-              </div>
+      <main id="aerotunnel-main" tabIndex={-1} aria-label="AeroTunnel workspace" className={`lab-canvas-zone lab-canvas-zone--${view}`}>
+          <section className="canvas-area" hidden={view!=="tunnel"} aria-label="Simulation canvas area">
+            <div className="viewport-toolbar">
+              {EMBED_MODE && <p className="embed-mode-hint">Modes · scroll horizontally to see all seven</p>}
+              <VisualizationModes modes={MODES} value={mode} onChange={changeMode} />
               {/* 30.1 — Compare mode controls */}
               {compareMode && !is3D && (
                 <div className="compare-bar">
                   <div className="compare-bar__side">
                     <span className="compare-bar__label">A</span>
-                    <select className="compare-bar__select" value={compareFieldA} onChange={e => setCompareFieldA(e.target.value)}>
+                    <select disabled={!comparisonAvailable(mode)} aria-label="Comparison field A" className="compare-bar__select" value={compareFieldA} onChange={e => setCompareFieldA(e.target.value)}>
                       <option value="velocity">Velocity</option>
                       <option value="pressure">Pressure</option>
                       <option value="vorticity">Vorticity</option>
                     </select>
                   </div>
-                  <button className={`compare-bar__diff ${showDiff ? "is-active" : ""}`} onClick={() => setShowDiff(d => !d)}>
-                    Show &Delta;
+                  <button type="button" disabled={!comparisonAvailable(mode)} title="Absolute difference between independently normalized fields; dimensionless, not a physical subtraction." aria-pressed={showDiff} className={`compare-bar__diff ${showDiff ? "is-active" : ""}`} onClick={() => setShowDiff(d => !d)}>
+                    Normalized &Delta;
                   </button>
                   <div className="compare-bar__side">
-                    <select className="compare-bar__select" value={compareFieldB} onChange={e => setCompareFieldB(e.target.value)}>
+                    <select disabled={!comparisonAvailable(mode)} aria-label="Comparison field B" className="compare-bar__select" value={compareFieldB} onChange={e => setCompareFieldB(e.target.value)}>
                       <option value="velocity">Velocity</option>
                       <option value="pressure">Pressure</option>
                       <option value="vorticity">Vorticity</option>
@@ -1234,12 +1207,69 @@ export default function CFDLab() {
                 </div>
               )}
             </div>
+            <div className="plot-status" aria-label="Plot state">
+              <span>Flow <svg viewBox="0 0 32 12" aria-hidden="true"><path d="M1 6h28m-5-4 5 4-5 4" /></svg></span>
+              <span>AoA {aoa.toFixed(1)}°</span>
+              <span>{running ? "LBM running" : "LBM paused"}</span>
+              <span title="RMS change in lattice velocity between solver steps, in cells/step; not a validated accuracy criterion.">Δu {convergenceDelta == null ? "—" : convergenceDelta.toExponential(1)}</span>
+            </div>
+            <div className={`canvas-wrapper ${running ? "is-live" : ""}`} onPointerDown={() => { if (window.matchMedia("(max-width: 1023px)").matches) closeControlPanel(); }}>
+              <canvas
+                ref={canvasRef}
+                width={SIM_W}
+                height={SIM_H}
+                className="stage-canvas"
+                role="img"
+                aria-label={`2D LBM ${MODES.find(item => item.id === mode)?.label || mode} field in lattice units. Geometry aspect ratio preserved.`}
+                style={{display:is3D?"none":"block",position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain"}} />
+              {is3D && view==="tunnel" && <View3D captureRequestRef={captureRequestRef} poly={poly} solverRef={solverRef} cx={cx} cy={cy} sx={sx} sy={sy} aoa={aoa} mode={mode} preset={preset} simplify={simplify} onExit={() => changeMode("velocity")} />}
+
+              <div className="canvas-hud">
+                {!hasRun && !running && (
+                  <div className="hud-waiting"><span>Ready to simulate</span></div>
+                )}
+              </div>
+
+            </div>
+            <FieldLegend mode={mode} frame={legendFrame} comparison={compareMode} difference={showDiff} />
           </section>
-        )}
-        {view==="analysis" && <AnalysisPanel hSnap={histSnap} miniRef={miniRef} running={running} exportCSV={exportCSV} exportSession={exportSession} stats={stats} ldRatio={ldRatio} regime={regime} onSaveSession={saveCurrentSession} onLoadSession={loadSavedSession} onDeleteSession={deleteSavedSession} sweepState={sweepState} onStartSweep={startSweep} onCancelSweep={cancelSweep} recording={recording} onStartRecording={startRecording} onStopRecording={stopRecording} recordFrameCount={recordCount.current} />}
+        <AnalysisPanel isActive={view === "analysis"} hSnap={histSnap} sample={analysisSample}
+          setup={{ preset, poly, cx, cy, sx, sy, aoa, simplify, vel, turb, nu }}
+          convergenceDelta={convergenceDelta} running={running} started={workspaceStarted || hasRun}
+          exportTools={<ExportActions {...exportActions} />} onPublish={openPublishing}
+          onSaveSession={saveCurrentSession} onLoadSession={loadSavedSession} onDeleteSession={deleteSavedSession}
+          sweepState={sweepState} sweepReport={sweepReport} onStartSweep={startSweep} onCancelSweep={cancelSweep}
+          recording={recording} onStartRecording={startRecording} onStopRecording={stopRecording}
+          recordFrameCount={recordFrameCount} recordingExport={recordingExport}
+          onReturn={() => { changeRailView("tunnel"); requestAnimationFrame(() => document.getElementById("aerotunnel-main")?.focus({ preventScroll: true })); }} onFullscreen={toggleFS} />
         {view==="about" && <AboutPanel />}
       </main>
 
+      {!EMBED_MODE && view==="tunnel" && (
+        <aside className="workspace-metrics" aria-label="Live aerodynamic metrics">
+          <h2>Live indicators</h2>
+          <dl>
+            {metrics.map(m => <div key={m.label} style={{"--tone":m.tone}}>
+              <dt>{m.label}</dt><dd>{m.value}</dd>
+            </div>)}
+          </dl>
+          <p className="metric-caveat">{!metricsFresh && "Awaiting a sample for this setup. "}Heuristic proxies, not validated force coefficients. Re* is a scaled lattice estimate.</p>
+          <button type="button" className="workspace-text-action" onClick={() => changeRailView("analysis")}>Analysis &amp; exports <span aria-hidden="true">→</span></button>
+        </aside>
+      )}
+      </div>
+      {!EMBED_MODE && view !== "analysis" && <div className="workspace-context-actions" role="group" aria-label="Publishing and exports">
+        <button type="button" onClick={openPublishing}>Share &amp; Export</button>
+        <button type="button" onClick={toggleFS}>Fullscreen</button>
+        <button type="button" onClick={exportSession}>Save Simulation Session (JSON)</button>
+        <button type="button" onClick={() => sessionInputRef.current?.click()}>Load Session</button>
+        <span className="workspace-shortcuts">Space: run / pause · S: save image · F: fullscreen</span>
+      </div>}
+      {EMBED_MODE && <p className="embed-note">Interactive default F1 model · educational 2D LBM in lattice units. No saved session loaded. 3D is qualitative, not full 3D CFD.</p>}
+      {!EMBED_MODE && <>
+        <input ref={sessionInputRef} hidden type="file" accept=".json,application/json" aria-label="Load AeroTunnel session file" onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; readSessionFile(file); }} />
+        <PublishingDialog dialogRef={publishingRef} busy={imageBusy} error={imageError} onImage={snap} actions={exportActions} frames={frameActions} canCapture={view === "tunnel"} notice={sessionToast} />
+      </>}
       {/* 21.1/21.2/21.4 — Solver warning HUD */}
       {solverWarning && (
         <div className={`solver-warning solver-warning--${solverWarning}`} role="alert">
@@ -1247,52 +1277,19 @@ export default function CFDLab() {
           <span className="solver-warning__text">
             {solverWarning === "diverged" && "SOLVER DIVERGED — Reduce velocity or increase viscosity"}
             {solverWarning === "overflow" && "VELOCITY OVERFLOW — Solver struggling, consider adjusting parameters"}
-            {solverWarning === "geom-points" && "INVALID GEOMETRY — Polygon must have at least 3 points"}
-            {solverWarning === "geom-area" && "INVALID GEOMETRY — Shape has zero area"}
+            {GEOMETRY_ERRORS[solverWarning]}
             {solverWarning === "geom-intersect" && "SELF-INTERSECTING GEOMETRY — Results may be inaccurate"}
-          </span>
-        </div>
-      )}
-
-      {/* 14.4 — Floating metric pills */}
-      {view==="tunnel" && (
-        <div className={`floating-metrics ${!hasRun?"is-waiting":""}`}>
-          {metrics.map(m => (
-            <div key={m.label} className="floating-metric-pill" style={{"--tone":m.tone}}>
-              <span className="floating-metric-pill__label">{m.label}</span>
-              <span className="floating-metric-pill__value">{m.value}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 24.1 — Compact metric bar for mobile */}
-      {view==="tunnel" && (
-        <div className={`floating-metrics-compact ${!hasRun?"is-waiting":""}`}>
-          <span className="floating-metrics-compact__item">
-            <span className="floating-metrics-compact__label">CL</span>
-            <span className="floating-metrics-compact__value">{hasRun?stats.cl:"—"}</span>
-          </span>
-          <span className="floating-metrics-compact__sep">&middot;</span>
-          <span className="floating-metrics-compact__item">
-            <span className="floating-metrics-compact__label">CD</span>
-            <span className="floating-metrics-compact__value">{hasRun?stats.cd:"—"}</span>
-          </span>
-          <span className="floating-metrics-compact__sep">&middot;</span>
-          <span className="floating-metrics-compact__item">
-            <span className="floating-metrics-compact__label">L/D</span>
-            <span className="floating-metrics-compact__value">{hasRun?ldRatio:"—"}</span>
           </span>
         </div>
       )}
 
       {/* 25.1 — Session restore toast */}
       {sessionToast && (
-        <div className="session-toast" role="status">{sessionToast}</div>
+        <div className="session-toast" role={/^(Import|Image export) failed/.test(sessionToast) ? "alert" : "status"}><span>{sessionToast}</span><button type="button" aria-label="Dismiss notice" onClick={() => setSessionToast(null)}>&times;</button></div>
       )}
 
-      {/* 20.5 — Screenshot watermark */}
-      <div className="screenshot-watermark">AEROLAB</div>
+
+      </div>
     </div>
   );
 }

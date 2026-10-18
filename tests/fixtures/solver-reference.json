@@ -1,0 +1,57 @@
+{
+  "provenance": "Recorded unchanged Phase06/07 solver fixtures; Cylinder, inlet .12, nu .015, turbulence 0, seed12345,30steps. Per-backend references; JS/WASM are not asserted bit-identical to each other.",
+  "cases": [
+    {
+      "width": 375,
+      "backend": "WASM",
+      "N": 21632,
+      "arrays": {
+        "ux": "177f0a73f1bcf12da908569b00e586736b8c9d706d4381bd8c1be40bd6e38a5c",
+        "uy": "cf2d6cf2bb8f4a84f40af93a9ad5f33db93d06869790849fae4f2e398e0bae30",
+        "rho": "8cc57275a5f5af610789eaceb7a14261c69f0a4a7747b60ac54ab08c60274ba8",
+        "spd": "766a5f5b1ddec0b44e50315973b095a6837b7569c6bdd87b40f35a311c0ea190",
+        "curl": "5e0c57038a7d796af883abc99d1d70086af4aba50937be941684b25c6d0d8920",
+        "solid": "8912f3fc6ea256cde017c70f966503bb0ab7c23e9acc2d10e2aef61b9aba7267"
+      }
+    },
+    {
+      "width": 375,
+      "backend": "JS",
+      "N": 21632,
+      "arrays": {
+        "ux": "3b9e90418ea5ead25c5b41cdbd09088cb2d48c68f638baabdd2387bf0dcc10eb",
+        "uy": "c0d863626cc5203ea8aa8609ef67aa76b7bae28f1f2a8e0b0ea84dce2a518fb1",
+        "rho": "c8a8051af1f668f5e1039502a31eb809a94fdfabcc1453864777123bea93335e",
+        "spd": "52d517a2bdabfc281cc6aa174d7e320fe97b1fa69b0b91ace6bb3d23a09f5f40",
+        "curl": "2e2b62f484e951c16b323ff0e3917ce316d6e65e06afd34200134153ae6f6c8c",
+        "solid": "8912f3fc6ea256cde017c70f966503bb0ab7c23e9acc2d10e2aef61b9aba7267"
+      }
+    },
+    {
+      "width": 1440,
+      "backend": "WASM",
+      "N": 40500,
+      "arrays": {
+        "ux": "70f71f6e6b2bf1729122e658aeeac3d21fea575754d5dbc7c6b54ab252a8b1c8",
+        "uy": "e2a1af6fe201b2238d070def11743f98d34e138a49c9b662844cfc536e08d7d8",
+        "rho": "e4788478bf7d0cfc9c5eb9ded56dbc549a861c960a76fc61cf6bfb4961d42711",
+        "spd": "117ee2a3f147f49f434b293d50b938167ce59563413cc1030f87c1f933564fec",
+        "curl": "8e27b22ebb26438de82d373891d390f681cec0983e65b5b61d85d060c30622ef",
+        "solid": "a0e66ee1f5fb406474d9945b896a5a23f907bd55884bcdadecfe5e092ccda06a"
+      }
+    },
+    {
+      "width": 1440,
+      "backend": "JS",
+      "N": 40500,
+      "arrays": {
+        "ux": "d3906b75c9ab630bbc0b0720fc93f6b0c6278c7449eb205204f96488d9e63dab",
+        "uy": "6b34fa49e1f75f853e204d64edeb2046e1e126e0559c6548dacedc0a13aa1f87",
+        "rho": "7a0297fb22923a1612bc82af19d6dc23b6de2dfcd414d94bd07e5a73ced2c535",
+        "spd": "5a4ccddc03ac25840e16bca7445cd65dd1029383e9933cfd28c5afdeb834e0f2",
+        "curl": "8fe0d67ec87378c7a5bfbf3450d3af65b812125eb040b3002f66542b898598d3",
+        "solid": "a0e66ee1f5fb406474d9945b896a5a23f907bd55884bcdadecfe5e092ccda06a"
+      }
+    }
+  ]
+}

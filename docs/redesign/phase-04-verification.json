@@ -1,0 +1,1459 @@
+{
+  "layouts": [
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 68,
+        "top": 0,
+        "right": 320,
+        "bottom": 68,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 68,
+        "width": 320,
+        "height": 74,
+        "top": 68,
+        "right": 320,
+        "bottom": 142,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 142,
+        "width": 320,
+        "height": 498,
+        "top": 142,
+        "right": 320,
+        "bottom": 640,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 142,
+        "width": 320,
+        "height": 498,
+        "top": 142,
+        "right": 320,
+        "bottom": 640,
+        "left": 0
+      },
+      "rail": {
+        "x": 0,
+        "y": 588,
+        "width": 320,
+        "height": 52,
+        "top": 588,
+        "right": 320,
+        "bottom": 640,
+        "left": 0
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 210,
+        "width": 288,
+        "height": 42,
+        "top": 210,
+        "right": 304,
+        "bottom": 252,
+        "left": 16
+      },
+      "documentWidth": 320,
+      "documentHeight": 640,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(242, 238, 228)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(168, 46, 28)",
+        "rect": {
+          "x": 207,
+          "y": 11.5,
+          "width": 44,
+          "height": 44,
+          "top": 11.5,
+          "right": 251,
+          "bottom": 55.5,
+          "left": 207
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-light-320.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 0,
+          "y": 339,
+          "width": 320,
+          "height": 249,
+          "top": 339,
+          "right": 320,
+          "bottom": 588,
+          "left": 0
+        },
+        "workspace": {
+          "x": 0,
+          "y": 142,
+          "width": 320,
+          "height": 498,
+          "top": 142,
+          "right": 320,
+          "bottom": 640,
+          "left": 0
+        },
+        "rail": {
+          "x": 0,
+          "y": 588,
+          "width": 320,
+          "height": 52,
+          "top": 588,
+          "right": 320,
+          "bottom": 640,
+          "left": 0
+        }
+      }
+    },
+    {
+      "width": 320,
+      "height": 640,
+      "theme": "dark",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 68,
+        "top": 0,
+        "right": 320,
+        "bottom": 68,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 68,
+        "width": 320,
+        "height": 74,
+        "top": 68,
+        "right": 320,
+        "bottom": 142,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 142,
+        "width": 320,
+        "height": 498,
+        "top": 142,
+        "right": 320,
+        "bottom": 640,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 142,
+        "width": 320,
+        "height": 498,
+        "top": 142,
+        "right": 320,
+        "bottom": 640,
+        "left": 0
+      },
+      "rail": {
+        "x": 0,
+        "y": 588,
+        "width": 320,
+        "height": 52,
+        "top": 588,
+        "right": 320,
+        "bottom": 640,
+        "left": 0
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 210,
+        "width": 288,
+        "height": 42,
+        "top": 210,
+        "right": 304,
+        "bottom": 252,
+        "left": 16
+      },
+      "documentWidth": 320,
+      "documentHeight": 640,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(27, 26, 25)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(255, 119, 95)",
+        "rect": {
+          "x": 207,
+          "y": 11.5,
+          "width": 44,
+          "height": 44,
+          "top": 11.5,
+          "right": 251,
+          "bottom": 55.5,
+          "left": 207
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-dark-320.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 0,
+          "y": 339,
+          "width": 320,
+          "height": 249,
+          "top": 339,
+          "right": 320,
+          "bottom": 588,
+          "left": 0
+        },
+        "workspace": {
+          "x": 0,
+          "y": 142,
+          "width": 320,
+          "height": 498,
+          "top": 142,
+          "right": 320,
+          "bottom": 640,
+          "left": 0
+        },
+        "rail": {
+          "x": 0,
+          "y": 588,
+          "width": 320,
+          "height": 52,
+          "top": 588,
+          "right": 320,
+          "bottom": 640,
+          "left": 0
+        }
+      }
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "theme": "light",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 375,
+        "height": 68,
+        "top": 0,
+        "right": 375,
+        "bottom": 68,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 68,
+        "width": 375,
+        "height": 74,
+        "top": 68,
+        "right": 375,
+        "bottom": 142,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 142,
+        "width": 375,
+        "height": 670,
+        "top": 142,
+        "right": 375,
+        "bottom": 812,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 142,
+        "width": 375,
+        "height": 670,
+        "top": 142,
+        "right": 375,
+        "bottom": 812,
+        "left": 0
+      },
+      "rail": {
+        "x": 0,
+        "y": 760,
+        "width": 375,
+        "height": 52,
+        "top": 760,
+        "right": 375,
+        "bottom": 812,
+        "left": 0
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 210,
+        "width": 343,
+        "height": 42,
+        "top": 210,
+        "right": 359,
+        "bottom": 252,
+        "left": 16
+      },
+      "documentWidth": 375,
+      "documentHeight": 812,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(242, 238, 228)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(168, 46, 28)",
+        "rect": {
+          "x": 257,
+          "y": 11.5,
+          "width": 44,
+          "height": 44,
+          "top": 11.5,
+          "right": 301,
+          "bottom": 55.5,
+          "left": 257
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-light-375.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 0,
+          "y": 425,
+          "width": 375,
+          "height": 335,
+          "top": 425,
+          "right": 375,
+          "bottom": 760,
+          "left": 0
+        },
+        "workspace": {
+          "x": 0,
+          "y": 142,
+          "width": 375,
+          "height": 670,
+          "top": 142,
+          "right": 375,
+          "bottom": 812,
+          "left": 0
+        },
+        "rail": {
+          "x": 0,
+          "y": 760,
+          "width": 375,
+          "height": 52,
+          "top": 760,
+          "right": 375,
+          "bottom": 812,
+          "left": 0
+        }
+      }
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "theme": "dark",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 375,
+        "height": 68,
+        "top": 0,
+        "right": 375,
+        "bottom": 68,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 68,
+        "width": 375,
+        "height": 74,
+        "top": 68,
+        "right": 375,
+        "bottom": 142,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 142,
+        "width": 375,
+        "height": 670,
+        "top": 142,
+        "right": 375,
+        "bottom": 812,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 142,
+        "width": 375,
+        "height": 670,
+        "top": 142,
+        "right": 375,
+        "bottom": 812,
+        "left": 0
+      },
+      "rail": {
+        "x": 0,
+        "y": 760,
+        "width": 375,
+        "height": 52,
+        "top": 760,
+        "right": 375,
+        "bottom": 812,
+        "left": 0
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 210,
+        "width": 343,
+        "height": 42,
+        "top": 210,
+        "right": 359,
+        "bottom": 252,
+        "left": 16
+      },
+      "documentWidth": 375,
+      "documentHeight": 812,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(27, 26, 25)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(255, 119, 95)",
+        "rect": {
+          "x": 257,
+          "y": 11.5,
+          "width": 44,
+          "height": 44,
+          "top": 11.5,
+          "right": 301,
+          "bottom": 55.5,
+          "left": 257
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-dark-375.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 0,
+          "y": 425,
+          "width": 375,
+          "height": 335,
+          "top": 425,
+          "right": 375,
+          "bottom": 760,
+          "left": 0
+        },
+        "workspace": {
+          "x": 0,
+          "y": 142,
+          "width": 375,
+          "height": 670,
+          "top": 142,
+          "right": 375,
+          "bottom": 812,
+          "left": 0
+        },
+        "rail": {
+          "x": 0,
+          "y": 760,
+          "width": 375,
+          "height": 52,
+          "top": 760,
+          "right": 375,
+          "bottom": 812,
+          "left": 0
+        }
+      }
+    },
+    {
+      "width": 768,
+      "height": 900,
+      "theme": "light",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 768,
+        "height": 68,
+        "top": 0,
+        "right": 768,
+        "bottom": 68,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 68,
+        "width": 768,
+        "height": 45,
+        "top": 68,
+        "right": 768,
+        "bottom": 113,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 113,
+        "width": 768,
+        "height": 787,
+        "top": 113,
+        "right": 768,
+        "bottom": 900,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 113,
+        "width": 768,
+        "height": 787,
+        "top": 113,
+        "right": 768,
+        "bottom": 900,
+        "left": 0
+      },
+      "rail": {
+        "x": 16,
+        "y": 286.5,
+        "width": 50,
+        "height": 440,
+        "top": 286.5,
+        "right": 66,
+        "bottom": 726.5,
+        "left": 16
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 193,
+        "width": 736,
+        "height": 44,
+        "top": 193,
+        "right": 752,
+        "bottom": 237,
+        "left": 16
+      },
+      "documentWidth": 768,
+      "documentHeight": 900,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(242, 238, 228)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(168, 46, 28)",
+        "rect": {
+          "x": 640,
+          "y": 11.5,
+          "width": 44,
+          "height": 44,
+          "top": 11.5,
+          "right": 684,
+          "bottom": 55.5,
+          "left": 640
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-light-768.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 68,
+          "y": 234.625,
+          "width": 240,
+          "height": 543.75,
+          "top": 234.625,
+          "right": 308,
+          "bottom": 778.375,
+          "left": 68
+        },
+        "workspace": {
+          "x": 0,
+          "y": 113,
+          "width": 768,
+          "height": 787,
+          "top": 113,
+          "right": 768,
+          "bottom": 900,
+          "left": 0
+        },
+        "rail": {
+          "x": 16,
+          "y": 286.5,
+          "width": 50,
+          "height": 440,
+          "top": 286.5,
+          "right": 66,
+          "bottom": 726.5,
+          "left": 16
+        }
+      }
+    },
+    {
+      "width": 768,
+      "height": 900,
+      "theme": "dark",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 768,
+        "height": 68,
+        "top": 0,
+        "right": 768,
+        "bottom": 68,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 68,
+        "width": 768,
+        "height": 45,
+        "top": 68,
+        "right": 768,
+        "bottom": 113,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 113,
+        "width": 768,
+        "height": 787,
+        "top": 113,
+        "right": 768,
+        "bottom": 900,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 113,
+        "width": 768,
+        "height": 787,
+        "top": 113,
+        "right": 768,
+        "bottom": 900,
+        "left": 0
+      },
+      "rail": {
+        "x": 16,
+        "y": 286.5,
+        "width": 50,
+        "height": 440,
+        "top": 286.5,
+        "right": 66,
+        "bottom": 726.5,
+        "left": 16
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 193,
+        "width": 736,
+        "height": 44,
+        "top": 193,
+        "right": 752,
+        "bottom": 237,
+        "left": 16
+      },
+      "documentWidth": 768,
+      "documentHeight": 900,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(27, 26, 25)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(255, 119, 95)",
+        "rect": {
+          "x": 640,
+          "y": 11.5,
+          "width": 44,
+          "height": 44,
+          "top": 11.5,
+          "right": 684,
+          "bottom": 55.5,
+          "left": 640
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-dark-768.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 68,
+          "y": 234.625,
+          "width": 240,
+          "height": 543.75,
+          "top": 234.625,
+          "right": 308,
+          "bottom": 778.375,
+          "left": 68
+        },
+        "workspace": {
+          "x": 0,
+          "y": 113,
+          "width": 768,
+          "height": 787,
+          "top": 113,
+          "right": 768,
+          "bottom": 900,
+          "left": 0
+        },
+        "rail": {
+          "x": 16,
+          "y": 286.5,
+          "width": 50,
+          "height": 440,
+          "top": 286.5,
+          "right": 66,
+          "bottom": 726.5,
+          "left": 16
+        }
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 76,
+        "top": 0,
+        "right": 1440,
+        "bottom": 76,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 76,
+        "width": 1440,
+        "height": 45,
+        "top": 76,
+        "right": 1440,
+        "bottom": 121,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 121,
+        "width": 1440,
+        "height": 779,
+        "top": 121,
+        "right": 1440,
+        "bottom": 900,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 121,
+        "width": 1440,
+        "height": 779,
+        "top": 121,
+        "right": 1440,
+        "bottom": 900,
+        "left": 0
+      },
+      "rail": {
+        "x": 16,
+        "y": 290.5,
+        "width": 50,
+        "height": 440,
+        "top": 290.5,
+        "right": 66,
+        "bottom": 730.5,
+        "left": 16
+      },
+      "modeBar": {
+        "x": 345.3359375,
+        "y": 137,
+        "width": 749.328125,
+        "height": 40,
+        "top": 137,
+        "right": 1094.6640625,
+        "bottom": 177,
+        "left": 345.3359375
+      },
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(242, 238, 228)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(168, 46, 28)",
+        "rect": {
+          "x": 1348,
+          "y": 15.5,
+          "width": 44,
+          "height": 44,
+          "top": 15.5,
+          "right": 1392,
+          "bottom": 59.5,
+          "left": 1348
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-light-1440.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 68,
+          "y": 238.625,
+          "width": 260,
+          "height": 543.75,
+          "top": 238.625,
+          "right": 328,
+          "bottom": 782.375,
+          "left": 68
+        },
+        "workspace": {
+          "x": 0,
+          "y": 121,
+          "width": 1440,
+          "height": 779,
+          "top": 121,
+          "right": 1440,
+          "bottom": 900,
+          "left": 0
+        },
+        "rail": {
+          "x": 16,
+          "y": 290.5,
+          "width": 50,
+          "height": 440,
+          "top": 290.5,
+          "right": 66,
+          "bottom": 730.5,
+          "left": 16
+        }
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "masthead": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 76,
+        "top": 0,
+        "right": 1440,
+        "bottom": 76,
+        "left": 0
+      },
+      "raceDesk": {
+        "x": 0,
+        "y": 76,
+        "width": 1440,
+        "height": 45,
+        "top": 76,
+        "right": 1440,
+        "bottom": 121,
+        "left": 0
+      },
+      "workspace": {
+        "x": 0,
+        "y": 121,
+        "width": 1440,
+        "height": 779,
+        "top": 121,
+        "right": 1440,
+        "bottom": 900,
+        "left": 0
+      },
+      "canvas": {
+        "x": 0,
+        "y": 121,
+        "width": 1440,
+        "height": 779,
+        "top": 121,
+        "right": 1440,
+        "bottom": 900,
+        "left": 0
+      },
+      "rail": {
+        "x": 16,
+        "y": 290.5,
+        "width": 50,
+        "height": 440,
+        "top": 290.5,
+        "right": 66,
+        "bottom": 730.5,
+        "left": 16
+      },
+      "modeBar": {
+        "x": 345.3359375,
+        "y": 137,
+        "width": 749.328125,
+        "height": 40,
+        "top": 137,
+        "right": 1094.6640625,
+        "bottom": 177,
+        "left": 345.3359375
+      },
+      "documentWidth": 1440,
+      "documentHeight": 900,
+      "products": [
+        {
+          "text": "THE GRID",
+          "font": "15px",
+          "href": "https://f1-stories.gr/standings/",
+          "current": null
+        },
+        {
+          "text": "TELEMETRY",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+          "current": null
+        },
+        {
+          "text": "GHOST CAR",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/ghostcar/",
+          "current": null
+        },
+        {
+          "text": "TYRES",
+          "font": "15px",
+          "href": "https://georgiosbalatzis.github.io/Tyres/",
+          "current": null
+        },
+        {
+          "text": "AEROTUNNEL",
+          "font": "15px",
+          "href": "/aerotunnel/#aerotunnel-main",
+          "current": "page"
+        }
+      ],
+      "activeRule": "rgb(237, 76, 50)",
+      "activeRuleHeight": "3px",
+      "background": "rgb(27, 26, 25)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)",
+      "logoLoaded": true,
+      "closedPanelInert": true,
+      "focus": {
+        "visible": true,
+        "outline": "2px",
+        "color": "rgb(255, 119, 95)",
+        "rect": {
+          "x": 1348,
+          "y": 15.5,
+          "width": 44,
+          "height": 44,
+          "top": 15.5,
+          "right": 1392,
+          "bottom": 59.5,
+          "left": 1348
+        }
+      },
+      "screenshot": "docs/redesign/screenshots/phase-04-dark-1440.png",
+      "openPanel": {
+        "inert": false,
+        "rect": {
+          "x": 68,
+          "y": 238.625,
+          "width": 260,
+          "height": 543.75,
+          "top": 238.625,
+          "right": 328,
+          "bottom": 782.375,
+          "left": 68
+        },
+        "workspace": {
+          "x": 0,
+          "y": 121,
+          "width": 1440,
+          "height": 779,
+          "top": 121,
+          "right": 1440,
+          "bottom": 900,
+          "left": 0
+        },
+        "rail": {
+          "x": 16,
+          "y": 290.5,
+          "width": 50,
+          "height": 440,
+          "top": 290.5,
+          "right": 66,
+          "bottom": 730.5,
+          "left": 16
+        }
+      }
+    }
+  ],
+  "menus": [
+    {
+      "width": 320,
+      "theme": "light",
+      "spaceOpens": true,
+      "sevenLinks": true,
+      "escapeClosesAndRestoresFocus": true,
+      "outsideClickCloses": true,
+      "simulationRemainedPaused": true
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "spaceOpens": true,
+      "sevenLinks": true,
+      "escapeClosesAndRestoresFocus": true,
+      "outsideClickCloses": true,
+      "simulationRemainedPaused": true
+    },
+    {
+      "width": 375,
+      "theme": "light",
+      "spaceOpens": true,
+      "sevenLinks": true,
+      "escapeClosesAndRestoresFocus": true,
+      "outsideClickCloses": true,
+      "simulationRemainedPaused": true
+    },
+    {
+      "width": 375,
+      "theme": "dark",
+      "spaceOpens": true,
+      "sevenLinks": true,
+      "escapeClosesAndRestoresFocus": true,
+      "outsideClickCloses": true,
+      "simulationRemainedPaused": true
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "spaceOpens": true,
+      "sevenLinks": true,
+      "escapeClosesAndRestoresFocus": true,
+      "outsideClickCloses": true,
+      "simulationRemainedPaused": true
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "spaceOpens": true,
+      "sevenLinks": true,
+      "escapeClosesAndRestoresFocus": true,
+      "outsideClickCloses": true,
+      "simulationRemainedPaused": true
+    }
+  ],
+  "links": [
+    {
+      "text": "\u0391\u03c1\u03c7\u03b9\u03ba\u03ae",
+      "href": "https://f1-stories.gr/",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "\u0386\u03c1\u03b8\u03c1\u03b1",
+      "href": "https://f1-stories.gr/blog-module/blog/index.html",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "YouTube (opens in a new tab)",
+      "href": "https://www.youtube.com/@f1_stories_original",
+      "target": "_blank",
+      "rel": "noopener noreferrer",
+      "current": null
+    },
+    {
+      "text": "\u0392\u03b1\u03b8\u03bc\u03bf\u03bb\u03bf\u03b3\u03af\u03b1",
+      "href": "https://f1-stories.gr/standings/",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "\u0394\u03b5\u03b4\u03bf\u03bc\u03ad\u03bd\u03b1",
+      "href": "https://f1-stories.gr/standings/?tab=tyre-pace",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "\u03a3\u03c5\u03bd\u03c4\u03ac\u03ba\u03c4\u03b5\u03c2",
+      "href": "https://f1-stories.gr/authors/",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "BetCast (opens in a new tab)",
+      "href": "https://georgiosbalatzis.github.io/BetCastVisualisation/",
+      "target": "_blank",
+      "rel": "noopener noreferrer",
+      "current": null
+    },
+    {
+      "text": "THE GRID",
+      "href": "https://f1-stories.gr/standings/",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "TELEMETRY",
+      "href": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "GHOST CAR",
+      "href": "https://georgiosbalatzis.github.io/ghostcar/",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "TYRES",
+      "href": "https://georgiosbalatzis.github.io/Tyres/",
+      "target": "",
+      "rel": "",
+      "current": null
+    },
+    {
+      "text": "AEROTUNNEL",
+      "href": "http://127.0.0.1:5174/aerotunnel/#aerotunnel-main",
+      "target": "",
+      "rel": "",
+      "current": "page"
+    }
+  ],
+  "pageErrors": [],
+  "resizeClosesMenu": true,
+  "skipLink": true,
+  "pausedContinuity": {
+    "sameSolver": true,
+    "sameCanvas": true,
+    "sameParticlePool": true,
+    "sameNumericalBuffers": true,
+    "sameParameters": true,
+    "samePage": true,
+    "sameLegend": true,
+    "hash": "#aerotunnel-main"
+  },
+  "runningContinuity": {
+    "sameSolver": true,
+    "sameCanvas": true,
+    "samePage": true,
+    "canvasContainsField": true
+  },
+  "threeD": {
+    "themePreservesRenderer": true,
+    "offViewCanvasesDisposed": true,
+    "hiddenDrawCalls": 0,
+    "returnViewDraws": true,
+    "sameSolver": true
+  },
+  "comparisonControls": true,
+  "localRailKeyboard": true,
+  "finalSmoke": {
+    "footerUsesVerifiedDomain": true,
+    "menuEnterOpens": true,
+    "menuTabOrder": [
+      {
+        "text": "\u0391\u03c1\u03c7\u03b9\u03ba\u03ae",
+        "inMenu": true
+      },
+      {
+        "text": "\u0386\u03c1\u03b8\u03c1\u03b1",
+        "inMenu": true
+      },
+      {
+        "text": "YouTube (opens in a new tab)",
+        "inMenu": true
+      },
+      {
+        "text": "\u0392\u03b1\u03b8\u03bc\u03bf\u03bb\u03bf\u03b3\u03af\u03b1",
+        "inMenu": true
+      },
+      {
+        "text": "\u0394\u03b5\u03b4\u03bf\u03bc\u03ad\u03bd\u03b1",
+        "inMenu": true
+      },
+      {
+        "text": "\u03a3\u03c5\u03bd\u03c4\u03ac\u03ba\u03c4\u03b5\u03c2",
+        "inMenu": true
+      },
+      {
+        "text": "BetCast (opens in a new tab)",
+        "inMenu": true
+      }
+    ],
+    "tabExitCloses": true,
+    "mastheadTogglePersistsAfterReload": true,
+    "pageErrors": []
+  },
+  "verifiedAt": "2026-10-16T19:20:07.383832+00:00",
+  "staticChecks": {
+    "build": "pass; 43 modules, no warnings",
+    "lintBaselineErrors": 19,
+    "lintFinalErrors": 19,
+    "lintWarnings": 0,
+    "normalizedDiagnosticsIdentical": true,
+    "existingThemeTests": {
+      "pass": 8,
+      "fail": 0
+    },
+    "diffCheck": "pass",
+    "canonicalTokensByteIdentical": true,
+    "priorOutOfScopeTrackedDiffsPreserved": true,
+    "reviewer": "No remaining actionable findings after 3D mount guard and scrolling fixes"
+  }
+}

@@ -1,7 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { CONTROL_SECTIONS } from "./iconRailConfig";
 
-const FLOATING_CONTROL_IDS = new Set(["shape", "flow", "visual"]);
 
 function RailIcon({ icon }) {
   if (icon === "shape") {
@@ -46,6 +45,12 @@ function RailIcon({ icon }) {
         <path d="M19 19v-7" />
       </svg>
     );
+  }
+  if (icon === "simulation") {
+    return <svg viewBox="0 0 24 24" aria-hidden><rect x="3" y="5" width="18" height="14" /><path d="M6 9h12M6 15h12" /></svg>;
+  }
+  if (icon === "about") {
+    return <svg viewBox="0 0 24 24" aria-hidden><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7v1" /></svg>;
   }
   if (icon === "pause") {
     return (
@@ -99,6 +104,7 @@ export default function IconRail({
   activeSection,
   onSectionChange,
   running,
+  started = true,
   onRunToggle,
   onReset,
   currentView = "tunnel",
@@ -111,7 +117,7 @@ export default function IconRail({
   canUndo = false,
   canRedo = false,
 }) {
-  const controlItems = CONTROL_SECTIONS.filter(section => FLOATING_CONTROL_IDS.has(section.id)).map(section => ({
+  const controlItems = CONTROL_SECTIONS.map(section => ({
     id: `control-${section.id}`,
     className: `floating-rail-btn ${currentView === "tunnel" && panelOpen && activeSection === section.id ? "is-active" : ""}`,
     ariaLabel: `Toggle ${section.label} controls`,
@@ -122,9 +128,18 @@ export default function IconRail({
   }));
   const viewItems = [
     {
+      id: "simulation",
+      className: `floating-rail-btn ${currentView === "tunnel" ? "is-active" : ""}`,
+      ariaLabel: "Open simulation view",
+      tooltip: "Simulation",
+      icon: "simulation",
+      isActive: currentView === "tunnel",
+      onClick: () => onViewChange("tunnel"),
+    },
+    {
       id: "compare",
       className: `floating-rail-btn ${compareMode ? "is-active" : ""}`,
-      ariaLabel: compareMode ? "Exit comparison mode" : "Enter comparison mode",
+      ariaLabel: "Compare fields",
       tooltip: "Compare",
       icon: "compare",
       isActive: compareMode,
@@ -139,20 +154,30 @@ export default function IconRail({
       isActive: currentView === "analysis",
       onClick: () => onViewChange("analysis"),
     },
+    {
+      id: "about",
+      className: `floating-rail-btn ${currentView === "about" ? "is-active" : ""}`,
+      ariaLabel: "Open About view",
+      tooltip: "About",
+      icon: "about",
+      isActive: currentView === "about",
+      onClick: () => onViewChange("about"),
+    },
   ];
   const actionItems = [
     {
       id: "run",
       className: `floating-rail-action ${running ? "is-running" : "is-paused"}`,
-      ariaLabel: running ? "Hold simulation" : "Run simulation",
+      ariaLabel: running ? "Pause simulation" : "Run simulation",
       icon: running ? "pause" : "play",
       onClick: onRunToggle,
     },
     {
       id: "reset",
       className: "floating-rail-btn",
-      ariaLabel: "Reset solver",
-      tooltip: "Reset",
+      ariaLabel: "Reset simulation",
+      tooltip: "Reset simulation",
+      title: "Restart flow with current geometry, settings and history (R)",
       icon: "reset",
       onClick: onReset,
     },
@@ -173,60 +198,56 @@ export default function IconRail({
       onClick: onRedo,
     },
   ];
-  const railItems = [...controlItems, ...viewItems, ...actionItems];
-  const activeIndex = railItems.findIndex(item => item.isActive);
-  const defaultFocusIndex = activeIndex >= 0 ? activeIndex : 0;
-  const [focusIndex, setFocusIndex] = useState(defaultFocusIndex);
+  const railItems = [...viewItems.filter(item => item.id !== "compare"), ...controlItems, viewItems.find(item => item.id === "compare"), ...actionItems.filter(item => item.id !== "run"), actionItems.find(item => item.id === "run")];
   const buttonRefs = useRef([]);
-
-  const moveFocus = nextIndex => {
-    setFocusIndex(nextIndex);
-    window.requestAnimationFrame(() => buttonRefs.current[nextIndex]?.focus());
-  };
   const handleRailKeyDown = event => {
-    const currentIndex = buttonRefs.current.findIndex(button => button === document.activeElement);
-    const baseIndex = currentIndex >= 0 ? currentIndex : focusIndex;
-    let nextIndex = null;
-
-    if (event.key === "ArrowDown" || event.key === "ArrowRight") nextIndex = (baseIndex + 1) % railItems.length;
-    if (event.key === "ArrowUp" || event.key === "ArrowLeft") nextIndex = (baseIndex - 1 + railItems.length) % railItems.length;
-    if (event.key === "Home") nextIndex = 0;
-    if (event.key === "End") nextIndex = railItems.length - 1;
-    if (nextIndex === null) return;
-
+    const buttons = buttonRefs.current.filter(button => button && !button.disabled && button.getClientRects().length);
+    const current = buttons.indexOf(document.activeElement);
+    let next;
+    if (event.key === "Home") next = 0;
+    if (event.key === "End") next = buttons.length - 1;
+    if (event.key === "ArrowDown" || event.key === "ArrowRight") next = (current + 1) % buttons.length;
+    if (event.key === "ArrowUp" || event.key === "ArrowLeft") next = (current - 1 + buttons.length) % buttons.length;
+    if (next === undefined) return;
     event.preventDefault();
-    moveFocus(nextIndex);
+    buttons[next]?.focus();
   };
   const renderRailButton = item => {
     const index = railItems.indexOf(item);
 
     return (
       <button
+        type="button"
         key={item.id}
         ref={node => { buttonRefs.current[index] = node; }}
         className={item.className}
         aria-label={item.ariaLabel}
-        data-tooltip={item.tooltip}
-        tabIndex={focusIndex === index ? 0 : -1}
-        onFocus={() => setFocusIndex(index)}
+        aria-pressed={item.isActive}
+        disabled={(item.id === "undo" && !canUndo) || (item.id === "redo" && !canRedo)}
+        title={item.title || item.tooltip || item.ariaLabel}
+        data-control-section={item.id.startsWith("control-") ? item.id.slice(8) : undefined}
+        onFocus={event => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })}
+        tabIndex={0}
         onClick={item.onClick}
       >
         <RailIcon icon={item.icon} />
+        <span className="rail-button-label">{item.id === "run" ? running ? "Pause" : "Run" : item.tooltip}</span>
       </button>
     );
   };
 
   return (
-    <nav className="floating-rail" aria-label="AeroLab rail navigation" onKeyDown={handleRailKeyDown}>
-      <div className="floating-rail__group">
+    <nav className="workspace-navigation" aria-label="AEROTUNNEL rail navigation" onKeyDown={handleRailKeyDown}>
+      <div className="workspace-navigation__views" role="group" aria-label="Application views">
+        {viewItems.filter(item => item.id !== "compare").map(renderRailButton)}
+      </div>
+      <div className="workspace-navigation__tools" role="group" aria-label="Simulation settings and comparison" hidden={currentView !== "tunnel"}>
         {controlItems.map(renderRailButton)}
+        {renderRailButton(viewItems.find(item => item.id === "compare"))}
+        {actionItems.filter(item => item.id !== "run").map(renderRailButton)}
       </div>
-      <div className="floating-rail__separator" />
-      <div className="floating-rail__group">
-        {viewItems.map(renderRailButton)}
-      </div>
-      <div className="floating-rail__actions">
-        {actionItems.map(renderRailButton)}
+      <div className="workspace-navigation__run">
+        {started && renderRailButton(actionItems.find(item => item.id === "run"))}
       </div>
     </nav>
   );

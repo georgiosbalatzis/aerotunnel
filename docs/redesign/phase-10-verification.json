@@ -1,0 +1,560 @@
+{
+  "phase": 10,
+  "date": "2026-10-17",
+  "recommendation": "GO for the reviewed static production build, within documented Chromium/headless coverage",
+  "baseline": {
+    "lintErrors": 11,
+    "lintWarnings": 0,
+    "unitTests": 36,
+    "build": "pass",
+    "snapshot": "Phase09 working tree, before Phase10 edits"
+  },
+  "final": {
+    "lintErrors": 0,
+    "lintWarnings": 0,
+    "unitTests": 36,
+    "browserTests": 38,
+    "visualReferenceImages": 12,
+    "build": "pass",
+    "buildLog": "\n> aerotunnel@0.0.0 build\n> vite build\n\nvite v8.0.8 building client environment for production...\n\u001b[2K\ntransforming...\u2713 62 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                               3.15 kB \u2502 gzip:   1.13 kB\ndist/assets/barlow-condensed-700-DDMez4TK.woff2              14.88 kB\ndist/assets/ibm-plex-sans-400-600-greek-Cuw1d432.woff2       16.29 kB\ndist/assets/ibm-plex-sans-400-600-latin-ext-KUPCjGsn.woff2   25.86 kB\ndist/assets/aerolab_lbm_bg-DupCWjTg.wasm                     29.04 kB \u2502 gzip:  11.64 kB\ndist/assets/ibm-plex-sans-400-600-BD64o3ke.woff2             40.24 kB\ndist/assets/index-Cew-7Ndd.css                               93.02 kB \u2502 gzip:  19.43 kB\ndist/assets/aerolab_lbm-Cb8EQLWT.js                           4.34 kB \u2502 gzip:   1.56 kB\ndist/assets/index-Dc43cU5n.js                               346.87 kB \u2502 gzip: 113.11 kB\n\n\u2713 built in 121ms\n"
+  },
+  "browserRun": {
+    "stats": {
+      "startTime": "2026-10-17T19:02:00.550Z",
+      "duration": 105338.80099999999,
+      "expected": 38,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "name": "light: named controls, focus, contrast, reduced motion and modal keyboard containment",
+        "file": "accessibility.spec.mjs",
+        "status": "passed",
+        "durationMs": 1185
+      },
+      {
+        "name": "dark: named controls, focus, contrast, reduced motion and modal keyboard containment",
+        "file": "accessibility.spec.mjs",
+        "status": "passed",
+        "durationMs": 684
+      },
+      {
+        "name": "WASM 375px: unchanged fields after 30 controlled steps",
+        "file": "numerical.spec.mjs",
+        "status": "passed",
+        "durationMs": 968
+      },
+      {
+        "name": "JS 375px: unchanged fields after 30 controlled steps",
+        "file": "numerical.spec.mjs",
+        "status": "passed",
+        "durationMs": 566
+      },
+      {
+        "name": "WASM 1440px: unchanged fields after 30 controlled steps",
+        "file": "numerical.spec.mjs",
+        "status": "passed",
+        "durationMs": 577
+      },
+      {
+        "name": "JS 1440px: unchanged fields after 30 controlled steps",
+        "file": "numerical.spec.mjs",
+        "status": "passed",
+        "durationMs": 603
+      },
+      {
+        "name": "startup, Run/Pause, modes, reset (WASM)",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 4674
+      },
+      {
+        "name": "startup, Run/Pause, modes, reset (JS fallback)",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 4776
+      },
+      {
+        "name": "navigation, theme persistence, keyboard and live solver continuity",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 1838
+      },
+      {
+        "name": "legacy JSON import, precise exports, malformed input and gallery restoration",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 2080
+      },
+      {
+        "name": "recorded CSV keeps values and recording produces a ZIP",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 2905
+      },
+      {
+        "name": "320px light: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 2073
+      },
+      {
+        "name": "320px dark: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 2129
+      },
+      {
+        "name": "375px light: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 1991
+      },
+      {
+        "name": "375px dark: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 1916
+      },
+      {
+        "name": "768px light: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 2712
+      },
+      {
+        "name": "768px dark: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 3183
+      },
+      {
+        "name": "1024px light: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 2966
+      },
+      {
+        "name": "1024px dark: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 2999
+      },
+      {
+        "name": "1440px light: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 3134
+      },
+      {
+        "name": "1440px dark: first visit, active, drawer, analysis and publishing fit",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 3122
+      },
+      {
+        "name": "comparison, canvas resizing and keyboard fullscreen preserve paused state",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 742
+      },
+      {
+        "name": "mobile menu, skip link, drawer focus, numeric drafts and error recovery",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 754
+      },
+      {
+        "name": "3D loads, captures and disposes when navigating away",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 9043
+      },
+      {
+        "name": "embed exposes no editor or saved local sessions",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 233
+      },
+      {
+        "name": "parameter sweep retains raw CSV and cancellation restores its parameter",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 6374
+      },
+      {
+        "name": "geometry file formats, error retention, drop, Undo and Redo remain usable",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 13422
+      },
+      {
+        "name": "unavailable 3D resources give a recoverable 2D path",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 697
+      },
+      {
+        "name": "NACA, F1 tuner and resized sketch preserve editable geometry",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 4713
+      },
+      {
+        "name": "car-reference decoder workers are released across repeated 3D visits",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 8230
+      },
+      {
+        "name": "leaving 3D during delayed model or decoder loading releases late workers",
+        "file": "smoke.spec.mjs",
+        "status": "passed",
+        "durationMs": 7608
+      },
+      {
+        "name": "light: preference resolved before React paints",
+        "file": "theme.spec.mjs",
+        "status": "passed",
+        "durationMs": 401
+      },
+      {
+        "name": "dark: preference resolved before React paints",
+        "file": "theme.spec.mjs",
+        "status": "passed",
+        "durationMs": 318
+      },
+      {
+        "name": "storage failure follows OS until explicit choice; keyboard toggle stays usable",
+        "file": "theme.spec.mjs",
+        "status": "passed",
+        "durationMs": 563
+      },
+      {
+        "name": "representative 375px light interface",
+        "file": "visual.spec.mjs",
+        "status": "passed",
+        "durationMs": 719
+      },
+      {
+        "name": "representative 375px dark interface",
+        "file": "visual.spec.mjs",
+        "status": "passed",
+        "durationMs": 820
+      },
+      {
+        "name": "representative 1440px light interface",
+        "file": "visual.spec.mjs",
+        "status": "passed",
+        "durationMs": 1084
+      },
+      {
+        "name": "representative 1440px dark interface",
+        "file": "visual.spec.mjs",
+        "status": "passed",
+        "durationMs": 1031
+      }
+    ],
+    "baseURL": "http://127.0.0.1:5180/aerotunnel/",
+    "snapshotUpdatesInFinalRun": false,
+    "retries": 0
+  },
+  "protection": {
+    "comparedExistingSourcePublicTestFiles": 272,
+    "changedExistingSourcePublicTestFiles": [
+      "src/cfdlab.css",
+      "src/CFDLab.jsx",
+      "src/styles/publishing.css",
+      "src/styles/navigation.css",
+      "src/styles/workspace.css",
+      "src/components/View3D.jsx",
+      "src/components/AboutPanel.jsx",
+      "src/components/PublishingDialog.jsx",
+      "src/engine/exporters.js"
+    ],
+    "changedRootFiles": [
+      "README.md",
+      "package.json",
+      "package-lock.json",
+      "eslint.config.js",
+      ".gitignore"
+    ],
+    "newSourcePublicTestFiles": [
+      "tests/browser/accessibility.spec.mjs",
+      "tests/browser/helpers.mjs",
+      "tests/browser/numerical.spec.mjs",
+      "tests/browser/smoke.spec.mjs",
+      "tests/browser/theme.spec.mjs",
+      "tests/browser/visual.spec.mjs",
+      "tests/browser/visual.spec.mjs-snapshots/analysis-empty-1440-dark-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/analysis-empty-1440-light-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/analysis-empty-375-dark-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/analysis-empty-375-light-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/masthead-1440-dark-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/masthead-1440-light-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/masthead-375-dark-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/masthead-375-light-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/publishing-1440-dark-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/publishing-1440-light-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/publishing-375-dark-darwin.png",
+      "tests/browser/visual.spec.mjs-snapshots/publishing-375-light-darwin.png",
+      "tests/fixtures/solver-reference.json"
+    ],
+    "engineFiles": 199,
+    "unchangedEngineFiles": 198,
+    "onlyEngineChange": "exporters.js: remove unused catch binding; format bodies unchanged",
+    "protectedRootFiles": [
+      "index.html",
+      "vite.config.js"
+    ],
+    "storageAndSchemasUnchanged": [
+      "f1stories-theme",
+      "aerolab-session",
+      "aerolab-sessions",
+      "app: aerolab",
+      "JSON version2",
+      "/aerotunnel/"
+    ],
+    "newRootFiles": [
+      "playwright.config.mjs"
+    ]
+  },
+  "cssCleanup": [
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact__value"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail__group"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail__separator"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail__actions"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".lab-shell.is-screenshot .floating-rail"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail__group",
+        ".floating-rail__actions"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail__separator"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact.is-waiting"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact__item"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact__label"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact__value"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact__sep"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail__group",
+        ".floating-rail__actions"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-rail__separator"
+      ]
+    },
+    {
+      "file": "src/cfdlab.css",
+      "selectors": [
+        ".floating-metrics-compact"
+      ]
+    },
+    {
+      "file": "src/styles/navigation.css",
+      "selectors": [
+        ".app-workspace .floating-rail"
+      ]
+    },
+    {
+      "file": "src/styles/navigation.css",
+      "selectors": [
+        ".app-workspace .floating-rail__group",
+        ".app-workspace .floating-rail__actions"
+      ]
+    },
+    {
+      "file": "src/styles/navigation.css",
+      "selectors": [
+        ".app-workspace .floating-metrics-compact"
+      ]
+    },
+    {
+      "file": "src/styles/navigation.css",
+      "selectors": [
+        ".app-workspace .floating-rail"
+      ]
+    },
+    {
+      "file": "src/styles/navigation.css",
+      "selectors": [
+        ".app-workspace .floating-metrics-compact"
+      ]
+    }
+  ],
+  "detector": {
+    "runs": 1,
+    "exitCode": 2,
+    "findings": [
+      {
+        "antipattern": "side-tab",
+        "name": "Side-tab accent border",
+        "description": "Thick colored border on one side of a card \u2014 the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+        "severity": "warning",
+        "category": "slop",
+        "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+        "line": 126,
+        "snippet": "border-left: 3px solid var(--accent-crit)"
+      },
+      {
+        "antipattern": "side-tab",
+        "name": "Side-tab accent border",
+        "description": "Thick colored border on one side of a card \u2014 the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+        "severity": "warning",
+        "category": "slop",
+        "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+        "line": 552,
+        "snippet": "border-left: 4px solid var(--tone, var(--accent-flow))"
+      },
+      {
+        "antipattern": "side-tab",
+        "name": "Side-tab accent border",
+        "description": "Thick colored border on one side of a card \u2014 the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+        "severity": "warning",
+        "category": "slop",
+        "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+        "line": 640,
+        "snippet": "border-left: 3px solid var(--accent-flow)"
+      }
+    ],
+    "disposition": "Three retained baseline status/category stripe warnings; no new warning declaration."
+  },
+  "dependencyAudit": {
+    "production": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "allTooling": {
+      "info": 0,
+      "low": 1,
+      "moderate": 2,
+      "high": 12,
+      "critical": 0,
+      "total": 15
+    },
+    "newDependency": "@playwright/test 1.64.1, development only"
+  },
+  "delegation": {
+    "initialInvestigationsParallel": true,
+    "allInitialFindingsReceivedBeforeApplicationEdits": true,
+    "readOnly": [
+      "design_auditor",
+      "code_mapper",
+      "regression_reviewer"
+    ],
+    "leadOnlyApplicationEdits": true,
+    "finalSourceReview": "No blocking findings; full browser execution lead-owned",
+    "browserAuditInitialScope": "Independent agent covered five light widths and initial accessibility tree; lead completed both-theme interactive matrix."
+  },
+  "screenshots": [
+    "docs/redesign/screenshots/phase-10-1024-dark.png",
+    "docs/redesign/screenshots/phase-10-1024-light.png",
+    "docs/redesign/screenshots/phase-10-1440-dark.png",
+    "docs/redesign/screenshots/phase-10-1440-light.png",
+    "docs/redesign/screenshots/phase-10-320-dark.png",
+    "docs/redesign/screenshots/phase-10-320-light.png",
+    "docs/redesign/screenshots/phase-10-375-dark.png",
+    "docs/redesign/screenshots/phase-10-375-light.png",
+    "docs/redesign/screenshots/phase-10-768-dark.png",
+    "docs/redesign/screenshots/phase-10-768-light.png"
+  ],
+  "publicationPNG": "docs/redesign/exports/phase-10-publication.png"
+}

@@ -1,0 +1,738 @@
+{
+  "phase": 8,
+  "date": "2026-10-17",
+  "scope": "Analysis only; working Phases01–07 preserved, no commit/push/deploy/PR",
+  "baseline": {
+    "build": "pass",
+    "tests": 22,
+    "lintErrors": 15,
+    "lintWarnings": 0
+  },
+  "final": {
+    "build": "pass",
+    "modules": 57,
+    "jsKB": 331.09,
+    "jsGzipKB": 107.72,
+    "cssKB": 90.66,
+    "cssGzipKB": 19.07,
+    "tests": 29,
+    "lintErrors": 14,
+    "lintWarnings": 0,
+    "newLintSignatures": []
+  },
+  "protection": {
+    "baselineTrackedSourcePublicFiles": 247,
+    "modifiedExistingSourcePublicFiles": [
+      "src/CFDLab.jsx",
+      "src/components/AnalysisPanel.jsx"
+    ],
+    "addedSourcePublicFiles": [
+      "src/analysis/presentation.js",
+      "src/styles/analysis.css",
+      "src/components/AnalysisSweep.jsx",
+      "src/components/AnalysisChart.jsx",
+      "src/components/AnalysisMetric.jsx"
+    ],
+    "engineFilesByteIdentical": true,
+    "engineFilesCompared": 199,
+    "protectedRootFilesUnchanged": {
+      "package.json": true,
+      "package-lock.json": true,
+      "README.md": true,
+      "index.html": true
+    }
+  },
+  "numericFixtures": {
+    "cases": [
+      {
+        "port": 5175,
+        "uniform": false,
+        "stats": {
+          "cl": 0.013,
+          "cd": 0.018,
+          "re": 6000,
+          "maxV": 1.667
+        },
+        "display": "CL/CD and L/D are heuristic indicators, not force coefficients. Re* uses the existing scaled lattice estimate. Exports retain their historical field names.\n\nCL\n0.013\nHeuristic lift proxy\nCD\n0.018\nHeuristic drag proxy\nL/D\n0.72\nRatio of heuristic proxies\nRE*\n6.0k\nScaled lattice estimate\nCL/CD PROXIES OVER TIME\nDUAL-AXIS AERODYNAMIC TELEMETRY TRACE\nCL LIFT PROXY\nCD DRAG PROXY\nHISTORY TABLE\nLATEST 2 RECORDED SAMPLES\nTIME\nCL\nCD\nRE*\n09:44:18 π.μ.\n0.013\n0.018\n6000\n12:13:20 π.μ.\n99\n99\n99\nSESSIONS\nSAVE & RESTORE SIMULATION STATES\nSAVE CURRENT\nNo saved sessions. Use \"Save Current\" to store a snapshot.\nPARAMETRIC SWEEP\nAUTOMATED PARAMETER VARIATION → CSV EXPORT\nPARAMETER\nAngle of Attack\nInlet Velocity\nViscosity\nMIN\nMAX\nSTEPS\nRUN SWEEP\nEXPORT CSV\nEXPORT SESSION\nRECORD\nSESSION STARTED AT 12:13:20 Π.Μ.\n2 SAMPLES RECORDED\nRE* THRESHOLD TAG\nTURB.\nLegacy Re* threshold tag, not a validated diagnosis of the flow regime."
+      },
+      {
+        "port": 5175,
+        "uniform": true,
+        "stats": {
+          "cl": 0,
+          "cd": 0.008,
+          "re": 6000,
+          "maxV": 1
+        },
+        "display": "CL/CD and L/D are heuristic indicators, not force coefficients. Re* uses the existing scaled lattice estimate. Exports retain their historical field names.\n\nCL\n-\nHeuristic lift proxy\nCD\n0.008\nHeuristic drag proxy\nL/D\n0.00\nRatio of heuristic proxies\nRE*\n6.0k\nScaled lattice estimate\nCL/CD PROXIES OVER TIME\nDUAL-AXIS AERODYNAMIC TELEMETRY TRACE\nCL LIFT PROXY\nCD DRAG PROXY\nHISTORY TABLE\nLATEST 2 RECORDED SAMPLES\nTIME\nCL\nCD\nRE*\n09:44:20 π.μ.\n0\n0.008\n6000\n12:13:20 π.μ.\n99\n99\n99\nSESSIONS\nSAVE & RESTORE SIMULATION STATES\nSAVE CURRENT\nNo saved sessions. Use \"Save Current\" to store a snapshot.\nPARAMETRIC SWEEP\nAUTOMATED PARAMETER VARIATION → CSV EXPORT\nPARAMETER\nAngle of Attack\nInlet Velocity\nViscosity\nMIN\nMAX\nSTEPS\nRUN SWEEP\nEXPORT CSV\nEXPORT SESSION\nRECORD\nSESSION STARTED AT 12:13:20 Π.Μ.\n2 SAMPLES RECORDED\nRE* THRESHOLD TAG\nTURB.\nLegacy Re* threshold tag, not a validated diagnosis of the flow regime."
+      },
+      {
+        "port": 5174,
+        "uniform": false,
+        "stats": {
+          "cl": 0.013,
+          "cd": 0.018,
+          "re": 6000,
+          "maxV": 1.667
+        },
+        "display": "CL proxy\n0.013\n\nHeuristic lift magnitude\n\nCD proxy\n0.018\n\nHeuristic drag indicator\n\nRe*\n6,000\n\nScaled lattice estimate\n\nL/D proxy\n0.72\n\nRatio of recorded CL to CD"
+      },
+      {
+        "port": 5174,
+        "uniform": true,
+        "stats": {
+          "cl": 0,
+          "cd": 0.008,
+          "re": 6000,
+          "maxV": 1
+        },
+        "display": "CL proxy\n0\n\nHeuristic lift magnitude\n\nCD proxy\n0.008\n\nHeuristic drag indicator\n\nRe*\n6,000\n\nScaled lattice estimate\n\nL/D proxy\n0.00\n\nRatio of recorded CL to CD"
+      }
+    ],
+    "errors": []
+  },
+  "responsiveFirstBatch": {
+    "cases": [
+      {
+        "width": 320,
+        "theme": "light",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 282,
+          "docWidth": 316,
+          "viewport": 320,
+          "height": 4547,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0023",
+            "0.0253",
+            "4,160",
+            "0.09"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(32, 37, 31)"
+        }
+      },
+      {
+        "width": 320,
+        "theme": "dark",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 282,
+          "docWidth": 316,
+          "viewport": 320,
+          "height": 4547,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0023",
+            "0.0253",
+            "4,160",
+            "0.09"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(238, 232, 219)"
+        }
+      },
+      {
+        "width": 375,
+        "theme": "light",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 327,
+          "docWidth": 371,
+          "viewport": 375,
+          "height": 4384,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0007",
+            "0.026",
+            "4,160",
+            "0.03"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(32, 37, 31)"
+        }
+      },
+      {
+        "width": 375,
+        "theme": "dark",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 327,
+          "docWidth": 371,
+          "viewport": 375,
+          "height": 4384,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0025",
+            "0.0253",
+            "4,160",
+            "0.10"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(238, 232, 219)"
+        }
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 700,
+          "docWidth": 764,
+          "viewport": 768,
+          "height": 3456,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0047",
+            "0.0207",
+            "6,000",
+            "0.23"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(32, 37, 31)"
+        }
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 700,
+          "docWidth": 764,
+          "viewport": 768,
+          "height": 3456,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0047",
+            "0.0208",
+            "6,000",
+            "0.23"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(238, 232, 219)"
+        }
+      },
+      {
+        "width": 1024,
+        "theme": "light",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 956,
+          "docWidth": 1020,
+          "viewport": 1024,
+          "height": 3588,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0047",
+            "0.0207",
+            "6,000",
+            "0.23"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(32, 37, 31)"
+        }
+      },
+      {
+        "width": 1024,
+        "theme": "dark",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 956,
+          "docWidth": 1020,
+          "viewport": 1024,
+          "height": 3588,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0047",
+            "0.0208",
+            "6,000",
+            "0.23"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(238, 232, 219)"
+        }
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 1280,
+          "docWidth": 1436,
+          "viewport": 1440,
+          "height": 2866,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0043",
+            "0.0218",
+            "6,000",
+            "0.20"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(32, 37, 31)"
+        }
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "emptyHasNoMeasured": true,
+        "layout": {
+          "width": 1280,
+          "docWidth": 1436,
+          "viewport": 1440,
+          "height": 2866,
+          "focus": "analysis-title",
+          "metrics": [
+            "0.0042",
+            "0.0219",
+            "6,000",
+            "0.19"
+          ],
+          "sections": [
+            "Aerodynamic indicators",
+            "Flow & convergence",
+            "Recorded history",
+            "Parameter sweep",
+            "Saved sessions",
+            "Export & documentation"
+          ],
+          "bg": "rgb(238, 232, 219)"
+        }
+      }
+    ],
+    "errors": []
+  },
+  "workflows": {
+    "exports": [
+      {
+        "port": 5175,
+        "csvBytes": 3352,
+        "history": 65,
+        "app": "aerolab",
+        "version": 2,
+        "exactCSVandJSONMatch": false,
+        "comparisonNote": "Reference capture only: false is the original harness flag before a comparison exists; not a failed comparison. Candidate entry is the actual byte/schema assertion."
+      },
+      {
+        "port": 5174,
+        "csvBytes": 3352,
+        "history": 65,
+        "app": "aerolab",
+        "version": 2,
+        "exactCSVandJSONMatch": true
+      }
+    ],
+    "workflows": [
+      {
+        "width": 375,
+        "theme": "light",
+        "focus": {
+          "outline": "3px",
+          "horizontal": true
+        },
+        "kept": {
+          "solver": true,
+          "canvas": true,
+          "pool": true,
+          "origin": true,
+          "poly": true,
+          "arrays": {
+            "ux": true,
+            "uy": true,
+            "rho": true,
+            "spd": true,
+            "curl": true,
+            "solid": true
+          }
+        },
+        "sweepResults": [
+          {
+            "variable": "aoa",
+            "rows": 3,
+            "matchingCSV": true,
+            "restored": {
+              "aoa": 0,
+              "vel": 0.12,
+              "nu": 0.015
+            }
+          },
+          {
+            "variable": "velocity",
+            "rows": 3,
+            "matchingCSV": true,
+            "restored": {
+              "aoa": 0,
+              "vel": 0.12,
+              "nu": 0.015
+            }
+          },
+          {
+            "variable": "viscosity",
+            "rows": 3,
+            "matchingCSV": true,
+            "restored": {
+              "aoa": 0,
+              "vel": 0.12,
+              "nu": 0.015
+            }
+          }
+        ],
+        "cancelled": "Viscosity · 0.015 → 0.02 cells²/step · 1/100 points recorded\n\nPartial results retained. Cancellation restores the selected parameter on the next queued frame; no automatic CSV is requested.",
+        "recording": {
+          "zip": "aerotunnel-frames-1792219708293.zip",
+          "bytes": 798897
+        },
+        "galleryCompatible": true,
+        "draftsAndPaginationRetained": true
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "focus": {
+          "outline": "3px",
+          "horizontal": false
+        },
+        "kept": {
+          "solver": true,
+          "canvas": true,
+          "pool": true,
+          "origin": true,
+          "poly": true,
+          "arrays": {
+            "ux": true,
+            "uy": true,
+            "rho": true,
+            "spd": true,
+            "curl": true,
+            "solid": true
+          }
+        },
+        "sweepResults": [
+          {
+            "variable": "aoa",
+            "rows": 3,
+            "matchingCSV": true,
+            "restored": {
+              "aoa": 0,
+              "vel": 0.12,
+              "nu": 0.015
+            }
+          },
+          {
+            "variable": "velocity",
+            "rows": 3,
+            "matchingCSV": true,
+            "restored": {
+              "aoa": 0,
+              "vel": 0.12,
+              "nu": 0.015
+            }
+          },
+          {
+            "variable": "viscosity",
+            "rows": 3,
+            "matchingCSV": true,
+            "restored": {
+              "aoa": 0,
+              "vel": 0.12,
+              "nu": 0.015
+            }
+          }
+        ],
+        "cancelled": "Viscosity · 0.015 → 0.02 cells²/step · 1/100 points recorded\n\nPartial results retained. Cancellation restores the selected parameter on the next queued frame; no automatic CSV is requested.",
+        "recording": {
+          "zip": "aerotunnel-frames-1792219713833.zip",
+          "bytes": 1462724
+        },
+        "galleryCompatible": true,
+        "draftsAndPaginationRetained": true
+      }
+    ],
+    "errors": []
+  },
+  "edgeCases": {
+    "cases": [
+      {
+        "variant": "invalid-fields",
+        "metrics": [
+          "—",
+          "—",
+          "4,160",
+          "—"
+        ],
+        "interpretation": "Flow & convergence\n\nInterpretation of the available sample, with its limits.\n\nMaximum speed ratio\n1\n\nmax |u| / inlet speed. Dimensionless, not m/s. A live zero-inlet fallback is unavailable; old records lack inlet provenance.\n\nVelocity-change Δu\n1\n\nUnconverged estimate. Cells/step; not an accuracy certificate.\n\nLegacy Re* band\nTURB.\n\nThresholds 2300/4000. Not a validated transition or turbulence diagnosis.\n\nCurrent setup\nProfile\nf1car\nInlet\n0.12 cells/step\nViscosity\n0.015 cells²/step\nAngle\n0°\n\nHistory can span multiple setups. Restored records are not a fresh solver state. The 3D view is a qualitative extrusion/potential-flow illustration, not validated full 3D CFD."
+      },
+      {
+        "variant": "all-solid",
+        "metrics": [
+          "—",
+          "—",
+          "4,160",
+          "—"
+        ],
+        "interpretation": "Maximum speed ratio\n—\n\nmax |u| / inlet speed. Dimensionless, not m/s. A live zero-inlet fallback is unavailable; old records lack inlet provenance.\n\nVelocity-change Δu\n—\n\nNot sampled for this setup. Cells/step; not an accuracy certificate.\n\nLegacy Re* band\nTURB.\n\nThresholds 2300/4000. Not a validated transition or turbulence diagnosis.",
+        "finalGuardVerified": true
+      },
+      {
+        "variant": "zero-inlet",
+        "metrics": [
+          "0",
+          "0.068",
+          "0",
+          "0.00"
+        ],
+        "interpretation": "Flow & convergence\n\nInterpretation of the available sample, with its limits.\n\nMaximum speed ratio\n—\n\nmax |u| / inlet speed. Dimensionless, not m/s. A live zero-inlet fallback is unavailable; old records lack inlet provenance.\n\nVelocity-change Δu\n1\n\nUnconverged estimate. Cells/step; not an accuracy certificate.\n\nLegacy Re* band\nLAMINAR\n\nThresholds 2300/4000. Not a validated transition or turbulence diagnosis.\n\nCurrent setup\nProfile\nf1car\nInlet\n0 cells/step\nViscosity\n0.015 cells²/step\nAngle\n0°\n\nHistory can span multiple setups. Restored records are not a fresh solver state. The 3D view is a qualitative extrusion/potential-flow illustration, not validated full 3D CFD."
+      },
+      {
+        "variant": "missing-history",
+        "csvDisabled": true,
+        "JSONUnchanged": true,
+        "gapsRetained": true,
+        "badHistoryRejected": true
+      },
+      {
+        "variant": "blocked",
+        "handled": true
+      },
+      {
+        "variant": "quota",
+        "handled": true
+      },
+      {
+        "variant": "corrupt",
+        "handled": true
+      },
+      {
+        "variant": "bad-profile",
+        "handled": true
+      },
+      {
+        "variant": "delayed-PNG",
+        "retryVisible": true,
+        "ZIPDownloaded": true
+      },
+      {
+        "variant": "recording-cap",
+        "frames": 300,
+        "bytes": 5196228
+      },
+      {
+        "variant": "fullscreen-and-3D",
+        "restored": true
+      }
+    ],
+    "errors": []
+  },
+  "provenance": {
+    "errors": [],
+    "stale": true,
+    "newSampleReplacesStale": true,
+    "resetRetainsHistoryAndClearsLiveProvenance": true
+  },
+  "finalGuards": {
+    "noFluidDeltaUnavailable": true,
+    "onReturnFocus": "aerotunnel-main",
+    "interpretation": "Maximum speed ratio\n—\n\nmax |u| / inlet speed. Dimensionless, not m/s. A live zero-inlet fallback is unavailable; old records lack inlet provenance.\n\nVelocity-change Δu\n—\n\nNot sampled for this setup. Cells/step; not an accuracy certificate.\n\nLegacy Re* band\nTURB.\n\nThresholds 2300/4000. Not a validated transition or turbulence diagnosis."
+  },
+  "finalBrowser": {
+    "cases": [
+      {
+        "width": 1440,
+        "theme": "light",
+        "kept": {
+          "solver": true,
+          "canvas": true,
+          "pool": true,
+          "origin": true,
+          "poly": true,
+          "arrays": {
+            "ux": true,
+            "uy": true,
+            "rho": true,
+            "spd": true,
+            "curl": true,
+            "solid": true
+          }
+        },
+        "report": {
+          "width": 1280,
+          "docWidth": 1436,
+          "viewport": 1440,
+          "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+          "color": "rgb(32, 37, 31)",
+          "bg": "#f2eee4",
+          "secondary": "#5b6256",
+          "controlHeight": 44,
+          "focusToken": "#a82e1c"
+        },
+        "realSweepAndHistory": true
+      },
+      {
+        "width": 375,
+        "theme": "dark",
+        "kept": {
+          "solver": true,
+          "canvas": true,
+          "pool": true,
+          "origin": true,
+          "poly": true,
+          "arrays": {
+            "ux": true,
+            "uy": true,
+            "rho": true,
+            "spd": true,
+            "curl": true,
+            "solid": true
+          }
+        },
+        "report": {
+          "width": 331,
+          "docWidth": 375,
+          "viewport": 375,
+          "font": "\"IBM Plex Sans\", \"IBM Plex Sans Fallback\", sans-serif",
+          "color": "rgb(238, 232, 219)",
+          "bg": "#1b1a19",
+          "secondary": "#b6bbac",
+          "controlHeight": 44,
+          "focusToken": "#ff775f"
+        },
+        "realSweepAndHistory": true
+      }
+    ],
+    "errors": []
+  },
+  "contrast": [
+    {
+      "theme": "light",
+      "primaryOnPage": 13.47,
+      "secondaryOnPage": 5.45,
+      "secondaryOnSurface": 4.94,
+      "controlBorderOnPage": 4.0,
+      "focusOnPage": 5.9
+    },
+    {
+      "theme": "dark",
+      "primaryOnPage": 14.23,
+      "secondaryOnPage": 8.85,
+      "secondaryOnSurface": 8.0,
+      "controlBorderOnPage": 4.4,
+      "focusOnPage": 6.67
+    }
+  ],
+  "review": {
+    "readonlyAgents": [
+      "design_auditor",
+      "code_mapper",
+      "regression_reviewer"
+    ],
+    "allInitialFindingsReturnedBeforeEdits": true,
+    "regressionDisposition": "ship at reviewed Phase08 scope",
+    "detectorRuns": 1,
+    "detectorFindings": [],
+    "fullReportRecaptureConfirmed": true
+  },
+  "screenshots": [
+    "docs/redesign/screenshots/phase-08-after-empty-dark-1440.png",
+    "docs/redesign/screenshots/phase-08-after-empty-dark-375.png",
+    "docs/redesign/screenshots/phase-08-after-empty-light-1440.png",
+    "docs/redesign/screenshots/phase-08-after-empty-light-375.png",
+    "docs/redesign/screenshots/phase-08-after-history-dark-375.png",
+    "docs/redesign/screenshots/phase-08-after-history-light-1440.png",
+    "docs/redesign/screenshots/phase-08-after-paused-dark-1024.png",
+    "docs/redesign/screenshots/phase-08-after-paused-dark-1440.png",
+    "docs/redesign/screenshots/phase-08-after-paused-dark-320.png",
+    "docs/redesign/screenshots/phase-08-after-paused-dark-375.png",
+    "docs/redesign/screenshots/phase-08-after-paused-dark-768.png",
+    "docs/redesign/screenshots/phase-08-after-paused-light-1024.png",
+    "docs/redesign/screenshots/phase-08-after-paused-light-1440.png",
+    "docs/redesign/screenshots/phase-08-after-paused-light-320.png",
+    "docs/redesign/screenshots/phase-08-after-paused-light-375.png",
+    "docs/redesign/screenshots/phase-08-after-paused-light-768.png",
+    "docs/redesign/screenshots/phase-08-after-report-dark-375.png",
+    "docs/redesign/screenshots/phase-08-after-report-light-1440.png",
+    "docs/redesign/screenshots/phase-08-after-running-dark-375.png",
+    "docs/redesign/screenshots/phase-08-after-running-light-1440.png",
+    "docs/redesign/screenshots/phase-08-after-sweep-dark-375.png",
+    "docs/redesign/screenshots/phase-08-after-sweep-light-1440.png",
+    "docs/redesign/screenshots/phase-08-before-empty-dark-1440.png",
+    "docs/redesign/screenshots/phase-08-before-empty-dark-375.png",
+    "docs/redesign/screenshots/phase-08-before-empty-light-1440.png",
+    "docs/redesign/screenshots/phase-08-before-empty-light-375.png",
+    "docs/redesign/screenshots/phase-08-before-paused-dark-1440.png",
+    "docs/redesign/screenshots/phase-08-before-paused-dark-375.png",
+    "docs/redesign/screenshots/phase-08-before-paused-light-1440.png",
+    "docs/redesign/screenshots/phase-08-before-paused-light-375.png"
+  ],
+  "limitations": [
+    "Existing 14 lint errors remain; no new signatures.",
+    "Viscosity sweep legacy Re* can use preceding viscosity; numerical behavior preserved.",
+    "History has no per-row setup or convergence provenance; never treated as a fresh solved state.",
+    "Recording counter counts asynchronous capture requests; Stop packages completed PNG blobs.",
+    "Chromium automated checks do not substitute for physical mobile or screen-reader testing.",
+    "No performance benchmark or physical CFD validation is claimed."
+  ]
+}

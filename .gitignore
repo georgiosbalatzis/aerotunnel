@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Browser test output (reviewed reference images remain tracked)
+/test-results/
+/playwright-report/

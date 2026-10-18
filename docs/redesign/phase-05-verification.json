@@ -1,0 +1,2127 @@
+{
+  "verifiedAt": "2026-10-16T19:39:22.688756+00:00",
+  "layoutMatrix": {
+    "layouts": [
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-light-initial-320.png",
+        "width": 320,
+        "height": 640,
+        "theme": "light",
+        "docWidth": 320,
+        "docHeight": 898,
+        "intro": {
+          "x": 17,
+          "y": 142,
+          "width": 286,
+          "height": 215.453125,
+          "top": 142,
+          "right": 303,
+          "bottom": 357.453125,
+          "left": 17
+        },
+        "stage": {
+          "x": 18,
+          "y": 498.453125,
+          "width": 284,
+          "height": 285.109375,
+          "top": 498.453125,
+          "right": 302,
+          "bottom": 783.5625,
+          "left": 18
+        },
+        "main": {
+          "x": 17,
+          "y": 456.453125,
+          "width": 286,
+          "height": 328.109375,
+          "top": 456.453125,
+          "right": 303,
+          "bottom": 784.5625,
+          "left": 17
+        },
+        "mode": {
+          "x": 18,
+          "y": 457.453125,
+          "width": 284,
+          "height": 40,
+          "top": 457.453125,
+          "right": 302,
+          "bottom": 497.453125,
+          "left": 18
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 17,
+          "y": 796.5625,
+          "width": 286,
+          "height": 49.890625,
+          "top": 796.5625,
+          "right": 303,
+          "bottom": 846.453125,
+          "left": 17
+        },
+        "actions": {
+          "x": 17,
+          "y": 846.453125,
+          "width": 286,
+          "height": 44,
+          "top": 846.453125,
+          "right": 303,
+          "bottom": 890.453125,
+          "left": 17
+        },
+        "nav": {
+          "x": 17,
+          "y": 357.453125,
+          "width": 286,
+          "height": 91,
+          "top": 357.453125,
+          "right": 303,
+          "bottom": 448.453125,
+          "left": 17
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-light-active-320.png",
+        "width": 320,
+        "height": 640,
+        "theme": "light",
+        "docWidth": 320,
+        "docHeight": 640,
+        "intro": {
+          "x": 17,
+          "y": 142,
+          "width": 286,
+          "height": 37.84375,
+          "top": 142,
+          "right": 303,
+          "bottom": 179.84375,
+          "left": 17
+        },
+        "stage": {
+          "x": 18,
+          "y": 320.84375,
+          "width": 284,
+          "height": 200.265625,
+          "top": 320.84375,
+          "right": 302,
+          "bottom": 521.109375,
+          "left": 18
+        },
+        "main": {
+          "x": 17,
+          "y": 278.84375,
+          "width": 286,
+          "height": 243.265625,
+          "top": 278.84375,
+          "right": 303,
+          "bottom": 522.109375,
+          "left": 17
+        },
+        "mode": {
+          "x": 18,
+          "y": 279.84375,
+          "width": 284,
+          "height": 40,
+          "top": 279.84375,
+          "right": 302,
+          "bottom": 319.84375,
+          "left": 18
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 17,
+          "y": 534.109375,
+          "width": 286,
+          "height": 49.890625,
+          "top": 534.109375,
+          "right": 303,
+          "bottom": 584,
+          "left": 17
+        },
+        "actions": {
+          "x": 17,
+          "y": 584,
+          "width": 286,
+          "height": 48,
+          "top": 584,
+          "right": 303,
+          "bottom": 632,
+          "left": 17
+        },
+        "nav": {
+          "x": 17,
+          "y": 179.84375,
+          "width": 286,
+          "height": 91,
+          "top": 179.84375,
+          "right": 303,
+          "bottom": 270.84375,
+          "left": 17
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Running62 fps \u00b7 \u0394 3.0e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-dark-initial-320.png",
+        "width": 320,
+        "height": 640,
+        "theme": "dark",
+        "docWidth": 320,
+        "docHeight": 898,
+        "intro": {
+          "x": 17,
+          "y": 142,
+          "width": 286,
+          "height": 215.453125,
+          "top": 142,
+          "right": 303,
+          "bottom": 357.453125,
+          "left": 17
+        },
+        "stage": {
+          "x": 18,
+          "y": 498.453125,
+          "width": 284,
+          "height": 285.109375,
+          "top": 498.453125,
+          "right": 302,
+          "bottom": 783.5625,
+          "left": 18
+        },
+        "main": {
+          "x": 17,
+          "y": 456.453125,
+          "width": 286,
+          "height": 328.109375,
+          "top": 456.453125,
+          "right": 303,
+          "bottom": 784.5625,
+          "left": 17
+        },
+        "mode": {
+          "x": 18,
+          "y": 457.453125,
+          "width": 284,
+          "height": 40,
+          "top": 457.453125,
+          "right": 302,
+          "bottom": 497.453125,
+          "left": 18
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 17,
+          "y": 796.5625,
+          "width": 286,
+          "height": 49.890625,
+          "top": 796.5625,
+          "right": 303,
+          "bottom": 846.453125,
+          "left": 17
+        },
+        "actions": {
+          "x": 17,
+          "y": 846.453125,
+          "width": 286,
+          "height": 44,
+          "top": 846.453125,
+          "right": 303,
+          "bottom": 890.453125,
+          "left": 17
+        },
+        "nav": {
+          "x": 17,
+          "y": 357.453125,
+          "width": 286,
+          "height": 91,
+          "top": 357.453125,
+          "right": 303,
+          "bottom": 448.453125,
+          "left": 17
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-dark-active-320.png",
+        "width": 320,
+        "height": 640,
+        "theme": "dark",
+        "docWidth": 320,
+        "docHeight": 640,
+        "intro": {
+          "x": 17,
+          "y": 142,
+          "width": 286,
+          "height": 37.84375,
+          "top": 142,
+          "right": 303,
+          "bottom": 179.84375,
+          "left": 17
+        },
+        "stage": {
+          "x": 18,
+          "y": 320.84375,
+          "width": 284,
+          "height": 200.265625,
+          "top": 320.84375,
+          "right": 302,
+          "bottom": 521.109375,
+          "left": 18
+        },
+        "main": {
+          "x": 17,
+          "y": 278.84375,
+          "width": 286,
+          "height": 243.265625,
+          "top": 278.84375,
+          "right": 303,
+          "bottom": 522.109375,
+          "left": 17
+        },
+        "mode": {
+          "x": 18,
+          "y": 279.84375,
+          "width": 284,
+          "height": 40,
+          "top": 279.84375,
+          "right": 302,
+          "bottom": 319.84375,
+          "left": 18
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 17,
+          "y": 534.109375,
+          "width": 286,
+          "height": 49.890625,
+          "top": 534.109375,
+          "right": 303,
+          "bottom": 584,
+          "left": 17
+        },
+        "actions": {
+          "x": 17,
+          "y": 584,
+          "width": 286,
+          "height": 48,
+          "top": 584,
+          "right": 303,
+          "bottom": 632,
+          "left": 17
+        },
+        "nav": {
+          "x": 17,
+          "y": 179.84375,
+          "width": 286,
+          "height": 91,
+          "top": 179.84375,
+          "right": 303,
+          "bottom": 270.84375,
+          "left": 17
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Running62 fps \u00b7 \u0394 5.3e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-light-initial-375.png",
+        "width": 375,
+        "height": 812,
+        "theme": "light",
+        "docWidth": 375,
+        "docHeight": 898,
+        "intro": {
+          "x": 22,
+          "y": 142,
+          "width": 331,
+          "height": 215.453125,
+          "top": 142,
+          "right": 353,
+          "bottom": 357.453125,
+          "left": 22
+        },
+        "stage": {
+          "x": 23,
+          "y": 498.453125,
+          "width": 329,
+          "height": 285.109375,
+          "top": 498.453125,
+          "right": 352,
+          "bottom": 783.5625,
+          "left": 23
+        },
+        "main": {
+          "x": 22,
+          "y": 456.453125,
+          "width": 331,
+          "height": 328.109375,
+          "top": 456.453125,
+          "right": 353,
+          "bottom": 784.5625,
+          "left": 22
+        },
+        "mode": {
+          "x": 23,
+          "y": 457.453125,
+          "width": 329,
+          "height": 40,
+          "top": 457.453125,
+          "right": 352,
+          "bottom": 497.453125,
+          "left": 23
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 22,
+          "y": 796.5625,
+          "width": 331,
+          "height": 49.890625,
+          "top": 796.5625,
+          "right": 353,
+          "bottom": 846.453125,
+          "left": 22
+        },
+        "actions": {
+          "x": 22,
+          "y": 846.453125,
+          "width": 331,
+          "height": 44,
+          "top": 846.453125,
+          "right": 353,
+          "bottom": 890.453125,
+          "left": 22
+        },
+        "nav": {
+          "x": 22,
+          "y": 357.453125,
+          "width": 331,
+          "height": 91,
+          "top": 357.453125,
+          "right": 353,
+          "bottom": 448.453125,
+          "left": 22
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-light-active-375.png",
+        "width": 375,
+        "height": 812,
+        "theme": "light",
+        "docWidth": 375,
+        "docHeight": 812,
+        "intro": {
+          "x": 22,
+          "y": 142,
+          "width": 331,
+          "height": 37.84375,
+          "top": 142,
+          "right": 353,
+          "bottom": 179.84375,
+          "left": 22
+        },
+        "stage": {
+          "x": 23,
+          "y": 320.84375,
+          "width": 329,
+          "height": 372.265625,
+          "top": 320.84375,
+          "right": 352,
+          "bottom": 693.109375,
+          "left": 23
+        },
+        "main": {
+          "x": 22,
+          "y": 278.84375,
+          "width": 331,
+          "height": 415.265625,
+          "top": 278.84375,
+          "right": 353,
+          "bottom": 694.109375,
+          "left": 22
+        },
+        "mode": {
+          "x": 23,
+          "y": 279.84375,
+          "width": 329,
+          "height": 40,
+          "top": 279.84375,
+          "right": 352,
+          "bottom": 319.84375,
+          "left": 23
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 22,
+          "y": 706.109375,
+          "width": 331,
+          "height": 49.890625,
+          "top": 706.109375,
+          "right": 353,
+          "bottom": 756,
+          "left": 22
+        },
+        "actions": {
+          "x": 22,
+          "y": 756,
+          "width": 331,
+          "height": 48,
+          "top": 756,
+          "right": 353,
+          "bottom": 804,
+          "left": 22
+        },
+        "nav": {
+          "x": 22,
+          "y": 179.84375,
+          "width": 331,
+          "height": 91,
+          "top": 179.84375,
+          "right": 353,
+          "bottom": 270.84375,
+          "left": 22
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Running63 fps \u00b7 \u0394 3.0e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-dark-initial-375.png",
+        "width": 375,
+        "height": 812,
+        "theme": "dark",
+        "docWidth": 375,
+        "docHeight": 898,
+        "intro": {
+          "x": 22,
+          "y": 142,
+          "width": 331,
+          "height": 215.453125,
+          "top": 142,
+          "right": 353,
+          "bottom": 357.453125,
+          "left": 22
+        },
+        "stage": {
+          "x": 23,
+          "y": 498.453125,
+          "width": 329,
+          "height": 285.109375,
+          "top": 498.453125,
+          "right": 352,
+          "bottom": 783.5625,
+          "left": 23
+        },
+        "main": {
+          "x": 22,
+          "y": 456.453125,
+          "width": 331,
+          "height": 328.109375,
+          "top": 456.453125,
+          "right": 353,
+          "bottom": 784.5625,
+          "left": 22
+        },
+        "mode": {
+          "x": 23,
+          "y": 457.453125,
+          "width": 329,
+          "height": 40,
+          "top": 457.453125,
+          "right": 352,
+          "bottom": 497.453125,
+          "left": 23
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 22,
+          "y": 796.5625,
+          "width": 331,
+          "height": 49.890625,
+          "top": 796.5625,
+          "right": 353,
+          "bottom": 846.453125,
+          "left": 22
+        },
+        "actions": {
+          "x": 22,
+          "y": 846.453125,
+          "width": 331,
+          "height": 44,
+          "top": 846.453125,
+          "right": 353,
+          "bottom": 890.453125,
+          "left": 22
+        },
+        "nav": {
+          "x": 22,
+          "y": 357.453125,
+          "width": 331,
+          "height": 91,
+          "top": 357.453125,
+          "right": 353,
+          "bottom": 448.453125,
+          "left": 22
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-dark-active-375.png",
+        "width": 375,
+        "height": 812,
+        "theme": "dark",
+        "docWidth": 375,
+        "docHeight": 812,
+        "intro": {
+          "x": 22,
+          "y": 142,
+          "width": 331,
+          "height": 37.84375,
+          "top": 142,
+          "right": 353,
+          "bottom": 179.84375,
+          "left": 22
+        },
+        "stage": {
+          "x": 23,
+          "y": 320.84375,
+          "width": 329,
+          "height": 372.265625,
+          "top": 320.84375,
+          "right": 352,
+          "bottom": 693.109375,
+          "left": 23
+        },
+        "main": {
+          "x": 22,
+          "y": 278.84375,
+          "width": 331,
+          "height": 415.265625,
+          "top": 278.84375,
+          "right": 353,
+          "bottom": 694.109375,
+          "left": 22
+        },
+        "mode": {
+          "x": 23,
+          "y": 279.84375,
+          "width": 329,
+          "height": 40,
+          "top": 279.84375,
+          "right": 352,
+          "bottom": 319.84375,
+          "left": 23
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 22,
+          "y": 706.109375,
+          "width": 331,
+          "height": 49.890625,
+          "top": 706.109375,
+          "right": 353,
+          "bottom": 756,
+          "left": 22
+        },
+        "actions": {
+          "x": 22,
+          "y": 756,
+          "width": 331,
+          "height": 48,
+          "top": 756,
+          "right": 353,
+          "bottom": 804,
+          "left": 22
+        },
+        "nav": {
+          "x": 22,
+          "y": 179.84375,
+          "width": 331,
+          "height": 91,
+          "top": 179.84375,
+          "right": 353,
+          "bottom": 270.84375,
+          "left": 22
+        },
+        "canvasIntrinsic": [
+          640,
+          320
+        ],
+        "running": "Running62 fps \u00b7 \u0394 5.3e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-light-initial-768.png",
+        "width": 768,
+        "height": 900,
+        "theme": "light",
+        "docWidth": 768,
+        "docHeight": 928,
+        "intro": {
+          "x": 32,
+          "y": 113,
+          "width": 704,
+          "height": 171.390625,
+          "top": 113,
+          "right": 736,
+          "bottom": 284.390625,
+          "left": 32
+        },
+        "stage": {
+          "x": 33,
+          "y": 437.390625,
+          "width": 702,
+          "height": 363,
+          "top": 437.390625,
+          "right": 735,
+          "bottom": 800.390625,
+          "left": 33
+        },
+        "main": {
+          "x": 32,
+          "y": 391.390625,
+          "width": 704,
+          "height": 410,
+          "top": 391.390625,
+          "right": 736,
+          "bottom": 801.390625,
+          "left": 32
+        },
+        "mode": {
+          "x": 33,
+          "y": 392.390625,
+          "width": 702,
+          "height": 44,
+          "top": 392.390625,
+          "right": 735,
+          "bottom": 436.390625,
+          "left": 33
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 32,
+          "y": 813.390625,
+          "width": 704,
+          "height": 55,
+          "top": 813.390625,
+          "right": 736,
+          "bottom": 868.390625,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 868.390625,
+          "width": 704,
+          "height": 48,
+          "top": 868.390625,
+          "right": 736,
+          "bottom": 916.390625,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 284.390625,
+          "width": 704,
+          "height": 91,
+          "top": 284.390625,
+          "right": 736,
+          "bottom": 375.390625,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-light-active-768.png",
+        "width": 768,
+        "height": 900,
+        "theme": "light",
+        "docWidth": 768,
+        "docHeight": 900,
+        "intro": {
+          "x": 32,
+          "y": 113,
+          "width": 704,
+          "height": 56,
+          "top": 113,
+          "right": 736,
+          "bottom": 169,
+          "left": 32
+        },
+        "stage": {
+          "x": 33,
+          "y": 322,
+          "width": 702,
+          "height": 450,
+          "top": 322,
+          "right": 735,
+          "bottom": 772,
+          "left": 33
+        },
+        "main": {
+          "x": 32,
+          "y": 276,
+          "width": 704,
+          "height": 497,
+          "top": 276,
+          "right": 736,
+          "bottom": 773,
+          "left": 32
+        },
+        "mode": {
+          "x": 33,
+          "y": 277,
+          "width": 702,
+          "height": 44,
+          "top": 277,
+          "right": 735,
+          "bottom": 321,
+          "left": 33
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 32,
+          "y": 785,
+          "width": 704,
+          "height": 55,
+          "top": 785,
+          "right": 736,
+          "bottom": 840,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 840,
+          "width": 704,
+          "height": 48,
+          "top": 840,
+          "right": 736,
+          "bottom": 888,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 169,
+          "width": 704,
+          "height": 91,
+          "top": 169,
+          "right": 736,
+          "bottom": 260,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Running63 fps \u00b7 \u0394 2.5e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-dark-initial-768.png",
+        "width": 768,
+        "height": 900,
+        "theme": "dark",
+        "docWidth": 768,
+        "docHeight": 928,
+        "intro": {
+          "x": 32,
+          "y": 113,
+          "width": 704,
+          "height": 171.390625,
+          "top": 113,
+          "right": 736,
+          "bottom": 284.390625,
+          "left": 32
+        },
+        "stage": {
+          "x": 33,
+          "y": 437.390625,
+          "width": 702,
+          "height": 363,
+          "top": 437.390625,
+          "right": 735,
+          "bottom": 800.390625,
+          "left": 33
+        },
+        "main": {
+          "x": 32,
+          "y": 391.390625,
+          "width": 704,
+          "height": 410,
+          "top": 391.390625,
+          "right": 736,
+          "bottom": 801.390625,
+          "left": 32
+        },
+        "mode": {
+          "x": 33,
+          "y": 392.390625,
+          "width": 702,
+          "height": 44,
+          "top": 392.390625,
+          "right": 735,
+          "bottom": 436.390625,
+          "left": 33
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 32,
+          "y": 813.390625,
+          "width": 704,
+          "height": 55,
+          "top": 813.390625,
+          "right": 736,
+          "bottom": 868.390625,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 868.390625,
+          "width": 704,
+          "height": 48,
+          "top": 868.390625,
+          "right": 736,
+          "bottom": 916.390625,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 284.390625,
+          "width": 704,
+          "height": 91,
+          "top": 284.390625,
+          "right": 736,
+          "bottom": 375.390625,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-dark-active-768.png",
+        "width": 768,
+        "height": 900,
+        "theme": "dark",
+        "docWidth": 768,
+        "docHeight": 900,
+        "intro": {
+          "x": 32,
+          "y": 113,
+          "width": 704,
+          "height": 56,
+          "top": 113,
+          "right": 736,
+          "bottom": 169,
+          "left": 32
+        },
+        "stage": {
+          "x": 33,
+          "y": 322,
+          "width": 702,
+          "height": 450,
+          "top": 322,
+          "right": 735,
+          "bottom": 772,
+          "left": 33
+        },
+        "main": {
+          "x": 32,
+          "y": 276,
+          "width": 704,
+          "height": 497,
+          "top": 276,
+          "right": 736,
+          "bottom": 773,
+          "left": 32
+        },
+        "mode": {
+          "x": 33,
+          "y": 277,
+          "width": 702,
+          "height": 44,
+          "top": 277,
+          "right": 735,
+          "bottom": 321,
+          "left": 33
+        },
+        "controls": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "controlsOpen": false,
+        "metrics": {
+          "x": 32,
+          "y": 785,
+          "width": 704,
+          "height": 55,
+          "top": 785,
+          "right": 736,
+          "bottom": 840,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 840,
+          "width": 704,
+          "height": 48,
+          "top": 840,
+          "right": 736,
+          "bottom": 888,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 169,
+          "width": 704,
+          "height": 91,
+          "top": 169,
+          "right": 736,
+          "bottom": 260,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Running62 fps \u00b7 \u0394 3.4e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-light-initial-1024.png",
+        "width": 1024,
+        "height": 900,
+        "theme": "light",
+        "docWidth": 1024,
+        "docHeight": 900,
+        "intro": {
+          "x": 32,
+          "y": 121,
+          "width": 960,
+          "height": 175.265625,
+          "top": 121,
+          "right": 992,
+          "bottom": 296.265625,
+          "left": 32
+        },
+        "stage": {
+          "x": 305,
+          "y": 404.265625,
+          "width": 686,
+          "height": 363,
+          "top": 404.265625,
+          "right": 991,
+          "bottom": 767.265625,
+          "left": 305
+        },
+        "main": {
+          "x": 304,
+          "y": 358.265625,
+          "width": 688,
+          "height": 410,
+          "top": 358.265625,
+          "right": 992,
+          "bottom": 768.265625,
+          "left": 304
+        },
+        "mode": {
+          "x": 305,
+          "y": 359.265625,
+          "width": 686,
+          "height": 44,
+          "top": 359.265625,
+          "right": 991,
+          "bottom": 403.265625,
+          "left": 305
+        },
+        "controls": {
+          "x": 32,
+          "y": 358.265625,
+          "width": 260,
+          "height": 410,
+          "top": 358.265625,
+          "right": 292,
+          "bottom": 768.265625,
+          "left": 32
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 32,
+          "y": 780.265625,
+          "width": 960,
+          "height": 55,
+          "top": 780.265625,
+          "right": 992,
+          "bottom": 835.265625,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 835.265625,
+          "width": 960,
+          "height": 48,
+          "top": 835.265625,
+          "right": 992,
+          "bottom": 883.265625,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 296.265625,
+          "width": 960,
+          "height": 46,
+          "top": 296.265625,
+          "right": 992,
+          "bottom": 342.265625,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-light-active-1024.png",
+        "width": 1024,
+        "height": 900,
+        "theme": "light",
+        "docWidth": 1024,
+        "docHeight": 900,
+        "intro": {
+          "x": 32,
+          "y": 121,
+          "width": 960,
+          "height": 56,
+          "top": 121,
+          "right": 992,
+          "bottom": 177,
+          "left": 32
+        },
+        "stage": {
+          "x": 305,
+          "y": 285,
+          "width": 686,
+          "height": 487,
+          "top": 285,
+          "right": 991,
+          "bottom": 772,
+          "left": 305
+        },
+        "main": {
+          "x": 304,
+          "y": 239,
+          "width": 688,
+          "height": 534,
+          "top": 239,
+          "right": 992,
+          "bottom": 773,
+          "left": 304
+        },
+        "mode": {
+          "x": 305,
+          "y": 240,
+          "width": 686,
+          "height": 44,
+          "top": 240,
+          "right": 991,
+          "bottom": 284,
+          "left": 305
+        },
+        "controls": {
+          "x": 32,
+          "y": 239,
+          "width": 260,
+          "height": 534,
+          "top": 239,
+          "right": 292,
+          "bottom": 773,
+          "left": 32
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 32,
+          "y": 785,
+          "width": 960,
+          "height": 55,
+          "top": 785,
+          "right": 992,
+          "bottom": 840,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 840,
+          "width": 960,
+          "height": 48,
+          "top": 840,
+          "right": 992,
+          "bottom": 888,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 177,
+          "width": 960,
+          "height": 46,
+          "top": 177,
+          "right": 992,
+          "bottom": 223,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Running62 fps \u00b7 \u0394 3.4e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-dark-initial-1024.png",
+        "width": 1024,
+        "height": 900,
+        "theme": "dark",
+        "docWidth": 1024,
+        "docHeight": 900,
+        "intro": {
+          "x": 32,
+          "y": 121,
+          "width": 960,
+          "height": 175.265625,
+          "top": 121,
+          "right": 992,
+          "bottom": 296.265625,
+          "left": 32
+        },
+        "stage": {
+          "x": 305,
+          "y": 404.265625,
+          "width": 686,
+          "height": 363,
+          "top": 404.265625,
+          "right": 991,
+          "bottom": 767.265625,
+          "left": 305
+        },
+        "main": {
+          "x": 304,
+          "y": 358.265625,
+          "width": 688,
+          "height": 410,
+          "top": 358.265625,
+          "right": 992,
+          "bottom": 768.265625,
+          "left": 304
+        },
+        "mode": {
+          "x": 305,
+          "y": 359.265625,
+          "width": 686,
+          "height": 44,
+          "top": 359.265625,
+          "right": 991,
+          "bottom": 403.265625,
+          "left": 305
+        },
+        "controls": {
+          "x": 32,
+          "y": 358.265625,
+          "width": 260,
+          "height": 410,
+          "top": 358.265625,
+          "right": 292,
+          "bottom": 768.265625,
+          "left": 32
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 32,
+          "y": 780.265625,
+          "width": 960,
+          "height": 55,
+          "top": 780.265625,
+          "right": 992,
+          "bottom": 835.265625,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 835.265625,
+          "width": 960,
+          "height": 48,
+          "top": 835.265625,
+          "right": 992,
+          "bottom": 883.265625,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 296.265625,
+          "width": 960,
+          "height": 46,
+          "top": 296.265625,
+          "right": 992,
+          "bottom": 342.265625,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-dark-active-1024.png",
+        "width": 1024,
+        "height": 900,
+        "theme": "dark",
+        "docWidth": 1024,
+        "docHeight": 900,
+        "intro": {
+          "x": 32,
+          "y": 121,
+          "width": 960,
+          "height": 56,
+          "top": 121,
+          "right": 992,
+          "bottom": 177,
+          "left": 32
+        },
+        "stage": {
+          "x": 305,
+          "y": 285,
+          "width": 686,
+          "height": 487,
+          "top": 285,
+          "right": 991,
+          "bottom": 772,
+          "left": 305
+        },
+        "main": {
+          "x": 304,
+          "y": 239,
+          "width": 688,
+          "height": 534,
+          "top": 239,
+          "right": 992,
+          "bottom": 773,
+          "left": 304
+        },
+        "mode": {
+          "x": 305,
+          "y": 240,
+          "width": 686,
+          "height": 44,
+          "top": 240,
+          "right": 991,
+          "bottom": 284,
+          "left": 305
+        },
+        "controls": {
+          "x": 32,
+          "y": 239,
+          "width": 260,
+          "height": 534,
+          "top": 239,
+          "right": 292,
+          "bottom": 773,
+          "left": 32
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 32,
+          "y": 785,
+          "width": 960,
+          "height": 55,
+          "top": 785,
+          "right": 992,
+          "bottom": 840,
+          "left": 32
+        },
+        "actions": {
+          "x": 32,
+          "y": 840,
+          "width": 960,
+          "height": 48,
+          "top": 840,
+          "right": 992,
+          "bottom": 888,
+          "left": 32
+        },
+        "nav": {
+          "x": 32,
+          "y": 177,
+          "width": 960,
+          "height": 46,
+          "top": 177,
+          "right": 992,
+          "bottom": 223,
+          "left": 32
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Running62 fps \u00b7 \u0394 3.7e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-light-initial-1440.png",
+        "width": 1440,
+        "height": 900,
+        "theme": "light",
+        "docWidth": 1440,
+        "docHeight": 913,
+        "intro": {
+          "x": 48,
+          "y": 121,
+          "width": 1344,
+          "height": 193.046875,
+          "top": 121,
+          "right": 1392,
+          "bottom": 314.046875,
+          "left": 48
+        },
+        "stage": {
+          "x": 345,
+          "y": 422.046875,
+          "width": 846,
+          "height": 430,
+          "top": 422.046875,
+          "right": 1191,
+          "bottom": 852.046875,
+          "left": 345
+        },
+        "main": {
+          "x": 344,
+          "y": 376.046875,
+          "width": 848,
+          "height": 477,
+          "top": 376.046875,
+          "right": 1192,
+          "bottom": 853.046875,
+          "left": 344
+        },
+        "mode": {
+          "x": 345,
+          "y": 377.046875,
+          "width": 846,
+          "height": 44,
+          "top": 377.046875,
+          "right": 1191,
+          "bottom": 421.046875,
+          "left": 345
+        },
+        "controls": {
+          "x": 48,
+          "y": 376.046875,
+          "width": 280,
+          "height": 477,
+          "top": 376.046875,
+          "right": 328,
+          "bottom": 853.046875,
+          "left": 48
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 1208,
+          "y": 376.046875,
+          "width": 184,
+          "height": 477,
+          "top": 376.046875,
+          "right": 1392,
+          "bottom": 853.046875,
+          "left": 1208
+        },
+        "actions": {
+          "x": 48,
+          "y": 853.046875,
+          "width": 1344,
+          "height": 48,
+          "top": 853.046875,
+          "right": 1392,
+          "bottom": 901.046875,
+          "left": 48
+        },
+        "nav": {
+          "x": 48,
+          "y": 314.046875,
+          "width": 1344,
+          "height": 46,
+          "top": 314.046875,
+          "right": 1392,
+          "bottom": 360.046875,
+          "left": 48
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-light-active-1440.png",
+        "width": 1440,
+        "height": 900,
+        "theme": "light",
+        "docWidth": 1440,
+        "docHeight": 900,
+        "intro": {
+          "x": 48,
+          "y": 121,
+          "width": 1344,
+          "height": 56,
+          "top": 121,
+          "right": 1392,
+          "bottom": 177,
+          "left": 48
+        },
+        "stage": {
+          "x": 345,
+          "y": 285,
+          "width": 846,
+          "height": 554,
+          "top": 285,
+          "right": 1191,
+          "bottom": 839,
+          "left": 345
+        },
+        "main": {
+          "x": 344,
+          "y": 239,
+          "width": 848,
+          "height": 601,
+          "top": 239,
+          "right": 1192,
+          "bottom": 840,
+          "left": 344
+        },
+        "mode": {
+          "x": 345,
+          "y": 240,
+          "width": 846,
+          "height": 44,
+          "top": 240,
+          "right": 1191,
+          "bottom": 284,
+          "left": 345
+        },
+        "controls": {
+          "x": 48,
+          "y": 239,
+          "width": 280,
+          "height": 601,
+          "top": 239,
+          "right": 328,
+          "bottom": 840,
+          "left": 48
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 1208,
+          "y": 239,
+          "width": 184,
+          "height": 601,
+          "top": 239,
+          "right": 1392,
+          "bottom": 840,
+          "left": 1208
+        },
+        "actions": {
+          "x": 48,
+          "y": 840,
+          "width": 1344,
+          "height": 48,
+          "top": 840,
+          "right": 1392,
+          "bottom": 888,
+          "left": 48
+        },
+        "nav": {
+          "x": 48,
+          "y": 177,
+          "width": 1344,
+          "height": 46,
+          "top": 177,
+          "right": 1392,
+          "bottom": 223,
+          "left": 48
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Running61 fps \u00b7 \u0394 2.5e-3",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "initial",
+        "path": "docs/redesign/screenshots/phase-05-dark-initial-1440.png",
+        "width": 1440,
+        "height": 900,
+        "theme": "dark",
+        "docWidth": 1440,
+        "docHeight": 913,
+        "intro": {
+          "x": 48,
+          "y": 121,
+          "width": 1344,
+          "height": 193.046875,
+          "top": 121,
+          "right": 1392,
+          "bottom": 314.046875,
+          "left": 48
+        },
+        "stage": {
+          "x": 345,
+          "y": 422.046875,
+          "width": 846,
+          "height": 430,
+          "top": 422.046875,
+          "right": 1191,
+          "bottom": 852.046875,
+          "left": 345
+        },
+        "main": {
+          "x": 344,
+          "y": 376.046875,
+          "width": 848,
+          "height": 477,
+          "top": 376.046875,
+          "right": 1192,
+          "bottom": 853.046875,
+          "left": 344
+        },
+        "mode": {
+          "x": 345,
+          "y": 377.046875,
+          "width": 846,
+          "height": 44,
+          "top": 377.046875,
+          "right": 1191,
+          "bottom": 421.046875,
+          "left": 345
+        },
+        "controls": {
+          "x": 48,
+          "y": 376.046875,
+          "width": 280,
+          "height": 477,
+          "top": 376.046875,
+          "right": 328,
+          "bottom": 853.046875,
+          "left": 48
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 1208,
+          "y": 376.046875,
+          "width": 184,
+          "height": 477,
+          "top": 376.046875,
+          "right": 1392,
+          "bottom": 853.046875,
+          "left": 1208
+        },
+        "actions": {
+          "x": 48,
+          "y": 853.046875,
+          "width": 1344,
+          "height": 48,
+          "top": 853.046875,
+          "right": 1392,
+          "bottom": 901.046875,
+          "left": 48
+        },
+        "nav": {
+          "x": 48,
+          "y": 314.046875,
+          "width": 1344,
+          "height": 46,
+          "top": 314.046875,
+          "right": 1392,
+          "bottom": 360.046875,
+          "left": 48
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Ready",
+        "canvasFit": "contain"
+      },
+      {
+        "state": "active",
+        "path": "docs/redesign/screenshots/phase-05-dark-active-1440.png",
+        "width": 1440,
+        "height": 900,
+        "theme": "dark",
+        "docWidth": 1440,
+        "docHeight": 900,
+        "intro": {
+          "x": 48,
+          "y": 121,
+          "width": 1344,
+          "height": 56,
+          "top": 121,
+          "right": 1392,
+          "bottom": 177,
+          "left": 48
+        },
+        "stage": {
+          "x": 345,
+          "y": 285,
+          "width": 846,
+          "height": 554,
+          "top": 285,
+          "right": 1191,
+          "bottom": 839,
+          "left": 345
+        },
+        "main": {
+          "x": 344,
+          "y": 239,
+          "width": 848,
+          "height": 601,
+          "top": 239,
+          "right": 1192,
+          "bottom": 840,
+          "left": 344
+        },
+        "mode": {
+          "x": 345,
+          "y": 240,
+          "width": 846,
+          "height": 44,
+          "top": 240,
+          "right": 1191,
+          "bottom": 284,
+          "left": 345
+        },
+        "controls": {
+          "x": 48,
+          "y": 239,
+          "width": 280,
+          "height": 601,
+          "top": 239,
+          "right": 328,
+          "bottom": 840,
+          "left": 48
+        },
+        "controlsOpen": true,
+        "metrics": {
+          "x": 1208,
+          "y": 239,
+          "width": 184,
+          "height": 601,
+          "top": 239,
+          "right": 1392,
+          "bottom": 840,
+          "left": 1208
+        },
+        "actions": {
+          "x": 48,
+          "y": 840,
+          "width": 1344,
+          "height": 48,
+          "top": 840,
+          "right": 1392,
+          "bottom": 888,
+          "left": 48
+        },
+        "nav": {
+          "x": 48,
+          "y": 177,
+          "width": 1344,
+          "height": 46,
+          "top": 177,
+          "right": 1392,
+          "bottom": 223,
+          "left": 48
+        },
+        "canvasIntrinsic": [
+          1000,
+          450
+        ],
+        "running": "Running62 fps \u00b7 \u0394 2.5e-3",
+        "canvasFit": "contain"
+      }
+    ],
+    "errors": []
+  },
+  "interactions": {
+    "errors": [],
+    "downloads": [
+      {
+        "kind": "2d-png",
+        "name": "aerotunnel-1792179444361.png",
+        "bytes": 63394,
+        "dimensions": [
+          1000,
+          450
+        ]
+      },
+      {
+        "kind": "json",
+        "name": "aerotunnel-1792179444548.json",
+        "bytes": 3657
+      },
+      {
+        "kind": "csv",
+        "name": "aerotunnel-1792179444581.csv",
+        "bytes": 172
+      },
+      {
+        "kind": "3d-png",
+        "name": "aerotunnel-1792179446696.png",
+        "bytes": 416523,
+        "dimensions": [
+          702,
+          450
+        ]
+      }
+    ],
+    "start": {
+      "readyBeforeStart": true,
+      "sameCanvasAndSolver": true,
+      "compactAfterStart": true
+    },
+    "paused": {
+      "sameSolver": true,
+      "sameCanvas": true,
+      "samePool": true,
+      "sameIntrinsicDimensions": true,
+      "sameBuffers": true,
+      "sameParameters": true,
+      "samePage": true,
+      "sameLegend": true
+    },
+    "railKeyboard": true,
+    "sixModesAndDigitShortcuts": true,
+    "comparison": {
+      "fieldsAndDifference": true,
+      "controlsOutsideField": true
+    },
+    "running": {
+      "sameSolver": true,
+      "fieldContinues": true,
+      "themeSpaceDoesNotPause": true
+    },
+    "fullscreen2d": {
+      "nativeEntry": true,
+      "keyboardExit": true,
+      "sameCanvas": true
+    },
+    "rootJsonDrop": true,
+    "browseJsonImport": true,
+    "geometrySvgDrop": true,
+    "sketch": {
+      "cssRect": [
+        254,
+        143.203125
+      ],
+      "backing": [
+        232,
+        130
+      ],
+      "finiteContour": true,
+      "points": 21
+    },
+    "threeD": {
+      "orbitDelta": 7.141049622680557,
+      "wheelRadiusDelta": 0.7200000000000006,
+      "pinchRadiusDelta": -0.5,
+      "resizeAndTheme": {
+        "sameCanvas": true,
+        "lost": false,
+        "sameSolver": true
+      },
+      "nativeFullscreen": true,
+      "pngDownload": true,
+      "offViewDisposed": true,
+      "returnViewRenders": true
+    },
+    "mobileSheet": {
+      "shortDragStays": true,
+      "longDragDismisses": true,
+      "escapeDismisses": true,
+      "stagePointerDismisses": true
+    },
+    "sessionRestore": {
+      "historicalKeyAndVersion": true,
+      "parametersRestored": true,
+      "pausedUntilStart": true
+    }
+  },
+  "performanceAndMobile": {
+    "performance": {
+      "before": {
+        "frames": 180,
+        "meanFrameMs": 16.66611111111111,
+        "medianFrameMs": 16.699999999999818,
+        "p95FrameMs": 16.700000000000273,
+        "uiFps": "60"
+      },
+      "after": {
+        "frames": 180,
+        "meanFrameMs": 16.665972222222223,
+        "medianFrameMs": 16.664999999999964,
+        "p95FrameMs": 16.670000000000073,
+        "uiFps": "60 fps \u00b7 \u0394 1.7e-3"
+      }
+    },
+    "mobile": {
+      "touchDragDismisses": true,
+      "cancelClearsDragWithoutDismissal": true,
+      "shortLandscape": {
+        "docWidth": 568,
+        "width": 568,
+        "stageHeight": 275.109375,
+        "docHeight": 711,
+        "scrollablePage": true
+      }
+    }
+  },
+  "captureComparison": {
+    "before": {
+      "width": 1440,
+      "height": 779,
+      "pixels": 1121760,
+      "nonTransparent": 1121760,
+      "sampledColors": 1
+    },
+    "after": {
+      "width": 1142,
+      "height": 554,
+      "pixels": 632668,
+      "nonTransparent": 632668,
+      "sampledColors": 4791
+    }
+  },
+  "shortcuts": {
+    "undo": true,
+    "redo": true,
+    "ctrlZ": true,
+    "resetR": true,
+    "captureS": true,
+    "compareAccessibleNameIncludesVisibleLabel": true
+  },
+  "static": {
+    "changedExistingSourceFiles": [
+      "src/CFDLab.jsx",
+      "src/components/CommandBar.jsx",
+      "src/components/IconRail.jsx",
+      "src/components/ControlPanel.jsx"
+    ],
+    "protectedSections": {
+      "sessionHelpers": true,
+      "wasmAndRestore": true,
+      "numericalRenderLoop": true
+    },
+    "protectedFilesUnchanged": true
+  },
+  "checks": {
+    "build": {
+      "status": "pass",
+      "modules": 44,
+      "warnings": 0
+    },
+    "themeTests": {
+      "pass": 8,
+      "fail": 0
+    },
+    "lint": {
+      "beforeErrors": 19,
+      "afterErrors": 18,
+      "warnings": 0,
+      "newDiagnostics": [],
+      "removedDiagnostics": [
+        [
+          "src/components/CommandBar.jsx",
+          "no-unused-vars",
+          "'solverWarning' is defined but never used."
+        ]
+      ]
+    },
+    "diffCheck": "pass",
+    "designDetector": "zero findings in Phase05 files",
+    "independentReview": "All findings resolved; no remaining actionable new regression"
+  },
+  "browserMethod": "Local production preview; installed Playwright over dedicated headless Chromium CDP profile. Layout captures use reduced motion, ready fonts and settled active FPS. No project dependency added."
+}

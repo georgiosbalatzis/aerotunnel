@@ -1,400 +1,75 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import RecordedFrames from './RecordedFrames.jsx';
+import { useEffect, useRef, useState } from 'react';
+import AnalysisMetric from './AnalysisMetric.jsx';
+import AnalysisChart from './AnalysisChart.jsx';
+import AnalysisSweep from './AnalysisSweep.jsx';
+import { SWEEP_VARIABLES, analysisSource, convergenceState, finite, formatMetric, formatRatio, formatTime, proxyRatio, readSessionGallery, regimeBand, sameSetup, savedSessionIssue, validTime } from '../analysis/presentation.js';
 
-const CHART_COLORS = {
-  cl: "#22ff88",
-  cd: "#ff6600",
-  re: "#eeff22",
-  ld: "#00d4ff",
-};
-
-function formatRe(value) {
-  if (!Number.isFinite(value)) return "-";
-  return value > 999 ? `${(value / 1000).toFixed(1)}k` : String(value);
+function SessionGallery({ name, setName, onSave, onLoad, onDelete }) {
+  const [gallery, setGallery] = useState(readSessionGallery), [message, setMessage] = useState(''), [error, setError] = useState('');
+  const refresh = () => setGallery(readSessionGallery());
+  return <section className="report-section" id="analysis-sessions" aria-labelledby="analysis-sessions-heading">
+    <div className="report-section-heading"><div><h3 id="analysis-sessions-heading">Saved sessions</h3><p>Store the current setup and its most recent 200 records in this browser. Up to ten sessions are retained. Loading a session without history leaves retained records unchanged.</p></div><span>{gallery.items.length}/10 saved</span></div>
+    <form className="report-save-form" onSubmit={event => { event.preventDefault(); const ok = onSave(name); refresh(); setError(ok === false ? 'The session could not be saved. Download JSON to keep the current setup.' : ''); if (ok !== false) { setMessage('Current session saved.'); setName(''); } }}>
+      <label htmlFor="analysis-session-name">Session name <span className="report-help">(optional)</span><input id="analysis-session-name" value={name} onChange={event => setName(event.target.value)} placeholder="Preset and time when left blank" disabled={!!gallery.error} /></label><button type="submit" className="report-button" disabled={!!gallery.error}>Save current session</button>
+    </form>
+    {(gallery.error || error) && <p className="report-error" role="alert">{gallery.error || error}</p>}{message && !error && <p className="report-help" role="status">{message}</p>}
+    {gallery.items.length ? <ul className="report-session-list">{gallery.items.map((item, index) => { const issue = savedSessionIssue(item), title = item?.name || `Saved entry ${index + 1}`, count = Array.isArray(item?.history) ? item.history.length : 0; return <li key={`${item?.timestamp}-${index}`}>
+      <div><h4>{title}</h4><p>{item?.preset || 'Custom setup'} · {formatTime(item?.timestamp)} · {count} historical records</p>{count > 0 && <p>Stored CL {formatMetric(item?.stats?.cl)} · CD {formatMetric(item?.stats?.cd)}</p>}{issue && <p className="report-error">{issue}</p>}</div>
+      <div className="report-inline-actions"><button type="button" className="report-button" disabled={!!issue} aria-label={`Load ${title}`} onClick={() => { onLoad(item); setMessage(`Loaded ${title}. Recorded history is distinct from live measurements.`); }}>Load</button><button type="button" className="report-button" aria-label={`Delete ${title}`} onClick={() => { const ok = onDelete(index); refresh(); setError(ok === false ? 'This entry could not be deleted from browser storage.' : ''); setMessage(ok === false ? '' : `Deleted ${title}.`); }}>Delete</button></div>
+    </li>; })}</ul> : !gallery.error && <div className="analysis-empty">No saved sessions. Save the current setup or download its JSON file.</div>}
+  </section>;
 }
 
-function regimeDescription(label) {
-  if (label === "LAMINAR") return "Attached flow. Wake energy is low and stable.";
-  if (label === "TRANS.") return "Transition zone. Small setup changes can shift the wake.";
-  if (label === "TURB.") return "Turbulent wake. Drag and separation need close review.";
-  return "Run the tunnel to classify the current flow.";
-}
+export default function AnalysisPanel({ isActive = true, hSnap, sample, setup, convergenceDelta, running, started, exportTools, onPublish, onSaveSession, onLoadSession, onDeleteSession, sweepState, sweepReport, onStartSweep, onCancelSweep, recording, onStartRecording, onStopRecording, recordFrameCount, recordingExport, onReturn, onFullscreen }) {
+  const [form, setForm] = useState({ param: 'aoa', ...SWEEP_VARIABLES.aoa }), [reference, setReference] = useState(0), [page, setPage] = useState(0), [sessionName, setSessionName] = useState('');
+  const heading = useRef(null);
+  useEffect(() => { if (!isActive) return; const frame = requestAnimationFrame(() => heading.current?.focus({ preventScroll: true })); return () => cancelAnimationFrame(frame); }, [isActive]);
+  if (!isActive) return <article className="analysis-report" hidden inert />;
+  const history = Array.isArray(hSnap) ? hSnap : [], source = analysisSource(sample, history, setup), values = source.values;
+  const visualRows = history.map(row => row && typeof row === 'object' ? { ...row, ld: proxyRatio(row) } : {});
+  const state = running ? 'Running' : started ? 'Paused' : history.length ? 'Recorded history' : 'Not started';
+  const unavailable = source.available && ['cl', 'cd', 're', 'maxV'].some(key => !finite(values?.[key]));
+  const metrics = [{ label: 'CL proxy', value: formatMetric(values?.cl), note: 'Heuristic lift magnitude', field: 'cl' }, { label: 'CD proxy', value: formatMetric(values?.cd), note: 'Heuristic drag indicator', field: 'cd' }, { label: 'Re*', value: formatMetric(values?.re), note: 'Scaled lattice estimate', field: 're' }, { label: 'L/D proxy', value: formatRatio(proxyRatio(values)), note: 'Ratio of recorded CL to CD', field: 'ld' }];
+  const convergenceReady = !!sample && sample.fluidCells > 0 && sameSetup(sample.setup, setup), delta = convergenceReady && finite(convergenceDelta) && convergenceDelta >= 0 ? convergenceDelta : null;
+  const pageSize = 25, pages = Math.max(1, Math.ceil(history.length / pageSize)), currentPage = Math.min(page, pages - 1);
+  const recent = history.map((row, index) => ({ row, index })).reverse().slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  const maxRatio = sample && (!finite(sample.setup?.vel) || sample.setup.vel <= 0) ? null : values?.maxV;
 
-function resizeCanvas(canvas) {
-  const rect = canvas.getBoundingClientRect();
-  const ratio = window.devicePixelRatio || 1;
-  const width = Math.max(1, Math.round(rect.width * ratio));
-  const height = Math.max(1, Math.round(rect.height * ratio));
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-  }
-  return { width, height, ratio };
-}
-
-function drawKpiSparkline(canvas, values, color) {
-  const ctx = canvas.getContext("2d");
-  const { width, height, ratio } = resizeCanvas(canvas);
-  ctx.clearRect(0, 0, width, height);
-  if (values.length < 2) return;
-
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  const pad = 3 * ratio;
-  const step = (width - pad * 2) / Math.max(1, values.length - 1);
-  const points = values.map((value, index) => [
-    pad + index * step,
-    height - pad - ((value - min) / span) * (height - pad * 2),
-  ]);
-
-  ctx.beginPath();
-  points.forEach(([x, y], index) => {
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.lineTo(points[points.length - 1][0], height - pad);
-  ctx.lineTo(points[0][0], height - pad);
-  ctx.closePath();
-  ctx.fillStyle = `${color}22`;
-  ctx.fill();
-
-  ctx.beginPath();
-  points.forEach(([x, y], index) => {
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.strokeStyle = `${color}99`;
-  ctx.lineWidth = Math.max(1, ratio);
-  ctx.stroke();
-}
-
-function AnalysisKpiCard({ label, value, note, tone, color, values }) {
-  const ref = useRef(null);
-  const sparkValues = useMemo(() => values.filter(Number.isFinite).slice(-60), [values]);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    drawKpiSparkline(canvas, sparkValues, color);
-  }, [color, sparkValues]);
-
-  return (
-    <div className="analysis-kpi-card" style={{ "--tone": tone }}>
-      <div className="analysis-kpi-card__label">{label}</div>
-      <div className="analysis-kpi-card__value">{value}</div>
-      <div className="analysis-kpi-card__note">{note}</div>
-      <canvas ref={ref} className="analysis-kpi-card__sparkline" aria-hidden="true" />
-    </div>
-  );
-}
-
-function HistoryChart({ history }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return undefined;
-    const ctx = canvas.getContext("2d");
-    const { width, height, ratio } = resizeCanvas(canvas);
-    let rafId = null;
-    let cancelled = false;
-    const started = performance.now();
-
-    const drawGrid = (pad, plotWidth, plotHeight) => {
-      ctx.strokeStyle = "rgba(255,255,255,0.07)";
-      ctx.lineWidth = Math.max(1, ratio);
-      for (let i = 0; i <= 4; i++) {
-        const y = pad.top + (plotHeight * i) / 4;
-        ctx.beginPath();
-        ctx.moveTo(pad.left, y);
-        ctx.lineTo(width - pad.right, y);
-        ctx.stroke();
-      }
-      if (history.length > 1) {
-        for (let index = 0; index < history.length; index += 20) {
-          const x = pad.left + (index / (history.length - 1)) * plotWidth;
-          ctx.beginPath();
-          ctx.moveTo(x, pad.top);
-          ctx.lineTo(x, height - pad.bottom);
-          ctx.stroke();
-        }
-      }
-    };
-
-    const drawPlaceholder = () => {
-      ctx.fillStyle = "rgba(128,128,160,0.65)";
-      ctx.font = `${12 * ratio}px 'Share Tech Mono'`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("AWAITING TELEMETRY...", width / 2, height / 2);
-      ctx.textAlign = "left";
-    };
-
-    const drawLine = (series, range, color, mapX, progress) => {
-      if (series.length < 2) return;
-      const maxIndex = Math.max(1, Math.floor((series.length - 1) * progress));
-      const mapY = value => {
-        const span = range.max - range.min || 1;
-        return height - pad.bottom - ((value - range.min) / span) * plotHeight;
-      };
-      ctx.beginPath();
-      for (let index = 0; index <= maxIndex; index++) {
-        const x = mapX(index);
-        const y = mapY(series[index]);
-        index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = color;
-      ctx.lineWidth = Math.max(2, 2 * ratio);
-      ctx.stroke();
-    };
-
-    const pad = { top: 34 * ratio, right: 48 * ratio, bottom: 30 * ratio, left: 48 * ratio };
-    const plotWidth = width - pad.left - pad.right;
-    const plotHeight = height - pad.top - pad.bottom;
-    const cl = history.map(sample => sample.cl).filter(Number.isFinite);
-    const cd = history.map(sample => sample.cd).filter(Number.isFinite);
-    const clRange = { min: Math.min(0, ...cl), max: Math.max(0.1, ...cl) };
-    const cdRange = { min: Math.min(0, ...cd), max: Math.max(0.05, ...cd) };
-    const mapX = index => pad.left + (index / Math.max(1, history.length - 1)) * plotWidth;
-
-    const draw = () => {
-      if (cancelled) return;
-      const progress = Math.min(1, (performance.now() - started) / 600);
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, width, height);
-      drawGrid(pad, plotWidth, plotHeight);
-
-      ctx.font = `${10 * ratio}px 'Share Tech Mono'`;
-      ctx.textBaseline = "top";
-      ctx.fillStyle = "rgba(34,255,136,0.9)";
-      ctx.fillText("CL", 12 * ratio, pad.top);
-      ctx.fillStyle = "rgba(255,102,0,0.9)";
-      ctx.fillText("CD", width - 34 * ratio, pad.top);
-      ctx.fillStyle = "rgba(128,128,160,0.75)";
-      ctx.fillText(clRange.max.toFixed(3), 12 * ratio, pad.top + 16 * ratio);
-      ctx.fillText(cdRange.max.toFixed(3), width - 44 * ratio, pad.top + 16 * ratio);
-
-      if (history.length < 5) {
-        drawPlaceholder();
-        return;
-      }
-
-      drawLine(history.map(sample => sample.cl), clRange, CHART_COLORS.cl, mapX, progress);
-      drawLine(history.map(sample => sample.cd), cdRange, CHART_COLORS.cd, mapX, progress);
-
-      if (progress < 1) rafId = requestAnimationFrame(draw);
-    };
-
-    rafId = requestAnimationFrame(draw);
-    return () => {
-      cancelled = true;
-      if (rafId !== null) cancelAnimationFrame(rafId);
-    };
-  }, [history]);
-
-  return (
-    <div className="history-chart-shell">
-      <div className="history-chart-legend" aria-hidden="true">
-        <span><i style={{ background: "var(--accent-hi)" }} /> CL lift coefficient</span>
-        <span><i style={{ background: "var(--accent-warn)" }} /> CD drag coefficient</span>
-      </div>
-      <canvas ref={ref} className="history-chart" width={760} height={240} role="img" aria-label="CL and CD telemetry over time" />
-    </div>
-  );
-}
-
-/* ── 29.3 — Parametric Sweep Section ── */
-function SweepSection({ sweepState, onStartSweep, onCancelSweep }) {
-  const [param, setParam] = useState("aoa");
-  const [min, setMin] = useState(-10);
-  const [max, setMax] = useState(20);
-  const [steps, setSteps] = useState(31);
-
-  const defaults = { aoa: { min: -10, max: 20, steps: 31 }, velocity: { min: 0.02, max: 0.18, steps: 17 }, viscosity: { min: 0.005, max: 0.1, steps: 20 } };
-
-  const handleParamChange = (p) => {
-    setParam(p);
-    setMin(defaults[p].min); setMax(defaults[p].max); setSteps(defaults[p].steps);
-  };
-
-  const progress = sweepState ? sweepState.current / sweepState.steps : 0;
-
-  return (
-    <section className="a-panel analysis-sweep-panel">
-      <div className="a-panel__header">
-        <div>
-          <div className="a-panel__title">Parametric Sweep</div>
-          <div className="a-panel__sub">Automated parameter variation &rarr; CSV export</div>
-        </div>
-      </div>
-      <div className="sweep-controls">
-        <div className="sweep-row">
-          <label className="sweep-label">Parameter
-            <select className="sweep-select" value={param} onChange={e => handleParamChange(e.target.value)} disabled={!!sweepState}>
-              <option value="aoa">Angle of Attack</option>
-              <option value="velocity">Inlet Velocity</option>
-              <option value="viscosity">Viscosity</option>
-            </select>
-          </label>
-        </div>
-        <div className="sweep-row sweep-row--triple">
-          <label className="sweep-label">Min
-            <input className="sweep-input" type="number" value={min} onChange={e => setMin(+e.target.value)} disabled={!!sweepState} step={param === "aoa" ? 1 : 0.01} />
-          </label>
-          <label className="sweep-label">Max
-            <input className="sweep-input" type="number" value={max} onChange={e => setMax(+e.target.value)} disabled={!!sweepState} step={param === "aoa" ? 1 : 0.01} />
-          </label>
-          <label className="sweep-label">Steps
-            <input className="sweep-input" type="number" value={steps} onChange={e => setSteps(Math.max(2, +e.target.value))} disabled={!!sweepState} min={2} max={100} />
-          </label>
-        </div>
-        {sweepState ? (
-          <div className="sweep-progress">
-            <div className="sweep-progress-bar">
-              <div className="sweep-progress-fill" style={{ width: `${progress * 100}%` }} />
-            </div>
-            <div className="sweep-progress-text">
-              <span>Step {sweepState.current}/{sweepState.steps}</span>
-              <button className="btn-ghost" onClick={onCancelSweep}>Cancel</button>
-            </div>
-          </div>
-        ) : (
-          <button className="btn-primary" onClick={() => onStartSweep(param, min, max, steps)}>Run Sweep</button>
-        )}
-      </div>
+  return <article className="analysis-report" aria-labelledby="analysis-title">
+    <header className="analysis-report-header"><div><h2 id="analysis-title" ref={heading} tabIndex={-1}>Analysis</h2><p>Engineering report for the 2D LBM workspace.</p></div><div className="report-header-actions"><span className="report-status">{state}</span><button type="button" className="report-button" onClick={onReturn}>Open simulation</button></div></header>
+    <nav className="report-navigation" aria-label="Analysis sections">{[['metrics', 'Metrics'], ['interpretation', 'Interpretation'], ['history', 'History'], ['sweep', 'Sweep'], ['sessions', 'Sessions'], ['exports', 'Exports']].map(([id, label]) => <a key={id} href={`#analysis-${id}`}>{label}</a>)}</nav>
+    <section className="report-section" id="analysis-metrics" aria-labelledby="analysis-metrics-heading">
+      <div className="report-section-heading"><div><h3 id="analysis-metrics-heading">Aerodynamic indicators</h3><p>{source.source}{source.available && validTime(source.at) ? ` · ${formatTime(source.at)}` : ''}{source.stale ? ' · settings changed since this sample' : ''}</p></div>{unavailable && <span className="report-status">Unavailable values</span>}</div>
+      {!source.available && <p className="report-notice">No measured sample yet. Start the simulation and wait for its first telemetry update. Initial zeros are not treated as measurements.</p>}
+      {sample?.fluidCells === 0 && <p className="report-notice">No fluid cells with finite speed were available at this sample. CL, CD and maximum speed are unavailable; Re* only describes the configured estimate.</p>}
+      {source.stale && <p className="report-notice">These values belong to the previous setup. A new live sample will replace them after the simulation runs.</p>}
+      <dl className="report-metrics">{metrics.map(metric => <AnalysisMetric key={metric.field} {...metric} rows={visualRows} />)}</dl>
+      <p className="report-help">CL/CD are bulk-velocity proxies, not integrated aerodynamic forces. L/D is unavailable for a missing, nonfinite or nonpositive CD. Recorded trends retain valid zeros and gaps.</p>
     </section>
-  );
-}
-
-function loadSavedSessions() {
-  try {
-    const raw = localStorage.getItem("aerolab-sessions");
-    return raw ? JSON.parse(raw) : [];
-  } catch (_) { return []; }
-}
-
-export default function AnalysisPanel({ hSnap, exportCSV, exportSession, stats, ldRatio, regime, onSaveSession, onLoadSession, onDeleteSession, sweepState, onStartSweep, onCancelSweep, recording, onStartRecording, onStopRecording, recordFrameCount }) {
-  const [savedSessions, setSavedSessions] = useState(() => loadSavedSessions());
-  const refreshSessions = useCallback(() => setSavedSessions(loadSavedSessions()), []);
-
-  const recentRows = hSnap.slice(-80).reverse();
-  const sessionStart = hSnap[0]?.t ? new Date(hSnap[0].t).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }) : "pending";
-  const history = useMemo(() => ({
-    cl: hSnap.map(sample => sample.cl),
-    cd: hSnap.map(sample => sample.cd),
-    ld: hSnap.map(sample => sample.cd > 0 ? sample.cl / sample.cd : null),
-    re: hSnap.map(sample => sample.re),
-  }), [hSnap]);
-  const kpis = [
-    { label: "CL", value: stats.cl || "-", note: "Lift coefficient", tone: "var(--accent-hi)", color: CHART_COLORS.cl, values: history.cl },
-    { label: "CD", value: stats.cd || "-", note: "Drag coefficient", tone: "var(--accent-warn)", color: CHART_COLORS.cd, values: history.cd },
-    { label: "L/D", value: ldRatio, note: "Aero efficiency", tone: "var(--accent-flow)", color: CHART_COLORS.ld, values: history.ld },
-    { label: "Re", value: formatRe(stats.re), note: "Reynolds number", tone: "var(--accent-mid)", color: CHART_COLORS.re, values: history.re },
-  ];
-
-  return (
-    <div className="analysis-view">
-      <div className="analysis-kpi-grid">
-        {kpis.map(kpi => <AnalysisKpiCard key={kpi.label} {...kpi} />)}
-      </div>
-
-      <div className="analysis-main-grid">
-        <section className="a-panel analysis-chart-panel">
-          <div className="a-panel__header">
-            <div>
-              <div className="a-panel__title">CL/CD Over Time</div>
-              <div className="a-panel__sub">Dual-axis aerodynamic telemetry trace</div>
-            </div>
-          </div>
-          <HistoryChart history={hSnap} />
-        </section>
-
-        <aside className="a-panel analysis-history-panel">
-          <div className="a-panel__header">
-            <div>
-              <div className="a-panel__title">History Table</div>
-              <div className="a-panel__sub">Latest {recentRows.length} recorded samples</div>
-            </div>
-          </div>
-          <div className="history-table">
-            <div className="history-row is-head"><span>Time</span><span>CL</span><span>CD</span><span>Re</span></div>
-            <div className="history-table__body">
-              {recentRows.length ? recentRows.map(row => (
-                <div className={`history-row ${row.cl > 0 ? "is-positive" : ""}`} key={row.t}>
-                  <span>{new Date(row.t).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit" })}</span>
-                  <span>{row.cl}</span>
-                  <span>{row.cd}</span>
-                  <span>{row.re}</span>
-                </div>
-              )) : <div className="history-empty">No samples yet. Run the simulation.</div>}
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      {/* 25.2 — Session gallery */}
-      <section className="a-panel analysis-sessions-panel">
-        <div className="a-panel__header">
-          <div>
-            <div className="a-panel__title">Sessions</div>
-            <div className="a-panel__sub">Save & restore simulation states</div>
-          </div>
-          <button className="btn-ghost" onClick={() => {
-            const name = prompt("Session name:", `${stats.cl > 0 ? `CL${stats.cl}` : "session"} ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
-            if (name != null) { onSaveSession?.(name); refreshSessions(); }
-          }}>Save Current</button>
-        </div>
-        {savedSessions.length > 0 ? (
-          <div className="session-gallery">
-            {savedSessions.map((s, i) => (
-              <div className="session-card" key={s.timestamp || i}>
-                <div className="session-card__info">
-                  <span className="session-card__name">{s.name}</span>
-                  <span className="session-card__meta">
-                    {s.preset && <span className="session-card__preset">{s.preset}</span>}
-                    {s.stats && <span>CL {s.stats.cl} · CD {s.stats.cd}</span>}
-                    <span>{new Date(s.timestamp).toLocaleDateString()} {new Date(s.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                  </span>
-                </div>
-                <div className="session-card__actions">
-                  <button className="btn-ghost" onClick={() => { onLoadSession?.(s); }}>Load</button>
-                  <button className="btn-ghost session-card__delete" onClick={() => { onDeleteSession?.(i); refreshSessions(); }}>&#10005;</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="history-empty">No saved sessions. Use "Save Current" to store a snapshot.</div>
-        )}
-      </section>
-
-      {/* 29.3 — Parametric Sweep */}
-      <SweepSection sweepState={sweepState} onStartSweep={onStartSweep} onCancelSweep={onCancelSweep} />
-
-      <div className="analysis-bottom-row">
-        <div className="analysis-session-meta">
-          <div className="analysis-export-buttons">
-            <button className="btn-primary" onClick={exportCSV} disabled={!hSnap.length}>Export CSV</button>
-            <button className="btn-primary" onClick={exportSession} disabled={!hSnap.length}>Export Session</button>
-            {recording
-              ? <button className="btn-primary btn-record is-recording" onClick={onStopRecording}>Stop Rec ({recordFrameCount})</button>
-              : <button className="btn-primary btn-record" onClick={onStartRecording}>Record</button>
-            }
-          </div>
-          <div>
-            <span>Session started at {sessionStart}</span>
-            <span>{hSnap.length} samples recorded</span>
-          </div>
-        </div>
-        <div className="analysis-regime-card" style={{ "--tone": regime.col }}>
-          <div className="analysis-regime-card__key">Flow Regime</div>
-          <div className="analysis-regime-card__label">{regime.label}</div>
-          <div className="analysis-regime-card__note">{regimeDescription(regime.label)}</div>
-        </div>
-      </div>
-    </div>
-  );
+    <section className="report-section" id="analysis-interpretation" aria-labelledby="analysis-interpretation-heading">
+      <div className="report-section-heading"><div><h3 id="analysis-interpretation-heading">Flow &amp; convergence</h3><p>Interpretation of the available sample, with its limits.</p></div></div>
+      <dl className="report-interpretation"><div><dt>Maximum speed ratio</dt><dd>{formatMetric(maxRatio, 3)}</dd><p>max |u| / inlet speed. Dimensionless, not m/s. A live zero-inlet fallback is unavailable; old records lack inlet provenance.</p></div><div><dt>Velocity-change Δu</dt><dd>{formatMetric(delta, 6)}</dd><p>{convergenceState(convergenceDelta, convergenceReady)}. Cells/step; not an accuracy certificate.</p></div><div><dt>Legacy Re* band</dt><dd>{regimeBand(values?.re)}</dd><p>Thresholds 2300/4000. Not a validated transition or turbulence diagnosis.</p></div></dl>
+      <div className="report-setup"><h4>Current setup</h4><dl><div><dt>Profile</dt><dd>{setup.preset || 'Custom'}</dd></div><div><dt>Inlet</dt><dd>{formatMetric(setup.vel)} cells/step</dd></div><div><dt>Viscosity</dt><dd>{formatMetric(setup.nu)} cells²/step</dd></div><div><dt>Angle</dt><dd>{formatMetric(setup.aoa)}°</dd></div></dl></div>
+      <p className="report-help">History can span multiple setups. Restored records are not a fresh solver state. The 3D view is a qualitative extrusion/potential-flow illustration, not validated full 3D CFD.</p>
+    </section>
+    <section className="report-section" id="analysis-history" aria-labelledby="analysis-history-heading">
+      <div className="report-section-heading"><div><h3 id="analysis-history-heading">Recorded history</h3><p>{history.length} retained records · {history.length < 2 ? 'Insufficient data for a trend' : 'Independent CL/CD scales, each including zero'}</p></div><span className="report-pan-hint">Narrow screen: scroll figures and tables horizontally.</span></div>
+      <div className="report-figures"><AnalysisChart rows={history} field="cl" title="CL · lift proxy" /><AnalysisChart rows={history} field="cd" title="CD · drag proxy" /></div>
+      <details className="report-details"><summary>Recorded samples · {history.length} rows</summary>
+        <div className="report-table-scroll" role="region" tabIndex={0} onKeyDown={event => { if (event.code === 'Space') event.stopPropagation(); }} aria-label="Recorded samples; scroll horizontally on narrow screens"><table className="report-table"><caption>Newest first. Timestamps are wall-clock recording times. Missing or invalid values remain unavailable; original data are retained.</caption><thead><tr><th scope="col">Record</th><th scope="col">Recorded time</th><th scope="col">CL proxy</th><th scope="col">CD proxy</th><th scope="col">L/D proxy</th><th scope="col">Re*</th><th scope="col">Max speed ratio</th></tr></thead><tbody>{recent.map(({ row, index }) => <tr key={index}><th scope="row">{index + 1}</th><td>{formatTime(row?.t)}</td><td>{formatMetric(row?.cl)}</td><td>{formatMetric(row?.cd)}</td><td>{formatRatio(proxyRatio(row))}</td><td>{formatMetric(row?.re)}</td><td>{formatMetric(row?.maxV, 3)}</td></tr>)}</tbody></table></div>
+        {history.length > 0 && <div className="report-pagination"><button type="button" className="report-button" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Newer records</button><span>Page {currentPage + 1} of {pages}</span><button type="button" className="report-button" disabled={currentPage === pages - 1} onClick={() => setPage(currentPage + 1)}>Older records</button></div>}
+      </details>
+    </section>
+    <AnalysisSweep form={form} setForm={setForm} active={sweepState} report={sweepReport} reference={reference} setReference={setReference} onStart={onStartSweep} onCancel={onCancelSweep} />
+    <SessionGallery name={sessionName} setName={setSessionName} onSave={onSaveSession} onLoad={onLoadSession} onDelete={onDeleteSession} />
+    <section className="report-section" id="analysis-exports" aria-labelledby="analysis-exports-heading">
+      <div className="report-section-heading"><div><h3 id="analysis-exports-heading">Export &amp; documentation</h3><p>Keep the underlying records and setup, with their original formats.</p></div></div>
+      <div className="report-inline-actions"><button type="button" className="report-button" onClick={onPublish}>Share &amp; Export</button><button type="button" className="report-button" onClick={onFullscreen}>Fullscreen</button></div>
+      {exportTools}
+      <h4 style={{ marginTop: 24 }}>Recorded Frames</h4>
+      <RecordedFrames recording={recording} count={recordFrameCount} state={recordingExport} onStart={onStartRecording} onStop={onStopRecording} />
+      <details className="report-details"><summary>Method, units &amp; export contract</summary><p>AeroTunnel is an educational two-dimensional D2Q9 LBM simulation in lattice units. CL = abs(mean(uy) × 2 × (1 + .06 × AoA)); CD = mean(abs(ux − inlet)) × .5 + .008. These are not surface-force coefficients. Re* = inlet × sx / (ν + 10⁻⁶) × 10.</p><p>CSV columns remain timestamp, cl, cd, re, maxV. The historical maxV name denotes a speed ratio. JSON uses the existing version-2 session format and preserves original history. Sweep CSV and recording ZIP formats remain compatible. Nonfinite fields are shown as gaps or unavailable values, without rewriting the source records.</p></details>
+    </section>
+  </article>;
 }

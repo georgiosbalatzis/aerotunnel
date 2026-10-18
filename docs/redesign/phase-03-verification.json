@@ -1,0 +1,432 @@
+{
+  "preferenceCases": [
+    {
+      "name": "fresh OS light",
+      "initialAndReload": "light",
+      "startupWrites": []
+    },
+    {
+      "name": "fresh OS dark",
+      "initialAndReload": "dark",
+      "startupWrites": []
+    },
+    {
+      "name": "saved light beats OS dark",
+      "initialAndReload": "light",
+      "startupWrites": []
+    },
+    {
+      "name": "saved dark beats OS light",
+      "initialAndReload": "dark",
+      "startupWrites": []
+    },
+    {
+      "name": "invalid value follows OS",
+      "initialAndReload": "light",
+      "startupWrites": []
+    },
+    {
+      "name": "sibling auto follows OS",
+      "initialAndReload": "light",
+      "startupWrites": []
+    },
+    {
+      "name": "obsolete automatic dark is ignored",
+      "initialAndReload": "light",
+      "startupWrites": []
+    },
+    {
+      "name": "canonical wins over obsolete key",
+      "initialAndReload": "light",
+      "startupWrites": []
+    },
+    {
+      "name": "canonical session fallback migrates",
+      "initialAndReload": "light",
+      "startupWrites": [
+        {
+          "scope": "local",
+          "value": "light"
+        }
+      ]
+    },
+    {
+      "name": "blocked local read",
+      "toggleWorks": true,
+      "manualChoiceSurvivesOSChange": true,
+      "sessionReload": false
+    },
+    {
+      "name": "blocked local write",
+      "toggleWorks": true,
+      "manualChoiceSurvivesOSChange": true,
+      "sessionReload": true
+    },
+    {
+      "name": "both stores inaccessible",
+      "toggleWorks": true,
+      "manualChoiceSurvivesOSChange": true,
+      "sessionReload": false
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/redesign/screenshots/phase-03-light-375.png",
+      "button": {
+        "x": 103.765625,
+        "y": 12,
+        "width": 44,
+        "height": 44,
+        "top": 12,
+        "right": 147.765625,
+        "bottom": 56,
+        "left": 103.765625
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 68,
+        "width": 343,
+        "height": 42,
+        "top": 68,
+        "right": 359,
+        "bottom": 110,
+        "left": 16
+      },
+      "theme": "light",
+      "focus": "2px",
+      "focusColor": "rgb(168, 46, 28)",
+      "focusVisible": true,
+      "pressed": "false",
+      "panel": "rgb(233, 227, 214)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)"
+    },
+    {
+      "path": "docs/redesign/screenshots/phase-03-dark-375.png",
+      "button": {
+        "x": 103.765625,
+        "y": 12,
+        "width": 44,
+        "height": 44,
+        "top": 12,
+        "right": 147.765625,
+        "bottom": 56,
+        "left": 103.765625
+      },
+      "modeBar": {
+        "x": 16,
+        "y": 68,
+        "width": 343,
+        "height": 42,
+        "top": 68,
+        "right": 359,
+        "bottom": 110,
+        "left": 16
+      },
+      "theme": "dark",
+      "focus": "2px",
+      "focusColor": "rgb(255, 119, 95)",
+      "focusVisible": true,
+      "pressed": "true",
+      "panel": "rgb(36, 35, 33)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)"
+    },
+    {
+      "path": "docs/redesign/screenshots/phase-03-light-900.png",
+      "button": {
+        "x": 147.5625,
+        "y": 20,
+        "width": 44,
+        "height": 44,
+        "top": 20,
+        "right": 191.5625,
+        "bottom": 64,
+        "left": 147.5625
+      },
+      "modeBar": {
+        "x": 75.3359375,
+        "y": 80,
+        "width": 749.328125,
+        "height": 40,
+        "top": 80,
+        "right": 824.6640625,
+        "bottom": 120,
+        "left": 75.3359375
+      },
+      "theme": "light",
+      "focus": "2px",
+      "focusColor": "rgb(168, 46, 28)",
+      "focusVisible": true,
+      "pressed": "false",
+      "panel": "rgb(233, 227, 214)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)"
+    },
+    {
+      "path": "docs/redesign/screenshots/phase-03-dark-900.png",
+      "button": {
+        "x": 147.5625,
+        "y": 20,
+        "width": 44,
+        "height": 44,
+        "top": 20,
+        "right": 191.5625,
+        "bottom": 64,
+        "left": 147.5625
+      },
+      "modeBar": {
+        "x": 75.3359375,
+        "y": 80,
+        "width": 749.328125,
+        "height": 40,
+        "top": 80,
+        "right": 824.6640625,
+        "bottom": 120,
+        "left": 75.3359375
+      },
+      "theme": "dark",
+      "focus": "2px",
+      "focusColor": "rgb(255, 119, 95)",
+      "focusVisible": true,
+      "pressed": "true",
+      "panel": "rgb(36, 35, 33)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)"
+    },
+    {
+      "path": "docs/redesign/screenshots/phase-03-light-1440.png",
+      "button": {
+        "x": 147.5625,
+        "y": 20,
+        "width": 44,
+        "height": 44,
+        "top": 20,
+        "right": 191.5625,
+        "bottom": 64,
+        "left": 147.5625
+      },
+      "modeBar": {
+        "x": 345.3359375,
+        "y": 16,
+        "width": 749.328125,
+        "height": 40,
+        "top": 16,
+        "right": 1094.6640625,
+        "bottom": 56,
+        "left": 345.3359375
+      },
+      "theme": "light",
+      "focus": "2px",
+      "focusColor": "rgb(168, 46, 28)",
+      "focusVisible": true,
+      "pressed": "false",
+      "panel": "rgb(233, 227, 214)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)"
+    },
+    {
+      "path": "docs/redesign/screenshots/phase-03-dark-1440.png",
+      "button": {
+        "x": 147.5625,
+        "y": 20,
+        "width": 44,
+        "height": 44,
+        "top": 20,
+        "right": 191.5625,
+        "bottom": 64,
+        "left": 147.5625
+      },
+      "modeBar": {
+        "x": 345.3359375,
+        "y": 16,
+        "width": 749.328125,
+        "height": 40,
+        "top": 16,
+        "right": 1094.6640625,
+        "bottom": 56,
+        "left": 345.3359375
+      },
+      "theme": "dark",
+      "focus": "2px",
+      "focusColor": "rgb(255, 119, 95)",
+      "focusVisible": true,
+      "pressed": "true",
+      "panel": "rgb(36, 35, 33)",
+      "legend": "linear-gradient(to top, rgb(0, 31, 255) 0%, rgb(0, 212, 255) 32%, rgb(34, 255, 136) 50%, rgb(238, 255, 34) 68%, rgb(255, 102, 0) 84%, rgb(255, 0, 34) 100%)"
+    },
+    {
+      "path": "docs/redesign/screenshots/phase-03-light-analysis.png",
+      "theme": "light",
+      "view": "analysis"
+    },
+    {
+      "path": "docs/redesign/screenshots/phase-03-dark-analysis.png",
+      "theme": "dark",
+      "view": "analysis"
+    }
+  ],
+  "pageErrors": [],
+  "osChanges": {
+    "followsWithoutSelection": true,
+    "explicitSelectionWins": true,
+    "reloadPersists": true
+  },
+  "sameOriginSync": true,
+  "beforeReact_light": {
+    "theme": "light",
+    "background": "rgb(242, 238, 228)",
+    "colorScheme": "light",
+    "reactChildren": 0,
+    "meta": "#f2eee4"
+  },
+  "beforeReact_dark": {
+    "theme": "dark",
+    "background": "rgb(27, 26, 25)",
+    "colorScheme": "dark",
+    "reactChildren": 0,
+    "meta": "#1b1a19"
+  },
+  "pausedContinuity": {
+    "sameSolver": true,
+    "sameCanvas": true,
+    "samePool": true,
+    "sameNumericalArrays": true,
+    "sameParameters": true,
+    "sameNavigation": true
+  },
+  "runningContinuity": {
+    "sameSolver": true,
+    "sameCanvas": true,
+    "sameNavigation": true,
+    "historyLength": 2
+  },
+  "threeDContinuity": {
+    "sameCanvases": true,
+    "canvasCount": 2,
+    "sameSolver": true,
+    "contextLost": false
+  },
+  "staticChecks": {
+    "lintBaseline": 19,
+    "lintUpdated": 19,
+    "identicalDiagnostics": true,
+    "scientificTokensUnchanged": true,
+    "CFDLabUnchanged": true,
+    "IconRailUnchanged": true,
+    "unrelatedPriorChangesPreserved": true,
+    "unitTestsPassed": 8
+  },
+  "detector": [
+    {
+      "antipattern": "side-tab",
+      "name": "Side-tab accent border",
+      "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+      "severity": "warning",
+      "category": "slop",
+      "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+      "line": 128,
+      "snippet": "border-left: 3px solid var(--accent-crit)"
+    },
+    {
+      "antipattern": "side-tab",
+      "name": "Side-tab accent border",
+      "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+      "severity": "warning",
+      "category": "slop",
+      "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+      "line": 565,
+      "snippet": "border-left: 4px solid var(--tone, var(--accent-flow))"
+    },
+    {
+      "antipattern": "side-tab",
+      "name": "Side-tab accent border",
+      "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+      "severity": "warning",
+      "category": "slop",
+      "file": "/Users/giorgos/WebstormProjects/aerotunnel/src/cfdlab.css",
+      "line": 653,
+      "snippet": "border-left: 3px solid var(--accent-flow)"
+    }
+  ],
+  "analysisAndNotices": {
+    "light": {
+      "panel": {
+        "background": "rgb(233, 227, 214)",
+        "color": "rgb(32, 37, 31)"
+      },
+      "input": {
+        "background": "rgb(242, 238, 228)",
+        "color": "rgb(32, 37, 31)"
+      },
+      "toast": {
+        "background": "rgb(233, 227, 214)",
+        "color": "rgb(32, 37, 31)"
+      },
+      "legend": {
+        "background": "rgb(6, 8, 12)",
+        "color": "rgb(192, 191, 178)"
+      },
+      "swatches": [
+        "rgb(34, 255, 136)",
+        "rgb(255, 102, 0)"
+      ]
+    },
+    "dark": {
+      "panel": {
+        "background": "rgb(36, 35, 33)",
+        "color": "rgb(238, 232, 219)"
+      },
+      "input": {
+        "background": "rgb(27, 26, 25)",
+        "color": "rgb(238, 232, 219)"
+      },
+      "toast": {
+        "background": "rgb(36, 35, 33)",
+        "color": "rgb(238, 232, 219)"
+      },
+      "legend": {
+        "background": "rgb(6, 8, 12)",
+        "color": "rgb(192, 191, 178)"
+      },
+      "swatches": [
+        "rgb(34, 255, 136)",
+        "rgb(255, 102, 0)"
+      ]
+    }
+  },
+  "savedSessionPreserved": true,
+  "keyboard": [
+    {
+      "key": "Enter",
+      "before": {
+        "theme": "dark",
+        "run": "Hold simulation",
+        "count": 0
+      },
+      "after": {
+        "theme": "light",
+        "run": "Hold simulation",
+        "count": 1
+      }
+    },
+    {
+      "key": "Space",
+      "before": {
+        "theme": "light",
+        "run": "Hold simulation",
+        "count": 1
+      },
+      "after": {
+        "theme": "dark",
+        "run": "Hold simulation",
+        "count": 2
+      }
+    }
+  ],
+  "contrast": {
+    "light": {
+      "primarySurface": 12.203169619119823,
+      "focusSurface": 5.345222766156386
+    },
+    "dark": {
+      "primarySurface": 12.861619933694348,
+      "focusSurface": 6.023666046905307
+    }
+  }
+}

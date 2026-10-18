@@ -1,0 +1,4724 @@
+{
+  "phase": 6,
+  "date": "2026-10-16",
+  "scope": "Phase 06 only; completed Phase 05 uncommitted workspace preserved",
+  "checks": {
+    "build": {
+      "baseline": "pass",
+      "final": "pass",
+      "modules": 47,
+      "warnings": 0,
+      "jsKb": 309.17,
+      "jsGzipKb": 100.23,
+      "cssKb": 75.53,
+      "cssGzipKb": 16.61
+    },
+    "lint": {
+      "baselineErrors": 18,
+      "finalErrors": 17,
+      "newNormalizedDiagnostics": [],
+      "removedNormalizedDiagnostics": [
+        [
+          "src/components/ControlPanel.jsx",
+          "no-unused-vars",
+          "'_' is defined but never used.",
+          1
+        ]
+      ]
+    },
+    "lintFiles": {
+      "src/CFDLab.jsx": 12,
+      "src/components/AnalysisPanel.jsx": 1,
+      "src/components/View3D.jsx": 1,
+      "src/engine/exporters.js": 1,
+      "src/engine/solver-wasm-pkg/aerolab_lbm.js": 2
+    },
+    "lintWarnings": 0,
+    "unitTests": {
+      "passed": 15,
+      "failed": 0,
+      "controlTests": 7,
+      "themeTests": 8,
+      "command": "node --test tests/*.test.mjs"
+    },
+    "diffCheck": "pass",
+    "finalIndependentReview": "no remaining actionable findings after CAD near-duplicate fix",
+    "designDetector": {
+      "runs": 1,
+      "files": 8,
+      "findings": 0
+    }
+  },
+  "sourceProtection": {
+    "changedExistingSnapshotFiles": [
+      "src/CFDLab.jsx",
+      "src/components/CommandBar.jsx",
+      "src/components/IconRail.jsx",
+      "src/components/iconRailConfig.js",
+      "src/components/ControlPanel.jsx"
+    ],
+    "protectedSections": {
+      "renderLoop": true,
+      "resetSolver": true,
+      "snap": true,
+      "generateF1Tuned": true
+    },
+    "unchangedSnapshotFiles": 234,
+    "missingSnapshotFiles": []
+  },
+  "browser": {
+    "engine": "local production Chromium via dedicated CDP and already-installed Playwright",
+    "newDependencies": false,
+    "completeControlCases": {
+      "cases": [
+        {
+          "width": 375,
+          "theme": "light",
+          "presets": [
+            "F1 Car",
+            "Front Wing",
+            "Rear Wing",
+            "Airfoil",
+            "Cylinder",
+            "Wedge",
+            "Bluff"
+          ],
+          "nacaPresets": [
+            "NACA 0012",
+            "NACA 2412",
+            "NACA 4412",
+            "NACA 2324",
+            "NACA 6409",
+            "NACA 0006"
+          ],
+          "f1Configs": [
+            "Low Drag",
+            "High Downforce",
+            "Balanced",
+            "Rain Setup"
+          ],
+          "ranges": [
+            {
+              "label": "Max Camber (M)",
+              "min": 0,
+              "max": 9,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Camber Position (P)",
+              "min": 10,
+              "max": 90,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Thickness (T)",
+              "min": 1,
+              "max": 40,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Front Wing Angle",
+              "min": 0,
+              "max": 30,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Rear Wing Angle",
+              "min": 5,
+              "max": 45,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Body Height",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Nose Length",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position X",
+              "min": 10,
+              "max": 198,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position Y",
+              "min": 4,
+              "max": 100,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale X",
+              "min": 10,
+              "max": 104,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale Y",
+              "min": 5,
+              "max": 72.8,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Angle of attack",
+              "min": -25,
+              "max": 35,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simplification",
+              "min": 0,
+              "max": 20,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Inlet velocity",
+              "min": 0.02,
+              "max": 0.18,
+              "step": 0.005,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Viscosity",
+              "min": 0.005,
+              "max": 0.1,
+              "step": 0.001,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Turbulence factor",
+              "min": 0,
+              "max": 3,
+              "step": 0.1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Particles",
+              "min": 0,
+              "max": 900,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Trail opacity",
+              "min": 0,
+              "max": 1,
+              "step": 0.05,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simulation steps per frame",
+              "min": 1,
+              "max": 8,
+              "step": 1,
+              "nativeEndpoints": true
+            }
+          ],
+          "imports": [
+            {
+              "file": "profile.svg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.svg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "session.json",
+              "via": "browse",
+              "legacyAppMarker": true
+            },
+            {
+              "file": "session.json",
+              "via": "drop",
+              "legacyAppMarker": true
+            }
+          ],
+          "editorContinuity": {
+            "samePanel": true,
+            "sameSketch": true,
+            "sameStage": true,
+            "sameSolver": true,
+            "samePoly": true,
+            "sameRho": true
+          },
+          "numericValidation": true,
+          "autoRunToggle": true,
+          "disclosureSpaceDoesNotRun": true,
+          "tabsKeyboard": true,
+          "failedImportsPreserveGeometry": true,
+          "sketch": {
+            "applied": true,
+            "bitmapRetained": true,
+            "clearKeepsGeometry": true,
+            "shortStrokeKeepsGeometry": true
+          },
+          "resets": {
+            "geometryUndoRedo": true,
+            "flowRetained": true,
+            "solverOnlyRestart": true
+          },
+          "sevenModesAndLiveFlow": true,
+          "rootJsonDrop": true
+        },
+        {
+          "width": 375,
+          "theme": "dark",
+          "presets": [
+            "F1 Car",
+            "Front Wing",
+            "Rear Wing",
+            "Airfoil",
+            "Cylinder",
+            "Wedge",
+            "Bluff"
+          ],
+          "nacaPresets": [
+            "NACA 0012",
+            "NACA 2412",
+            "NACA 4412",
+            "NACA 2324",
+            "NACA 6409",
+            "NACA 0006"
+          ],
+          "f1Configs": [
+            "Low Drag",
+            "High Downforce",
+            "Balanced",
+            "Rain Setup"
+          ],
+          "ranges": [
+            {
+              "label": "Max Camber (M)",
+              "min": 0,
+              "max": 9,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Camber Position (P)",
+              "min": 10,
+              "max": 90,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Thickness (T)",
+              "min": 1,
+              "max": 40,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Front Wing Angle",
+              "min": 0,
+              "max": 30,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Rear Wing Angle",
+              "min": 5,
+              "max": 45,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Body Height",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Nose Length",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position X",
+              "min": 10,
+              "max": 198,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position Y",
+              "min": 4,
+              "max": 100,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale X",
+              "min": 10,
+              "max": 104,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale Y",
+              "min": 5,
+              "max": 72.8,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Angle of attack",
+              "min": -25,
+              "max": 35,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simplification",
+              "min": 0,
+              "max": 20,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Inlet velocity",
+              "min": 0.02,
+              "max": 0.18,
+              "step": 0.005,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Viscosity",
+              "min": 0.005,
+              "max": 0.1,
+              "step": 0.001,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Turbulence factor",
+              "min": 0,
+              "max": 3,
+              "step": 0.1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Particles",
+              "min": 0,
+              "max": 900,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Trail opacity",
+              "min": 0,
+              "max": 1,
+              "step": 0.05,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simulation steps per frame",
+              "min": 1,
+              "max": 8,
+              "step": 1,
+              "nativeEndpoints": true
+            }
+          ],
+          "imports": [
+            {
+              "file": "profile.svg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.svg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "session.json",
+              "via": "browse",
+              "legacyAppMarker": true
+            },
+            {
+              "file": "session.json",
+              "via": "drop",
+              "legacyAppMarker": true
+            }
+          ],
+          "editorContinuity": {
+            "samePanel": true,
+            "sameSketch": true,
+            "sameStage": true,
+            "sameSolver": true,
+            "samePoly": true,
+            "sameRho": true
+          },
+          "numericValidation": true,
+          "autoRunToggle": true,
+          "disclosureSpaceDoesNotRun": true,
+          "tabsKeyboard": true,
+          "failedImportsPreserveGeometry": true,
+          "sketch": {
+            "applied": true,
+            "bitmapRetained": true,
+            "clearKeepsGeometry": true,
+            "shortStrokeKeepsGeometry": true
+          },
+          "resets": {
+            "geometryUndoRedo": true,
+            "flowRetained": true,
+            "solverOnlyRestart": true
+          },
+          "sevenModesAndLiveFlow": true,
+          "rootJsonDrop": true
+        },
+        {
+          "width": 1440,
+          "theme": "light",
+          "presets": [
+            "F1 Car",
+            "Front Wing",
+            "Rear Wing",
+            "Airfoil",
+            "Cylinder",
+            "Wedge",
+            "Bluff"
+          ],
+          "nacaPresets": [
+            "NACA 0012",
+            "NACA 2412",
+            "NACA 4412",
+            "NACA 2324",
+            "NACA 6409",
+            "NACA 0006"
+          ],
+          "f1Configs": [
+            "Low Drag",
+            "High Downforce",
+            "Balanced",
+            "Rain Setup"
+          ],
+          "ranges": [
+            {
+              "label": "Max Camber (M)",
+              "min": 0,
+              "max": 9,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Camber Position (P)",
+              "min": 10,
+              "max": 90,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Thickness (T)",
+              "min": 1,
+              "max": 40,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Front Wing Angle",
+              "min": 0,
+              "max": 30,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Rear Wing Angle",
+              "min": 5,
+              "max": 45,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Body Height",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Nose Length",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position X",
+              "min": 10,
+              "max": 290,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position Y",
+              "min": 4,
+              "max": 131,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale X",
+              "min": 10,
+              "max": 150,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale Y",
+              "min": 5,
+              "max": 94.5,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Angle of attack",
+              "min": -25,
+              "max": 35,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simplification",
+              "min": 0,
+              "max": 20,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Inlet velocity",
+              "min": 0.02,
+              "max": 0.18,
+              "step": 0.005,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Viscosity",
+              "min": 0.005,
+              "max": 0.1,
+              "step": 0.001,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Turbulence factor",
+              "min": 0,
+              "max": 3,
+              "step": 0.1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Particles",
+              "min": 0,
+              "max": 2000,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Trail opacity",
+              "min": 0,
+              "max": 1,
+              "step": 0.05,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simulation steps per frame",
+              "min": 1,
+              "max": 8,
+              "step": 1,
+              "nativeEndpoints": true
+            }
+          ],
+          "imports": [
+            {
+              "file": "profile.svg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.svg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "session.json",
+              "via": "browse",
+              "legacyAppMarker": true
+            },
+            {
+              "file": "session.json",
+              "via": "drop",
+              "legacyAppMarker": true
+            }
+          ],
+          "editorContinuity": {
+            "samePanel": true,
+            "sameSketch": true,
+            "sameStage": true,
+            "sameSolver": true,
+            "samePoly": true,
+            "sameRho": true
+          },
+          "numericValidation": true,
+          "autoRunToggle": true,
+          "disclosureSpaceDoesNotRun": true,
+          "tabsKeyboard": true,
+          "failedImportsPreserveGeometry": true,
+          "sketch": {
+            "applied": true,
+            "bitmapRetained": true,
+            "clearKeepsGeometry": true,
+            "shortStrokeKeepsGeometry": true
+          },
+          "resets": {
+            "geometryUndoRedo": true,
+            "flowRetained": true,
+            "solverOnlyRestart": true
+          },
+          "sevenModesAndLiveFlow": true,
+          "rootJsonDrop": true
+        },
+        {
+          "width": 1440,
+          "theme": "dark",
+          "presets": [
+            "F1 Car",
+            "Front Wing",
+            "Rear Wing",
+            "Airfoil",
+            "Cylinder",
+            "Wedge",
+            "Bluff"
+          ],
+          "nacaPresets": [
+            "NACA 0012",
+            "NACA 2412",
+            "NACA 4412",
+            "NACA 2324",
+            "NACA 6409",
+            "NACA 0006"
+          ],
+          "f1Configs": [
+            "Low Drag",
+            "High Downforce",
+            "Balanced",
+            "Rain Setup"
+          ],
+          "ranges": [
+            {
+              "label": "Max Camber (M)",
+              "min": 0,
+              "max": 9,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Camber Position (P)",
+              "min": 10,
+              "max": 90,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Thickness (T)",
+              "min": 1,
+              "max": 40,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Front Wing Angle",
+              "min": 0,
+              "max": 30,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Rear Wing Angle",
+              "min": 5,
+              "max": 45,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Body Height",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Nose Length",
+              "min": 20,
+              "max": 80,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position X",
+              "min": 10,
+              "max": 290,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Position Y",
+              "min": 4,
+              "max": 131,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale X",
+              "min": 10,
+              "max": 150,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Scale Y",
+              "min": 5,
+              "max": 94.5,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Angle of attack",
+              "min": -25,
+              "max": 35,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simplification",
+              "min": 0,
+              "max": 20,
+              "step": 1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Inlet velocity",
+              "min": 0.02,
+              "max": 0.18,
+              "step": 0.005,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Viscosity",
+              "min": 0.005,
+              "max": 0.1,
+              "step": 0.001,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Turbulence factor",
+              "min": 0,
+              "max": 3,
+              "step": 0.1,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Particles",
+              "min": 0,
+              "max": 2000,
+              "step": 10,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Trail opacity",
+              "min": 0,
+              "max": 1,
+              "step": 0.05,
+              "nativeEndpoints": true
+            },
+            {
+              "label": "Simulation steps per frame",
+              "min": 1,
+              "max": 8,
+              "step": 1,
+              "nativeEndpoints": true
+            }
+          ],
+          "imports": [
+            {
+              "file": "profile.svg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.svg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.dxf",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-ascii.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile-binary.stl",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.png",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "browse",
+              "finite": true
+            },
+            {
+              "file": "profile.jpg",
+              "via": "drop",
+              "finite": true
+            },
+            {
+              "file": "session.json",
+              "via": "browse",
+              "legacyAppMarker": true
+            },
+            {
+              "file": "session.json",
+              "via": "drop",
+              "legacyAppMarker": true
+            }
+          ],
+          "editorContinuity": {
+            "samePanel": true,
+            "sameSketch": true,
+            "sameStage": true,
+            "sameSolver": true,
+            "samePoly": true,
+            "sameRho": true
+          },
+          "numericValidation": true,
+          "autoRunToggle": true,
+          "disclosureSpaceDoesNotRun": true,
+          "tabsKeyboard": true,
+          "failedImportsPreserveGeometry": true,
+          "sketch": {
+            "applied": true,
+            "bitmapRetained": true,
+            "clearKeepsGeometry": true,
+            "shortStrokeKeepsGeometry": true
+          },
+          "resets": {
+            "geometryUndoRedo": true,
+            "flowRetained": true,
+            "solverOnlyRestart": true
+          },
+          "sevenModesAndLiveFlow": true,
+          "rootJsonDrop": true
+        }
+      ],
+      "errors": []
+    },
+    "responsiveLayouts": {
+      "layouts": [
+        {
+          "theme": "light",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 73.875,
+            "height": 44,
+            "top": 306.453125,
+            "right": 91.875,
+            "bottom": 350.453125,
+            "left": 18
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "198",
+              "step": "1",
+              "value": "72.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "100",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "104",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "72.8",
+              "step": "1",
+              "value": "46.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 44
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "72.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Position Y value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale X value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale Y value",
+              "value": "46.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 91.875,
+            "y": 306.453125,
+            "width": 43.71875,
+            "height": 44,
+            "top": 306.453125,
+            "right": 135.59375,
+            "bottom": 350.453125,
+            "left": 91.875
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 44
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 135.59375,
+            "y": 306.453125,
+            "width": 91.328125,
+            "height": 44,
+            "top": 306.453125,
+            "right": 226.921875,
+            "bottom": 350.453125,
+            "left": 135.59375
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "900",
+              "step": "10",
+              "value": "220",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "220",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 226.921875,
+            "y": 306.453125,
+            "width": 72.9375,
+            "height": 44,
+            "top": 306.453125,
+            "right": 299.859375,
+            "bottom": 350.453125,
+            "left": 226.921875
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 73.875,
+            "height": 44,
+            "top": 306.453125,
+            "right": 91.875,
+            "bottom": 350.453125,
+            "left": 18
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "198",
+              "step": "1",
+              "value": "72.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "100",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "104",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "72.8",
+              "step": "1",
+              "value": "46.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 44
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "72.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Position Y value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale X value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale Y value",
+              "value": "46.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 91.875,
+            "y": 306.453125,
+            "width": 43.71875,
+            "height": 44,
+            "top": 306.453125,
+            "right": 135.59375,
+            "bottom": 350.453125,
+            "left": 91.875
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 44
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 135.59375,
+            "y": 306.453125,
+            "width": 91.328125,
+            "height": 44,
+            "top": 306.453125,
+            "right": 226.921875,
+            "bottom": 350.453125,
+            "left": 135.59375
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "900",
+              "step": "10",
+              "value": "220",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "220",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 320,
+          "height": 640,
+          "docWidth": 320,
+          "docHeight": 640,
+          "panel": {
+            "x": 17,
+            "y": 233.453125,
+            "width": 286,
+            "height": 358.546875,
+            "top": 233.453125,
+            "right": 303,
+            "bottom": 592,
+            "left": 17
+          },
+          "body": {
+            "x": 18,
+            "y": 355.453125,
+            "width": 284,
+            "height": 174.546875,
+            "top": 355.453125,
+            "right": 302,
+            "bottom": 530,
+            "left": 18
+          },
+          "stage": {
+            "x": 18,
+            "y": 324.84375,
+            "width": 284,
+            "height": 196.265625,
+            "top": 324.84375,
+            "right": 302,
+            "bottom": 521.109375,
+            "left": 18
+          },
+          "tab": {
+            "x": 226.921875,
+            "y": 306.453125,
+            "width": 72.9375,
+            "height": 44,
+            "top": 306.453125,
+            "right": 299.859375,
+            "bottom": 350.453125,
+            "left": 226.921875
+          },
+          "tabRow": {
+            "x": 18,
+            "y": 306.453125,
+            "width": 284,
+            "height": 49,
+            "top": 306.453125,
+            "right": 302,
+            "bottom": 355.453125,
+            "left": 18
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 73.875,
+            "height": 44,
+            "top": 354.609375,
+            "right": 96.875,
+            "bottom": 398.609375,
+            "left": 23
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "198",
+              "step": "1",
+              "value": "72.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "100",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "104",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "72.8",
+              "step": "1",
+              "value": "46.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 44
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "72.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Position Y value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale X value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale Y value",
+              "value": "46.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 96.875,
+            "y": 354.609375,
+            "width": 43.71875,
+            "height": 44,
+            "top": 354.609375,
+            "right": 140.59375,
+            "bottom": 398.609375,
+            "left": 96.875
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 44
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 140.59375,
+            "y": 354.609375,
+            "width": 91.328125,
+            "height": 44,
+            "top": 354.609375,
+            "right": 231.921875,
+            "bottom": 398.609375,
+            "left": 140.59375
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "900",
+              "step": "10",
+              "value": "220",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "220",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 231.921875,
+            "y": 354.609375,
+            "width": 72.9375,
+            "height": 44,
+            "top": 354.609375,
+            "right": 304.859375,
+            "bottom": 398.609375,
+            "left": 231.921875
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 73.875,
+            "height": 44,
+            "top": 354.609375,
+            "right": 96.875,
+            "bottom": 398.609375,
+            "left": 23
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "198",
+              "step": "1",
+              "value": "72.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "100",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "104",
+              "step": "1",
+              "value": "52 cells",
+              "height": 44
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "72.8",
+              "step": "1",
+              "value": "46.8 cells",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 44
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "72.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Position Y value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale X value",
+              "value": "52",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Scale Y value",
+              "value": "46.8",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 96.875,
+            "y": 354.609375,
+            "width": 43.71875,
+            "height": 44,
+            "top": 354.609375,
+            "right": 140.59375,
+            "bottom": 398.609375,
+            "left": 96.875
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 44
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 140.59375,
+            "y": 354.609375,
+            "width": 91.328125,
+            "height": 44,
+            "top": 354.609375,
+            "right": 231.921875,
+            "bottom": 398.609375,
+            "left": 140.59375
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "900",
+              "step": "10",
+              "value": "220",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "220",
+              "font": "16px",
+              "height": 44
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 375,
+          "height": 812,
+          "docWidth": 375,
+          "docHeight": 812,
+          "panel": {
+            "x": 22,
+            "y": 281.609375,
+            "width": 331,
+            "height": 482.390625,
+            "top": 281.609375,
+            "right": 353,
+            "bottom": 764,
+            "left": 22
+          },
+          "body": {
+            "x": 23,
+            "y": 403.609375,
+            "width": 329,
+            "height": 298.390625,
+            "top": 403.609375,
+            "right": 352,
+            "bottom": 702,
+            "left": 23
+          },
+          "stage": {
+            "x": 23,
+            "y": 324.84375,
+            "width": 329,
+            "height": 368.265625,
+            "top": 324.84375,
+            "right": 352,
+            "bottom": 693.109375,
+            "left": 23
+          },
+          "tab": {
+            "x": 231.921875,
+            "y": 354.609375,
+            "width": 72.9375,
+            "height": 44,
+            "top": 354.609375,
+            "right": 304.859375,
+            "bottom": 398.609375,
+            "left": 231.921875
+          },
+          "tabRow": {
+            "x": 23,
+            "y": 354.609375,
+            "width": 329,
+            "height": 49,
+            "top": 354.609375,
+            "right": 352,
+            "bottom": 403.609375,
+            "left": 23
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 44
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "16px",
+              "height": 44
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 33,
+            "y": 325,
+            "width": 73.875,
+            "height": 44,
+            "top": 325,
+            "right": 106.875,
+            "bottom": 369,
+            "left": 33
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "290",
+              "step": "1",
+              "value": "105 cells",
+              "height": 40
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "131",
+              "step": "1",
+              "value": "67.5 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "150",
+              "step": "1",
+              "value": "75 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "94.5",
+              "step": "1",
+              "value": "60.75 cells",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 40
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "105",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Position Y value",
+              "value": "67.5",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale X value",
+              "value": "75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale Y value",
+              "value": "60.75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 106.875,
+            "y": 325,
+            "width": 43.71875,
+            "height": 44,
+            "top": 325,
+            "right": 150.59375,
+            "bottom": 369,
+            "left": 106.875
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 40
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 150.59375,
+            "y": 325,
+            "width": 91.328125,
+            "height": 44,
+            "top": 325,
+            "right": 241.921875,
+            "bottom": 369,
+            "left": 150.59375
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "2000",
+              "step": "10",
+              "value": "420",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "420",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 241.921875,
+            "y": 325,
+            "width": 72.9375,
+            "height": 44,
+            "top": 325,
+            "right": 314.859375,
+            "bottom": 369,
+            "left": 241.921875
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 33,
+            "y": 325,
+            "width": 73.875,
+            "height": 44,
+            "top": 325,
+            "right": 106.875,
+            "bottom": 369,
+            "left": 33
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "290",
+              "step": "1",
+              "value": "105 cells",
+              "height": 40
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "131",
+              "step": "1",
+              "value": "67.5 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "150",
+              "step": "1",
+              "value": "75 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "94.5",
+              "step": "1",
+              "value": "60.75 cells",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 40
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "105",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Position Y value",
+              "value": "67.5",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale X value",
+              "value": "75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale Y value",
+              "value": "60.75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 106.875,
+            "y": 325,
+            "width": 43.71875,
+            "height": 44,
+            "top": 325,
+            "right": 150.59375,
+            "bottom": 369,
+            "left": 106.875
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 40
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 150.59375,
+            "y": 325,
+            "width": 91.328125,
+            "height": 44,
+            "top": 325,
+            "right": 241.921875,
+            "bottom": 369,
+            "left": 150.59375
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "2000",
+              "step": "10",
+              "value": "420",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "420",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 768,
+          "height": 900,
+          "docWidth": 768,
+          "docHeight": 900,
+          "panel": {
+            "x": 32,
+            "y": 276,
+            "width": 290,
+            "height": 564,
+            "top": 276,
+            "right": 322,
+            "bottom": 840,
+            "left": 32
+          },
+          "body": {
+            "x": 33,
+            "y": 374,
+            "width": 288,
+            "height": 404,
+            "top": 374,
+            "right": 321,
+            "bottom": 778,
+            "left": 33
+          },
+          "stage": {
+            "x": 33,
+            "y": 322,
+            "width": 702,
+            "height": 450,
+            "top": 322,
+            "right": 735,
+            "bottom": 772,
+            "left": 33
+          },
+          "tab": {
+            "x": 241.921875,
+            "y": 325,
+            "width": 72.9375,
+            "height": 44,
+            "top": 325,
+            "right": 314.859375,
+            "bottom": 369,
+            "left": 241.921875
+          },
+          "tabRow": {
+            "x": 33,
+            "y": 325,
+            "width": 288,
+            "height": 49,
+            "top": 325,
+            "right": 321,
+            "bottom": 374,
+            "left": 33
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 49,
+            "y": 288,
+            "width": 73.875,
+            "height": 44,
+            "top": 288,
+            "right": 122.875,
+            "bottom": 332,
+            "left": 49
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "290",
+              "step": "1",
+              "value": "105 cells",
+              "height": 40
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "131",
+              "step": "1",
+              "value": "67.5 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "150",
+              "step": "1",
+              "value": "75 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "94.5",
+              "step": "1",
+              "value": "60.75 cells",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 40
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "105",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Position Y value",
+              "value": "67.5",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale X value",
+              "value": "75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale Y value",
+              "value": "60.75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 122.875,
+            "y": 288,
+            "width": 43.71875,
+            "height": 44,
+            "top": 288,
+            "right": 166.59375,
+            "bottom": 332,
+            "left": 122.875
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 40
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 166.59375,
+            "y": 288,
+            "width": 91.328125,
+            "height": 44,
+            "top": 288,
+            "right": 257.921875,
+            "bottom": 332,
+            "left": 166.59375
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "2000",
+              "step": "10",
+              "value": "420",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "420",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "light",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 253.921875,
+            "y": 288,
+            "width": 72.9375,
+            "height": 44,
+            "top": 288,
+            "right": 326.859375,
+            "bottom": 332,
+            "left": 253.921875
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 49,
+            "y": 288,
+            "width": 73.875,
+            "height": 44,
+            "top": 288,
+            "right": 122.875,
+            "bottom": 332,
+            "left": 49
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Geometry",
+          "visibleRanges": [
+            {
+              "name": "Position X",
+              "min": "10",
+              "max": "290",
+              "step": "1",
+              "value": "105 cells",
+              "height": 40
+            },
+            {
+              "name": "Position Y",
+              "min": "4",
+              "max": "131",
+              "step": "1",
+              "value": "67.5 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale X",
+              "min": "10",
+              "max": "150",
+              "step": "1",
+              "value": "75 cells",
+              "height": 40
+            },
+            {
+              "name": "Scale Y",
+              "min": "5",
+              "max": "94.5",
+              "step": "1",
+              "value": "60.75 cells",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack",
+              "min": "-25",
+              "max": "35",
+              "step": "1",
+              "value": "0 \u00b0",
+              "height": 40
+            },
+            {
+              "name": "Simplification",
+              "min": "0",
+              "max": "20",
+              "step": "1",
+              "value": "0",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Position X value",
+              "value": "105",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Position Y value",
+              "value": "67.5",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale X value",
+              "value": "75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Scale Y value",
+              "value": "60.75",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Angle of attack value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Simplification value",
+              "value": "0",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 122.875,
+            "y": 288,
+            "width": 43.71875,
+            "height": 44,
+            "top": 288,
+            "right": 166.59375,
+            "bottom": 332,
+            "left": 122.875
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Flow",
+          "visibleRanges": [
+            {
+              "name": "Inlet velocity",
+              "min": "0.02",
+              "max": "0.18",
+              "step": "0.005",
+              "value": "0.12 cells/step",
+              "height": 40
+            },
+            {
+              "name": "Viscosity",
+              "min": "0.005",
+              "max": "0.1",
+              "step": "0.001",
+              "value": "0.015 cells\u00b2/step",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor",
+              "min": "0",
+              "max": "3",
+              "step": "0.1",
+              "value": "0.15",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Inlet velocity value",
+              "value": "0.12",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Viscosity value",
+              "value": "0.015",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Turbulence factor value",
+              "value": "0.15",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 166.59375,
+            "y": 288,
+            "width": 91.328125,
+            "height": 44,
+            "top": 288,
+            "right": 257.921875,
+            "bottom": 332,
+            "left": 166.59375
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Visualization",
+          "visibleRanges": [
+            {
+              "name": "Particles",
+              "min": "0",
+              "max": "2000",
+              "step": "10",
+              "value": "420",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity",
+              "min": "0",
+              "max": "1",
+              "step": "0.05",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Particles value",
+              "value": "420",
+              "font": "15px",
+              "height": 40
+            },
+            {
+              "name": "Trail opacity value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        },
+        {
+          "theme": "dark",
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "docHeight": 900,
+          "panel": {
+            "x": 48,
+            "y": 239,
+            "width": 280,
+            "height": 601,
+            "top": 239,
+            "right": 328,
+            "bottom": 840,
+            "left": 48
+          },
+          "body": {
+            "x": 49,
+            "y": 341,
+            "width": 278,
+            "height": 437,
+            "top": 341,
+            "right": 327,
+            "bottom": 778,
+            "left": 49
+          },
+          "stage": {
+            "x": 345,
+            "y": 285,
+            "width": 846,
+            "height": 554,
+            "top": 285,
+            "right": 1191,
+            "bottom": 839,
+            "left": 345
+          },
+          "tab": {
+            "x": 253.921875,
+            "y": 288,
+            "width": 72.9375,
+            "height": 44,
+            "top": 288,
+            "right": 326.859375,
+            "bottom": 332,
+            "left": 253.921875
+          },
+          "tabRow": {
+            "x": 49,
+            "y": 288,
+            "width": 278,
+            "height": 53,
+            "top": 288,
+            "right": 327,
+            "bottom": 341,
+            "left": 49
+          },
+          "tabPanel": true,
+          "activeTask": "Advanced",
+          "visibleRanges": [
+            {
+              "name": "Simulation steps per frame",
+              "min": "1",
+              "max": "8",
+              "step": "1",
+              "value": "1",
+              "height": 40
+            }
+          ],
+          "visibleNumeric": [
+            {
+              "name": "Simulation steps per frame value",
+              "value": "1",
+              "font": "15px",
+              "height": 40
+            }
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "mobileAndCompatibility": {
+      "errors": [],
+      "mobile": [
+        {
+          "width": 320,
+          "initialModelChoiceBeforeStart": true,
+          "opensWithTaskFocus": true,
+          "runUnobscured": true,
+          "escapeAndFocusReturn": true,
+          "shortTouchRetains": true,
+          "longTouchDismisses": true,
+          "cancelRestores": true,
+          "canvasVisibleAfterClose": true,
+          "bounds": {
+            "panel": {
+              "x": 17,
+              "y": 233.453125,
+              "width": 286,
+              "height": 358.546875,
+              "top": 233.453125,
+              "right": 303,
+              "bottom": 592,
+              "left": 17
+            },
+            "run": {
+              "x": 231,
+              "y": 180.84375,
+              "width": 72,
+              "height": 44,
+              "top": 180.84375,
+              "right": 303,
+              "bottom": 224.84375,
+              "left": 231
+            },
+            "body": {
+              "x": 18,
+              "y": 355.453125,
+              "width": 284,
+              "height": 174.546875,
+              "top": 355.453125,
+              "right": 302,
+              "bottom": 530,
+              "left": 18
+            }
+          }
+        },
+        {
+          "width": 375,
+          "initialModelChoiceBeforeStart": true,
+          "opensWithTaskFocus": true,
+          "runUnobscured": true,
+          "escapeAndFocusReturn": true,
+          "shortTouchRetains": true,
+          "longTouchDismisses": true,
+          "cancelRestores": true,
+          "canvasVisibleAfterClose": true,
+          "bounds": {
+            "panel": {
+              "x": 22,
+              "y": 281.609375,
+              "width": 331,
+              "height": 482.390625,
+              "top": 281.609375,
+              "right": 353,
+              "bottom": 764,
+              "left": 22
+            },
+            "run": {
+              "x": 281,
+              "y": 180.84375,
+              "width": 72,
+              "height": 44,
+              "top": 180.84375,
+              "right": 353,
+              "bottom": 224.84375,
+              "left": 281
+            },
+            "body": {
+              "x": 23,
+              "y": 403.609375,
+              "width": 329,
+              "height": 298.390625,
+              "top": 403.609375,
+              "right": 352,
+              "bottom": 702,
+              "left": 23
+            }
+          }
+        }
+      ],
+      "legacy": {
+        "precisionAndOutOfDeviceParticleCountRetained": true
+      },
+      "keyboardFileChooser": true,
+      "rootErrorRetainsStateAndDismisses": true,
+      "collinearImportRejected": true,
+      "overviewDoesNotResume": true,
+      "advancedAnalysisHandoff": true
+    },
+    "shortcutsAndOutputs": {
+      "cases": [
+        {
+          "width": 375,
+          "theme": "light",
+          "undoZ": true,
+          "controlUndoRedo": true,
+          "metaUndoRedo": true,
+          "resetR": true,
+          "spaceRunPause": true,
+          "fullscreenF": true,
+          "screenshotS": true,
+          "compareFieldsAndDifference": true,
+          "inputShortcutGuard": true,
+          "advancedExportsAndGallery": false
+        },
+        {
+          "width": 375,
+          "theme": "dark",
+          "undoZ": true,
+          "controlUndoRedo": true,
+          "metaUndoRedo": true,
+          "resetR": true,
+          "spaceRunPause": true,
+          "fullscreenF": true,
+          "screenshotS": true,
+          "compareFieldsAndDifference": true,
+          "inputShortcutGuard": true,
+          "advancedExportsAndGallery": false
+        },
+        {
+          "width": 1440,
+          "theme": "light",
+          "undoZ": true,
+          "controlUndoRedo": true,
+          "metaUndoRedo": true,
+          "resetR": true,
+          "spaceRunPause": true,
+          "fullscreenF": true,
+          "screenshotS": true,
+          "compareFieldsAndDifference": true,
+          "inputShortcutGuard": true,
+          "advancedExportsAndGallery": false
+        },
+        {
+          "width": 1440,
+          "theme": "dark",
+          "undoZ": true,
+          "controlUndoRedo": true,
+          "metaUndoRedo": true,
+          "resetR": true,
+          "spaceRunPause": true,
+          "fullscreenF": true,
+          "screenshotS": true,
+          "compareFieldsAndDifference": true,
+          "inputShortcutGuard": true,
+          "advancedExportsAndGallery": true
+        }
+      ],
+      "errors": []
+    },
+    "analysisWorkflows": {
+      "sweeps": [
+        {
+          "param": "aoa",
+          "defaults": {
+            "min": "-10",
+            "max": "20",
+            "steps": "31"
+          },
+          "twoStepsExport": true
+        },
+        {
+          "param": "velocity",
+          "defaults": {
+            "min": "0.02",
+            "max": "0.18",
+            "steps": "17"
+          },
+          "twoStepsExport": true
+        },
+        {
+          "param": "viscosity",
+          "defaults": {
+            "min": "0.005",
+            "max": "0.1",
+            "steps": "20"
+          },
+          "twoStepsExport": true
+        }
+      ],
+      "errors": [],
+      "cancelStopsSweep": true,
+      "recordAndExportZip": true
+    },
+    "notes": [
+      "All successful completed runs recorded zero page errors.",
+      "Browser harnesses inspected actual existing React refs; no application test hooks were added.",
+      "The all-controls matrix ran before the final collinearity edge-case correction. Unit tests and independent review verify the correction; final shortcut/export/Analysis runs used the final build.",
+      "False harness expectations around existing auto-run behavior and exact wrapped-select labels were corrected; they were not application regressions.",
+      "Final refreshed layout captures include measured tab-row bounds and wait for nonzero active FPS before pausing."
+    ]
+  },
+  "screenshots": [
+    "docs/redesign/screenshots/phase-06-before-1440.png",
+    "docs/redesign/screenshots/phase-06-before-375.png",
+    "docs/redesign/screenshots/phase-06-dark-advanced-1440.png",
+    "docs/redesign/screenshots/phase-06-dark-advanced-375.png",
+    "docs/redesign/screenshots/phase-06-dark-flow-1440.png",
+    "docs/redesign/screenshots/phase-06-dark-flow-375.png",
+    "docs/redesign/screenshots/phase-06-dark-geometry-1440.png",
+    "docs/redesign/screenshots/phase-06-dark-geometry-320.png",
+    "docs/redesign/screenshots/phase-06-dark-geometry-375.png",
+    "docs/redesign/screenshots/phase-06-dark-geometry-768.png",
+    "docs/redesign/screenshots/phase-06-dark-visualization-1440.png",
+    "docs/redesign/screenshots/phase-06-dark-visualization-375.png",
+    "docs/redesign/screenshots/phase-06-import-error-mobile.png",
+    "docs/redesign/screenshots/phase-06-light-advanced-1440.png",
+    "docs/redesign/screenshots/phase-06-light-advanced-375.png",
+    "docs/redesign/screenshots/phase-06-light-flow-1440.png",
+    "docs/redesign/screenshots/phase-06-light-flow-375.png",
+    "docs/redesign/screenshots/phase-06-light-geometry-1440.png",
+    "docs/redesign/screenshots/phase-06-light-geometry-320.png",
+    "docs/redesign/screenshots/phase-06-light-geometry-375.png",
+    "docs/redesign/screenshots/phase-06-light-geometry-768.png",
+    "docs/redesign/screenshots/phase-06-light-visualization-1440.png",
+    "docs/redesign/screenshots/phase-06-light-visualization-375.png",
+    "docs/redesign/screenshots/phase-06-transform-desktop.png"
+  ],
+  "limitations": [
+    "17 baseline lint diagnostics remain.",
+    "Chromium only; no physical device, Safari/Firefox or screen-reader announcement verification.",
+    "Mobile sheets can cover the field while editing; dismissal restores full canvas access.",
+    "Existing Analysis styling, sweep draft remount/cancellation semantics, parser limits and remote 3D dependencies remain unchanged.",
+    "No new numerical accuracy or formal performance benchmark."
+  ],
+  "operations": {
+    "commit": false,
+    "push": false,
+    "deploy": false,
+    "pullRequest": false,
+    "phase07Started": false
+  }
+}

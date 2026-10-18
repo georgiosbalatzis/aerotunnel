@@ -1,0 +1,615 @@
+{
+  "phase": 9,
+  "date": "2026-10-17",
+  "scope": "Publishing and suite integration only, no commit/push/deploy/PR",
+  "baseline": {
+    "build": "pass",
+    "modules": 57,
+    "tests": 29,
+    "lintErrors": 14,
+    "lintWarnings": 0
+  },
+  "final": {
+    "build": "pass",
+    "modules": 62,
+    "tests": 36,
+    "jsKB": 346.19,
+    "jsGzipKB": 112.88,
+    "cssKB": 95.49,
+    "cssGzipKB": 19.75,
+    "lintErrors": 11,
+    "lintWarnings": 0,
+    "newLintSignatures": []
+  },
+  "protection": {
+    "baselineFilesCompared": 266,
+    "changedExistingSourceTestPublicFiles": [
+      "src/CFDLab.jsx",
+      "src/analysis/presentation.js",
+      "src/controls/validation.js",
+      "src/components/AnalysisPanel.jsx",
+      "src/components/View3D.jsx"
+    ],
+    "engineFilesCompared": 199,
+    "engineFilesByteIdentical": true,
+    "independentEngineSourceFilesReviewed": 18,
+    "protectedRootFilesUnchanged": {
+      "README.md": true,
+      "package.json": true,
+      "package-lock.json": true,
+      "vite.config.js": true
+    },
+    "indexHTMLChangedForMetadata": true
+  },
+  "browserBefore": {
+    "cases": [
+      {
+        "width": 375,
+        "theme": "dark"
+      },
+      {
+        "width": 1440,
+        "theme": "light"
+      }
+    ],
+    "errors": []
+  },
+  "publicationModesAndThemes": {
+    "cases": [
+      {
+        "width": 375,
+        "theme": "dark",
+        "exports": [
+          {
+            "style": "light",
+            "width": 2400,
+            "height": 2094,
+            "bytes": 418704
+          },
+          {
+            "style": "dark",
+            "width": 2400,
+            "height": 2094,
+            "bytes": 420935
+          }
+        ],
+        "raw": {
+          "width": 640,
+          "height": 320,
+          "bytes": 62232
+        },
+        "kept": {
+          "solver": true,
+          "canvas": true,
+          "pool": true,
+          "origin": true,
+          "poly": true,
+          "arrays": {
+            "ux": true,
+            "uy": true,
+            "rho": true,
+            "spd": true,
+            "curl": true,
+            "solid": true
+          }
+        },
+        "layout": {
+          "width": 375,
+          "docWidth": 375
+        }
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "exports": [
+          {
+            "style": "light",
+            "width": 2400,
+            "height": 1984,
+            "bytes": 445424
+          },
+          {
+            "style": "dark",
+            "width": 2400,
+            "height": 1984,
+            "bytes": 446679
+          },
+          {
+            "mode": "Pressure",
+            "width": 2400,
+            "height": 1984,
+            "bytes": 403635
+          },
+          {
+            "mode": "Streamlines",
+            "width": 2400,
+            "height": 1736,
+            "bytes": 267801
+          },
+          {
+            "mode": "Vorticity",
+            "width": 2400,
+            "height": 1984,
+            "bytes": 397467
+          },
+          {
+            "mode": "Vectors",
+            "width": 2400,
+            "height": 2038,
+            "bytes": 528655
+          },
+          {
+            "mode": "Schlieren",
+            "width": 2400,
+            "height": 1984,
+            "bytes": 449551
+          },
+          {
+            "mode": "3D View",
+            "width": 2400,
+            "height": 1632,
+            "bytes": 533073
+          }
+        ],
+        "raw": {
+          "width": 1000,
+          "height": 450,
+          "bytes": 93170
+        },
+        "kept": {
+          "solver": true,
+          "canvas": true,
+          "pool": true,
+          "origin": true,
+          "poly": true,
+          "arrays": {
+            "ux": true,
+            "uy": true,
+            "rho": true,
+            "spd": true,
+            "curl": true,
+            "solid": true
+          }
+        },
+        "layout": {
+          "width": 1440,
+          "docWidth": 1440
+        }
+      }
+    ],
+    "errors": []
+  },
+  "exportAndSessionWorkflows": {
+    "comparisons": [
+      {
+        "port": 5175,
+        "reference": true,
+        "CSVBytes": 603,
+        "JSONRecords": 12,
+        "STLBytes": 12484,
+        "STLTriangles": 248,
+        "exactMatch": null
+      },
+      {
+        "port": 5174,
+        "reference": false,
+        "CSVBytes": 603,
+        "JSONRecords": 12,
+        "STLBytes": 12484,
+        "STLTriangles": 248,
+        "exactMatch": true
+      }
+    ],
+    "cases": [
+      {
+        "width": 375,
+        "reimportedTwice": true,
+        "malformedRejected": true,
+        "formulaCSVBlocked": true,
+        "rawJSONPreserved": true,
+        "recordingZIP": 443120,
+        "URLCleanup": true,
+        "keyboardFailureVisible": true
+      },
+      {
+        "width": 1440,
+        "reimportedTwice": true,
+        "malformedRejected": true,
+        "formulaCSVBlocked": true,
+        "rawJSONPreserved": true,
+        "recordingZIP": 722092,
+        "URLCleanup": true,
+        "keyboardFailureVisible": true
+      },
+      {
+        "emptyData": true,
+        "CSVDisabled": true,
+        "JSONAvailable": true
+      }
+    ],
+    "errors": []
+  },
+  "crossOriginEmbeds": {
+    "cases": [
+      {
+        "width": 320,
+        "theme": "light",
+        "parentOrigin": "http://localhost:5176",
+        "childOrigin": "http://127.0.0.1:5174",
+        "storageReadWriteSkipped": true,
+        "privateStateUnchanged": true,
+        "focus": {
+          "outline": "rgb(242, 238, 228)",
+          "background": "rgb(168, 46, 28)",
+          "width": "3px",
+          "focusVisible": true
+        },
+        "layout": {
+          "canvasWidth": 270,
+          "canvasHeight": 195.609375,
+          "viewport": 296,
+          "docWidth": 296,
+          "docHeight": 640
+        },
+        "fullscreen3DandReturnLink": false
+      },
+      {
+        "width": 375,
+        "theme": "light",
+        "parentOrigin": "http://localhost:5176",
+        "childOrigin": "http://127.0.0.1:5174",
+        "storageReadWriteSkipped": true,
+        "privateStateUnchanged": true,
+        "focus": {
+          "outline": "rgb(242, 238, 228)",
+          "background": "rgb(168, 46, 28)",
+          "width": "3px",
+          "focusVisible": true
+        },
+        "layout": {
+          "canvasWidth": 325,
+          "canvasHeight": 268.609375,
+          "viewport": 351,
+          "docWidth": 351,
+          "docHeight": 640
+        },
+        "fullscreen3DandReturnLink": false
+      },
+      {
+        "width": 375,
+        "theme": "dark",
+        "parentOrigin": "http://localhost:5176",
+        "childOrigin": "http://127.0.0.1:5174",
+        "storageReadWriteSkipped": true,
+        "privateStateUnchanged": true,
+        "focus": {
+          "outline": "rgb(32, 37, 31)",
+          "background": "rgb(255, 119, 95)",
+          "width": "3px",
+          "focusVisible": true
+        },
+        "layout": {
+          "canvasWidth": 325,
+          "canvasHeight": 268.609375,
+          "viewport": 351,
+          "docWidth": 351,
+          "docHeight": 640
+        },
+        "fullscreen3DandReturnLink": false
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "parentOrigin": "http://localhost:5176",
+        "childOrigin": "http://127.0.0.1:5174",
+        "storageReadWriteSkipped": true,
+        "privateStateUnchanged": true,
+        "focus": {
+          "outline": "rgb(242, 238, 228)",
+          "background": "rgb(168, 46, 28)",
+          "width": "3px",
+          "focusVisible": true
+        },
+        "layout": {
+          "canvasWidth": 718,
+          "canvasHeight": 356.609375,
+          "viewport": 744,
+          "docWidth": 744,
+          "docHeight": 640
+        },
+        "fullscreen3DandReturnLink": false
+      },
+      {
+        "width": 1440,
+        "theme": "light",
+        "parentOrigin": "http://localhost:5176",
+        "childOrigin": "http://127.0.0.1:5174",
+        "storageReadWriteSkipped": true,
+        "privateStateUnchanged": true,
+        "focus": {
+          "outline": "rgb(242, 238, 228)",
+          "background": "rgb(168, 46, 28)",
+          "width": "3px",
+          "focusVisible": true
+        },
+        "layout": {
+          "canvasWidth": 1390,
+          "canvasHeight": 351.21875,
+          "viewport": 1416,
+          "docWidth": 1416,
+          "docHeight": 640
+        },
+        "fullscreen3DandReturnLink": false
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "parentOrigin": "http://localhost:5176",
+        "childOrigin": "http://127.0.0.1:5174",
+        "storageReadWriteSkipped": true,
+        "privateStateUnchanged": true,
+        "focus": {
+          "outline": "rgb(32, 37, 31)",
+          "background": "rgb(255, 119, 95)",
+          "width": "3px",
+          "focusVisible": true
+        },
+        "layout": {
+          "canvasWidth": 1390,
+          "canvasHeight": 388,
+          "viewport": 1416,
+          "docWidth": 1416,
+          "docHeight": 640
+        },
+        "fullscreen3DandReturnLink": true
+      }
+    ],
+    "errors": []
+  },
+  "narrowEmbedFix": [
+    {
+      "width": 320,
+      "theme": "light",
+      "scrollCue": true,
+      "sevenModesKeyboardReachable": true,
+      "at560px": {
+        "width": 270,
+        "height": 130,
+        "viewportWidth": 296,
+        "viewportHeight": 560,
+        "docWidth": 296
+      }
+    },
+    {
+      "width": 375,
+      "theme": "dark",
+      "scrollCue": true,
+      "sevenModesKeyboardReachable": true,
+      "at560px": {
+        "width": 325,
+        "height": 163.8125,
+        "viewportWidth": 351,
+        "viewportHeight": 560,
+        "docWidth": 351
+      }
+    }
+  ],
+  "pixelFidelity": {
+    "checks": [
+      {
+        "source": [
+          1000,
+          450
+        ],
+        "rect": [
+          96,
+          377.99999999999994,
+          2208,
+          993.6000000000001
+        ],
+        "imageSmoothing": false,
+        "total": 60,
+        "mismatch": 0
+      },
+      {
+        "source": [
+          1000,
+          450
+        ],
+        "rect": [
+          96,
+          377.99999999999994,
+          2208,
+          993.6000000000001
+        ],
+        "imageSmoothing": false,
+        "total": 60,
+        "mismatch": 0
+      }
+    ],
+    "errors": []
+  },
+  "advancedOptionsAndFailures": {
+    "errors": [],
+    "longTitleNoClipping": true,
+    "unitsWithoutOptionalLegend": true,
+    "optionalMethodWorks": true,
+    "keyboardEncodingFailureVisible": true,
+    "retryAfterFailure": true,
+    "captureTimeoutRecovers": true,
+    "embedIgnoresDataURLandDrop": true
+  },
+  "liveExportClipboardAndSweep": {
+    "errors": [],
+    "clipboardCodeHasNoRunState": true,
+    "runningFrameCapturedWithoutStoppingSolver": true,
+    "sweepCSVStillWorks": true
+  },
+  "links": [
+    {
+      "url": "https://georgiosbalatzis.github.io/aerotunnel/",
+      "status": 200,
+      "finalURL": "https://georgiosbalatzis.github.io/aerotunnel/",
+      "frameHeaders": {}
+    },
+    {
+      "url": "https://f1-stories.gr/",
+      "status": 200,
+      "finalURL": "https://f1-stories.gr/",
+      "frameHeaders": {}
+    },
+    {
+      "url": "https://f1-stories.gr/standings/",
+      "status": 200,
+      "finalURL": "https://f1-stories.gr/standings/",
+      "frameHeaders": {}
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+      "status": 200,
+      "finalURL": "https://georgiosbalatzis.github.io/f1-telemetry-dashboard/",
+      "frameHeaders": {}
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/ghostcar/",
+      "status": 200,
+      "finalURL": "https://georgiosbalatzis.github.io/ghostcar/",
+      "frameHeaders": {}
+    },
+    {
+      "url": "https://georgiosbalatzis.github.io/Tyres/",
+      "status": 200,
+      "finalURL": "https://georgiosbalatzis.github.io/Tyres/",
+      "frameHeaders": {}
+    }
+  ],
+  "review": {
+    "initialInvestigationsParallel": true,
+    "allInitialFindingsReturnedBeforeEdits": true,
+    "readonlyAgents": [
+      "code_mapper",
+      "design_auditor",
+      "regression_reviewer"
+    ],
+    "leadOnlyApplicationEdits": true,
+    "finalDisposition": "ship at reviewed Phase09 scope",
+    "designFinding": "narrow embed scroll cue resolved",
+    "detectorRuns": 1,
+    "detectorTargets": 12,
+    "detectorOutput": [],
+    "detectorExitCode": 0
+  },
+  "screenshots": [
+    "docs/redesign/screenshots/phase-09-before-dark-375.png",
+    "docs/redesign/screenshots/phase-09-before-light-1440.png",
+    "docs/redesign/screenshots/phase-09-embed-3d-dark-1440.png",
+    "docs/redesign/screenshots/phase-09-embed-active-dark-1440.png",
+    "docs/redesign/screenshots/phase-09-embed-active-dark-375.png",
+    "docs/redesign/screenshots/phase-09-embed-active-light-320.png",
+    "docs/redesign/screenshots/phase-09-embed-initial-dark-1440.png",
+    "docs/redesign/screenshots/phase-09-publishing-dark-375.png",
+    "docs/redesign/screenshots/phase-09-publishing-light-1440.png"
+  ],
+  "exportPNGs": [
+    {
+      "path": "docs/redesign/exports/phase-09-3d-view.png",
+      "bytes": 533073,
+      "width": 2400,
+      "height": 1632
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-before-native.png",
+      "bytes": 83783,
+      "width": 1000,
+      "height": 450
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-comparison.png",
+      "bytes": 524338,
+      "width": 2400,
+      "height": 2120
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-native-1440.png",
+      "bytes": 93170,
+      "width": 1000,
+      "height": 450
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-native-375.png",
+      "bytes": 62232,
+      "width": 640,
+      "height": 320
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-pressure.png",
+      "bytes": 403635,
+      "width": 2400,
+      "height": 1984
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-running.png",
+      "bytes": 393748,
+      "width": 2400,
+      "height": 1984
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-schlieren.png",
+      "bytes": 449551,
+      "width": 2400,
+      "height": 1984
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-streamlines.png",
+      "bytes": 267801,
+      "width": 2400,
+      "height": 1736
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-vectors.png",
+      "bytes": 528655,
+      "width": 2400,
+      "height": 2038
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-velocity-dark-1440.png",
+      "bytes": 446679,
+      "width": 2400,
+      "height": 1984
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-velocity-dark-375.png",
+      "bytes": 420935,
+      "width": 2400,
+      "height": 2094
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-velocity-light-1440.png",
+      "bytes": 445424,
+      "width": 2400,
+      "height": 1984
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-velocity-light-375.png",
+      "bytes": 418704,
+      "width": 2400,
+      "height": 2094
+    },
+    {
+      "path": "docs/redesign/exports/phase-09-vorticity.png",
+      "bytes": 397467,
+      "width": 2400,
+      "height": 1984
+    }
+  ],
+  "limitations": [
+    "Local preview cross-origin/sandbox/CSP checks, not deployed new-version validation. Live HEAD checks validate destinations and currently returned headers only.",
+    "Embed is an ephemeral default demonstration, not a shared run; no parent resize/theme messaging.",
+    "JSON retains setup/history, not full solver distributions or deterministic replay.",
+    "Native images and recorded frames do not include publication captions. Recording remains asynchronous 2D only.",
+    "Manual local file imports retain inherited resource limits; no untrusted remote/session URL import was added.",
+    "3D uses existing external CDN resources; no offline or new scientific validation claim.",
+    "Eight-significant-digit field labels intentionally retain small density differences.",
+    "11 baseline lint findings remain; no physical-device, non-Chromium or production-host guarantee."
+  ]
+}

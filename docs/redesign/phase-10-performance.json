@@ -1,0 +1,4181 @@
+{
+  "pairedFrameMeasurements": {
+    "environment": {
+      "at": "2026-10-17T11:41:15.644Z",
+      "platform": "darwin",
+      "release": "25.6.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "logicalCPUs": 12,
+      "totalMemoryBytes": 38654705664,
+      "node": "v26.12.0",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "HeadlessChrome/156.0.8078.4",
+        "revision": "@f842f52ef39fd97b449eb27cff414bf05a98ddce",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+        "jsVersion": "15.6.75"
+      },
+      "initialLoadAverage": [
+        8.2705078125,
+        10.76025390625,
+        7.52490234375
+      ],
+      "finalLoadAverage": [
+        3.65283203125,
+        6.4150390625,
+        6.41845703125
+      ]
+    },
+    "method": {
+      "kind": "performance",
+      "warmupFrames": 60,
+      "measuredIntervals": 180,
+      "pairs": 3,
+      "dpr": 1,
+      "geometry": "Cylinder",
+      "velocity": 0.12,
+      "viscosity": 0.015,
+      "turbulence": 0,
+      "stepsPerFrame": 1,
+      "theme": "light",
+      "serialPagesOnly": true,
+      "baseline": "Phase10-start production snapshot :5175",
+      "candidate": "current production :5174"
+    },
+    "samples": [
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "velocity",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 88.19999992847443,
+          "wasmInstalledMs": 95.69999992847443,
+          "domContentLoadedMs": 21.899999976158142,
+          "loadMs": 21.899999976158142,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 12
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 52
+            }
+          ],
+          "wasmResponseEndMs": 87.60000002384186
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.8999999999996,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1085.708,
+          "ScriptDuration": 781.138,
+          "LayoutDuration": 7.496,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9712428,
+          "after": 9598128
+        },
+        "hostLoadAverage": [
+          7.60791015625,
+          10.58154296875,
+          7.48046875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "velocity",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 139.69000005722046,
+          "wasmInstalledMs": 147.13999998569489,
+          "domContentLoadedMs": 64.81000006198883,
+          "loadMs": 64.86000001430511,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 49.825000047683716
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 101.13499999046326
+            }
+          ],
+          "wasmResponseEndMs": 139.00499999523163
+        },
+        "cadence": {
+          "meanMs": 16.665999999999997,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8799999999997,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1040.5739999999998,
+          "ScriptDuration": 728.249,
+          "LayoutDuration": 7.783,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9998156,
+          "after": 10123800
+        },
+        "hostLoadAverage": [
+          6.65869140625,
+          10.28173828125,
+          7.41015625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "velocity",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 111.19999992847443,
+          "wasmInstalledMs": 118.69999992847443,
+          "domContentLoadedMs": 24.699999928474426,
+          "loadMs": 24.699999928474426,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 96
+            }
+          ],
+          "wasmResponseEndMs": 106.5
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000273,
+          "over25ms": 0,
+          "wallMs": 2999.8999999999996,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1132.0890000000002,
+          "ScriptDuration": 813.7189999999999,
+          "LayoutDuration": 7.561,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 11173488,
+          "after": 9636412
+        },
+        "hostLoadAverage": [
+          6.205078125,
+          10.12744140625,
+          7.37255859375
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "velocity",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 139.80000007152557,
+          "wasmInstalledMs": 147.41500008106232,
+          "domContentLoadedMs": 62.8050000667572,
+          "loadMs": 62.85000002384186,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 48.514999985694885
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 99.83000004291534
+            }
+          ],
+          "wasmResponseEndMs": 139.11500000953674
+        },
+        "cadence": {
+          "meanMs": 16.666000000000004,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8800000000006,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1154.3129999999999,
+          "ScriptDuration": 821.543,
+          "LayoutDuration": 7.203,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 7453912,
+          "after": 11071480
+        },
+        "hostLoadAverage": [
+          5.7080078125,
+          9.958984375,
+          7.3291015625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "velocity",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 104.60000002384186,
+          "wasmInstalledMs": 112,
+          "domContentLoadedMs": 24.5,
+          "loadMs": 24.600000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 92
+            }
+          ],
+          "wasmResponseEndMs": 101.60000002384186
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.799999999999727,
+          "over25ms": 0,
+          "wallMs": 2999.9,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1106.192,
+          "ScriptDuration": 798.258,
+          "LayoutDuration": 7.165,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 11219488,
+          "after": 13833588
+        },
+        "hostLoadAverage": [
+          5.33056640625,
+          9.81005859375,
+          7.2919921875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "velocity",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 134.9099999666214,
+          "wasmInstalledMs": 142.375,
+          "domContentLoadedMs": 61.35000002384186,
+          "loadMs": 61.39999997615814,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 47.18499994277954
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 95.66499996185303
+            }
+          ],
+          "wasmResponseEndMs": 134.22000002861023
+        },
+        "cadence": {
+          "meanMs": 16.666,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.88,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1129.7820000000002,
+          "ScriptDuration": 800.0279999999999,
+          "LayoutDuration": 7.184,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9333736,
+          "after": 10668632
+        },
+        "hostLoadAverage": [
+          5.1435546875,
+          9.69677734375,
+          7.2666015625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "streamlines",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 103.80000007152557,
+          "wasmInstalledMs": 111.80000007152557,
+          "domContentLoadedMs": 23.40000009536743,
+          "loadMs": 23.40000009536743,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 60
+            }
+          ],
+          "wasmResponseEndMs": 102.90000009536743
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.9,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1101.444,
+          "ScriptDuration": 587.225,
+          "LayoutDuration": 6.048,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9970344,
+          "after": 14172048
+        },
+        "hostLoadAverage": [
+          4.7314453125,
+          9.53564453125,
+          7.2236328125
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "streamlines",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 136.65500009059906,
+          "wasmInstalledMs": 144.2850000858307,
+          "domContentLoadedMs": 62.29000008106232,
+          "loadMs": 62.34500002861023,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 47.41500008106232
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 99.66500008106232
+            }
+          ],
+          "wasmResponseEndMs": 135.9650000333786
+        },
+        "cadence": {
+          "meanMs": 16.665999999999997,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8799999999997,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1020.524,
+          "ScriptDuration": 522.805,
+          "LayoutDuration": 5.095,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 8706452,
+          "after": 10027616
+        },
+        "hostLoadAverage": [
+          4.7529296875,
+          9.4599609375,
+          7.21044921875
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "streamlines",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 105.59999990463257,
+          "wasmInstalledMs": 113.39999997615814,
+          "domContentLoadedMs": 25.09999990463257,
+          "loadMs": 25.09999990463257,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 92
+            }
+          ],
+          "wasmResponseEndMs": 102
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.799999999999727,
+          "over25ms": 0,
+          "wallMs": 2999.8999999999996,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1025.3419999999999,
+          "ScriptDuration": 538.698,
+          "LayoutDuration": 5.911,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 11078344,
+          "after": 9673028
+        },
+        "hostLoadAverage": [
+          4.5322265625,
+          9.3359375,
+          7.1796875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "streamlines",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 139.12000000476837,
+          "wasmInstalledMs": 146.51000010967255,
+          "domContentLoadedMs": 68.66500008106232,
+          "loadMs": 68.73000001907349,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 52.6800000667572
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 103.75
+            }
+          ],
+          "wasmResponseEndMs": 138.4650000333786
+        },
+        "cadence": {
+          "meanMs": 16.665999999999997,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8799999999997,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1172.1730000000002,
+          "ScriptDuration": 599.015,
+          "LayoutDuration": 6.554,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 10340100,
+          "after": 8138884
+        },
+        "hostLoadAverage": [
+          4.5693359375,
+          9.263671875,
+          7.16650390625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "streamlines",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 106.5,
+          "wasmInstalledMs": 114.10000002384186,
+          "domContentLoadedMs": 25.600000023841858,
+          "loadMs": 25.700000047683716,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 92
+            }
+          ],
+          "wasmResponseEndMs": 102.89999997615814
+        },
+        "cadence": {
+          "meanMs": 16.666111111111114,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.800000000000182,
+          "over25ms": 0,
+          "wallMs": 2999.9000000000005,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 972.252,
+          "ScriptDuration": 513.251,
+          "LayoutDuration": 5.511,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 12735296,
+          "after": 9109016
+        },
+        "hostLoadAverage": [
+          4.603515625,
+          9.19287109375,
+          7.15380859375
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "streamlines",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 136.74500000476837,
+          "wasmInstalledMs": 144.29000008106232,
+          "domContentLoadedMs": 61.890000104904175,
+          "loadMs": 61.925000071525574,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 48.480000019073486
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 123.01000010967255
+            }
+          ],
+          "wasmResponseEndMs": 133.61500000953674
+        },
+        "cadence": {
+          "meanMs": 16.666,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.88,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1029.2060000000001,
+          "ScriptDuration": 521.8770000000001,
+          "LayoutDuration": 6.271,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9052724,
+          "after": 10275828
+        },
+        "hostLoadAverage": [
+          4.31494140625,
+          9.056640625,
+          7.11767578125
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "3d",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 107.89999997615814,
+          "wasmInstalledMs": 115.59999990463257,
+          "domContentLoadedMs": 24.399999976158142,
+          "loadMs": 24.399999976158142,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 96
+            }
+          ],
+          "wasmResponseEndMs": 106.79999995231628
+        },
+        "cadence": {
+          "meanMs": 29.351111111111116,
+          "medianMs": 33.30000000000018,
+          "p95Ms": 33.400000000000546,
+          "over25ms": 135,
+          "wallMs": 5283.200000000001,
+          "actual3D": {
+            "calls": 182,
+            "meanMs": 29.280110497501013,
+            "p95Ms": 34.199999928474426
+          }
+        },
+        "costs": {
+          "TaskDuration": 5025.047,
+          "ScriptDuration": 688.236,
+          "LayoutDuration": 3.2439999999999998,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 24074548,
+          "after": 29221720
+        },
+        "hostLoadAverage": [
+          4.8330078125,
+          9.00634765625,
+          7.12158203125
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "3d",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 115.88999998569489,
+          "wasmInstalledMs": 123.30000007152557,
+          "domContentLoadedMs": 49.16000008583069,
+          "loadMs": 49.19500005245209,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 34.57000005245209
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 105.15000009536743
+            }
+          ],
+          "wasmResponseEndMs": 113.33500003814697
+        },
+        "cadence": {
+          "meanMs": 28.795166666666667,
+          "medianMs": 33.32999999999993,
+          "p95Ms": 33.335000000000036,
+          "over25ms": 129,
+          "wallMs": 5183.13,
+          "actual3D": {
+            "calls": 182,
+            "meanMs": 28.799337016284795,
+            "p95Ms": 34.02499997615814
+          }
+        },
+        "costs": {
+          "TaskDuration": 4941.803,
+          "ScriptDuration": 633.383,
+          "LayoutDuration": 2.994,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 17812504,
+          "after": 37370432
+        },
+        "hostLoadAverage": [
+          5.361328125,
+          8.9873046875,
+          7.13720703125
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "3d",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 86.39999997615814,
+          "wasmInstalledMs": 93.70000004768372,
+          "domContentLoadedMs": 20.700000047683716,
+          "loadMs": 20.700000047683716,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 12
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 52
+            }
+          ],
+          "wasmResponseEndMs": 85.80000007152557
+        },
+        "cadence": {
+          "meanMs": 28.888333333333325,
+          "medianMs": 33.30000000000018,
+          "p95Ms": 33.400000000000546,
+          "over25ms": 127,
+          "wallMs": 5199.899999999999,
+          "actual3D": {
+            "calls": 182,
+            "meanMs": 28.923756906340795,
+            "p95Ms": 33.10000002384186
+          }
+        },
+        "costs": {
+          "TaskDuration": 4964.8240000000005,
+          "ScriptDuration": 664.6560000000001,
+          "LayoutDuration": 2.853,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 17889608,
+          "after": 40048828
+        },
+        "hostLoadAverage": [
+          6.1328125,
+          9.0869140625,
+          7.18310546875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "3d",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 115.47000002861023,
+          "wasmInstalledMs": 122.89999997615814,
+          "domContentLoadedMs": 49.11500000953674,
+          "loadMs": 49.139999985694885,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 34.705000042915344
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 104.04499995708466
+            }
+          ],
+          "wasmResponseEndMs": 112.29999995231628
+        },
+        "cadence": {
+          "meanMs": 28.79513888888889,
+          "medianMs": 33.32999999999993,
+          "p95Ms": 33.335000000000946,
+          "over25ms": 129,
+          "wallMs": 5183.125,
+          "actual3D": {
+            "calls": 182,
+            "meanMs": 28.800856353169646,
+            "p95Ms": 33.64999997615814
+          }
+        },
+        "costs": {
+          "TaskDuration": 4942.47,
+          "ScriptDuration": 630.3160000000001,
+          "LayoutDuration": 3.4050000000000002,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 23020680,
+          "after": 35285764
+        },
+        "hostLoadAverage": [
+          6.3779296875,
+          9.0361328125,
+          7.1865234375
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "3d",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 88.10000002384186,
+          "wasmInstalledMs": 95.5,
+          "domContentLoadedMs": 20.600000023841858,
+          "loadMs": 20.600000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 12
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 52
+            }
+          ],
+          "wasmResponseEndMs": 87.30000007152557
+        },
+        "cadence": {
+          "meanMs": 29.721111111111107,
+          "medianMs": 33.30000000000018,
+          "p95Ms": 33.400000000000546,
+          "over25ms": 138,
+          "wallMs": 5349.799999999999,
+          "actual3D": {
+            "calls": 182,
+            "meanMs": 29.69834254130474,
+            "p95Ms": 34.59999990463257
+          }
+        },
+        "costs": {
+          "TaskDuration": 5098.313,
+          "ScriptDuration": 699.553,
+          "LayoutDuration": 3.8739999999999997,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 24198596,
+          "after": 17446652
+        },
+        "hostLoadAverage": [
+          6.01220703125,
+          8.86962890625,
+          7.1484375
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "3d",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 116.82500004768372,
+          "wasmInstalledMs": 124.04500007629395,
+          "domContentLoadedMs": 50.080000042915344,
+          "loadMs": 50.105000019073486,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 35.31500005722046
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 105.16500008106232
+            }
+          ],
+          "wasmResponseEndMs": 114.01000010967255
+        },
+        "cadence": {
+          "meanMs": 29.165500000000005,
+          "medianMs": 33.32999999999993,
+          "p95Ms": 33.335000000000946,
+          "over25ms": 135,
+          "wallMs": 5249.790000000001,
+          "actual3D": {
+            "calls": 182,
+            "meanMs": 29.13759668558342,
+            "p95Ms": 34.74000000953674
+          }
+        },
+        "costs": {
+          "TaskDuration": 4999.289999999999,
+          "ScriptDuration": 644.2549999999999,
+          "LayoutDuration": 3.435,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 17805144,
+          "after": 39255288
+        },
+        "hostLoadAverage": [
+          5.46826171875,
+          8.6591796875,
+          7.09375
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "comparison",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 87.89999997615814,
+          "wasmInstalledMs": 95.30000007152557,
+          "domContentLoadedMs": 21.100000023841858,
+          "loadMs": 21.100000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 12
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 52
+            }
+          ],
+          "wasmResponseEndMs": 87.30000007152557
+        },
+        "cadence": {
+          "meanMs": 16.665555555555553,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.799999999999727,
+          "over25ms": 0,
+          "wallMs": 2999.7999999999997,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1221.8700000000001,
+          "ScriptDuration": 978.366,
+          "LayoutDuration": 6.314,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 11698248,
+          "after": 9241064
+        },
+        "hostLoadAverage": [
+          5.1103515625,
+          8.53173828125,
+          7.0576171875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "comparison",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 121.5699999332428,
+          "wasmInstalledMs": 128.97499990463257,
+          "domContentLoadedMs": 55.21999990940094,
+          "loadMs": 55.25,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 39.6949999332428
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 84.49499988555908
+            }
+          ],
+          "wasmResponseEndMs": 120.9449999332428
+        },
+        "cadence": {
+          "meanMs": 16.66597222222222,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8749999999995,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1248.526,
+          "ScriptDuration": 984.739,
+          "LayoutDuration": 7.755,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 11100884,
+          "after": 9760740
+        },
+        "hostLoadAverage": [
+          4.94091796875,
+          8.439453125,
+          7.03369140625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "comparison",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 102.39999997615814,
+          "wasmInstalledMs": 109.89999997615814,
+          "domContentLoadedMs": 23.899999976158142,
+          "loadMs": 23.899999976158142,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 92
+            }
+          ],
+          "wasmResponseEndMs": 99.39999997615814
+        },
+        "cadence": {
+          "meanMs": 16.665555555555553,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.7999999999997,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1200.791,
+          "ScriptDuration": 953.566,
+          "LayoutDuration": 5.178,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9500728,
+          "after": 12273252
+        },
+        "hostLoadAverage": [
+          4.705078125,
+          8.33251953125,
+          7.00390625
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "comparison",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 129.08500003814697,
+          "wasmInstalledMs": 136.6599999666214,
+          "domContentLoadedMs": 57.11500000953674,
+          "loadMs": 57.144999980926514,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 42.825000047683716
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 116.57500004768372
+            }
+          ],
+          "wasmResponseEndMs": 126.70500004291534
+        },
+        "cadence": {
+          "meanMs": 16.665972222222226,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8750000000005,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1202.08,
+          "ScriptDuration": 941.1899999999999,
+          "LayoutDuration": 6.921,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9948960,
+          "after": 9272028
+        },
+        "hostLoadAverage": [
+          4.568359375,
+          8.24365234375,
+          6.97998046875
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "comparison",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 102.60000002384186,
+          "wasmInstalledMs": 110.5,
+          "domContentLoadedMs": 22.600000023841858,
+          "loadMs": 22.600000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 12
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 92
+            }
+          ],
+          "wasmResponseEndMs": 99.29999995231628
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.8999999999996,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1242.648,
+          "ScriptDuration": 993.253,
+          "LayoutDuration": 5.802,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9677408,
+          "after": 14388976
+        },
+        "hostLoadAverage": [
+          4.4423828125,
+          8.15625,
+          6.95654296875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "workload": "comparison",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 119.62999999523163,
+          "wasmInstalledMs": 126.97499990463257,
+          "domContentLoadedMs": 53.22499990463257,
+          "loadMs": 53.264999985694885,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 37.62999999523163
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 83.84999990463257
+            }
+          ],
+          "wasmResponseEndMs": 119.05999994277954
+        },
+        "cadence": {
+          "meanMs": 16.666000000000004,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8800000000006,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1256.2640000000001,
+          "ScriptDuration": 985.214,
+          "LayoutDuration": 8.432,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9083776,
+          "after": 10535952
+        },
+        "hostLoadAverage": [
+          4.08642578125,
+          8.0205078125,
+          6.91552734375
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "velocity",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 81.10000002384186,
+          "wasmInstalledMs": 85.39999997615814,
+          "domContentLoadedMs": 24.600000023841858,
+          "loadMs": 24.600000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 72
+            }
+          ],
+          "wasmResponseEndMs": 79.29999995231628
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.9,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 958.4970000000001,
+          "ScriptDuration": 710.96,
+          "LayoutDuration": 8.875,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 8151320,
+          "after": 14654156
+        },
+        "hostLoadAverage": [
+          3.9990234375,
+          7.93701171875,
+          6.892578125
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "velocity",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 124.76499998569489,
+          "wasmInstalledMs": 128.9299999475479,
+          "domContentLoadedMs": 61.49000000953674,
+          "loadMs": 61.52499997615814,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 46.8199999332428
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 88.40499997138977
+            }
+          ],
+          "wasmResponseEndMs": 123.7849999666214
+        },
+        "cadence": {
+          "meanMs": 16.666,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.88,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 994.5339999999999,
+          "ScriptDuration": 728.1659999999999,
+          "LayoutDuration": 10.059999999999999,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 8588640,
+          "after": 10385180
+        },
+        "hostLoadAverage": [
+          3.8388671875,
+          7.83837890625,
+          6.86376953125
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "velocity",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 86.5,
+          "wasmInstalledMs": 91,
+          "domContentLoadedMs": 23.600000023841858,
+          "loadMs": 23.600000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 76
+            }
+          ],
+          "wasmResponseEndMs": 85.60000002384186
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.9,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 892.249,
+          "ScriptDuration": 659.2,
+          "LayoutDuration": 7.877999999999999,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 7567704,
+          "after": 9647848
+        },
+        "hostLoadAverage": [
+          3.611328125,
+          7.724609375,
+          6.8291015625
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "velocity",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 119.24000000953674,
+          "wasmInstalledMs": 123.58500003814697,
+          "domContentLoadedMs": 60.355000019073486,
+          "loadMs": 60.4099999666214,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 44.9650000333786
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 109.00999999046326
+            }
+          ],
+          "wasmResponseEndMs": 118.48500001430511
+        },
+        "cadence": {
+          "meanMs": 16.666,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.88,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 965.028,
+          "ScriptDuration": 712.142,
+          "LayoutDuration": 9.181999999999999,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9611004,
+          "after": 8825508
+        },
+        "hostLoadAverage": [
+          3.48193359375,
+          7.62939453125,
+          6.80078125
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "velocity",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 85,
+          "wasmInstalledMs": 89.39999997615814,
+          "domContentLoadedMs": 23.899999976158142,
+          "loadMs": 23.899999976158142,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 76
+            }
+          ],
+          "wasmResponseEndMs": 84.20000004768372
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.8999999999996,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1011.1600000000001,
+          "ScriptDuration": 754.3330000000001,
+          "LayoutDuration": 7.971000000000001,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9048928,
+          "after": 9712148
+        },
+        "hostLoadAverage": [
+          3.28271484375,
+          7.51904296875,
+          6.7666015625
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "velocity",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 121.56500005722046,
+          "wasmInstalledMs": 126.00500011444092,
+          "domContentLoadedMs": 61.78500008583069,
+          "loadMs": 61.83500003814697,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 47
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 110.81500005722046
+            }
+          ],
+          "wasmResponseEndMs": 120.63000011444092
+        },
+        "cadence": {
+          "meanMs": 16.666,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.88,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 915.123,
+          "ScriptDuration": 671.1700000000001,
+          "LayoutDuration": 9.369,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9702152,
+          "after": 8744308
+        },
+        "hostLoadAverage": [
+          3.1796875,
+          7.42724609375,
+          6.73828125
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "streamlines",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 84.10000002384186,
+          "wasmInstalledMs": 88.5,
+          "domContentLoadedMs": 23.399999976158142,
+          "loadMs": 23.399999976158142,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 76
+            }
+          ],
+          "wasmResponseEndMs": 83.10000002384186
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.9,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 868.221,
+          "ScriptDuration": 489.882,
+          "LayoutDuration": 7.098,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 7571920,
+          "after": 10842000
+        },
+        "hostLoadAverage": [
+          3.0849609375,
+          7.3369140625,
+          6.71044921875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "streamlines",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 125.23000001907349,
+          "wasmInstalledMs": 129.3550000190735,
+          "domContentLoadedMs": 62.394999980926514,
+          "loadMs": 62.44500005245209,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 47.31000006198883
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 90.10000002384186
+            }
+          ],
+          "wasmResponseEndMs": 123.4650000333786
+        },
+        "cadence": {
+          "meanMs": 16.666027777777778,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.885,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 769.842,
+          "ScriptDuration": 413.76,
+          "LayoutDuration": 6.273,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 7768160,
+          "after": 9909624
+        },
+        "hostLoadAverage": [
+          3.29248046875,
+          7.24267578125,
+          6.68408203125
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "streamlines",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 84.59999990463257,
+          "wasmInstalledMs": 89,
+          "domContentLoadedMs": 24.299999952316284,
+          "loadMs": 24.399999976158142,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 76
+            }
+          ],
+          "wasmResponseEndMs": 83.79999995231628
+        },
+        "cadence": {
+          "meanMs": 16.665555555555557,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.800000000000182,
+          "over25ms": 0,
+          "wallMs": 2999.8,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 901.8249999999999,
+          "ScriptDuration": 503.56800000000004,
+          "LayoutDuration": 7.021999999999999,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 7611772,
+          "after": 10875024
+        },
+        "hostLoadAverage": [
+          3.18896484375,
+          7.1552734375,
+          6.65625
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "streamlines",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 122.31500005722046,
+          "wasmInstalledMs": 126.86500000953674,
+          "domContentLoadedMs": 61.53000009059906,
+          "loadMs": 61.56500005722046,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 47.230000019073486
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 112.07000005245209
+            }
+          ],
+          "wasmResponseEndMs": 121.4650000333786
+        },
+        "cadence": {
+          "meanMs": 16.665972222222223,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.875,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 928.7489999999999,
+          "ScriptDuration": 502.46100000000007,
+          "LayoutDuration": 9.181999999999999,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 8614452,
+          "after": 7360320
+        },
+        "hostLoadAverage": [
+          3.173828125,
+          7.0859375,
+          6.634765625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "streamlines",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 86.20000004768372,
+          "wasmInstalledMs": 90.60000002384186,
+          "domContentLoadedMs": 25.300000071525574,
+          "loadMs": 25.300000071525574,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 76
+            }
+          ],
+          "wasmResponseEndMs": 85.39999997615814
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000273,
+          "over25ms": 0,
+          "wallMs": 2999.9,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 781.048,
+          "ScriptDuration": 436.05699999999996,
+          "LayoutDuration": 6.668,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 8855408,
+          "after": 9635452
+        },
+        "hostLoadAverage": [
+          2.99951171875,
+          6.98486328125,
+          6.6015625
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "streamlines",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "streamlines",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 122.18500006198883,
+          "wasmInstalledMs": 126.39999997615814,
+          "domContentLoadedMs": 62.269999980926514,
+          "loadMs": 62.31500005722046,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 47.9300000667572
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 111.07000005245209
+            }
+          ],
+          "wasmResponseEndMs": 121.22500002384186
+        },
+        "cadence": {
+          "meanMs": 16.665972222222223,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.875,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 905.729,
+          "ScriptDuration": 490.219,
+          "LayoutDuration": 7.955,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 8426088,
+          "after": 7384880
+        },
+        "hostLoadAverage": [
+          3.31982421875,
+          6.98486328125,
+          6.603515625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "3d",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 87.79999995231628,
+          "wasmInstalledMs": 92.09999990463257,
+          "domContentLoadedMs": 26,
+          "loadMs": 26,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 80
+            }
+          ],
+          "wasmResponseEndMs": 87
+        },
+        "cadence": {
+          "meanMs": 16.666111111111114,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.800000000000182,
+          "over25ms": 0,
+          "wallMs": 2999.9000000000005,
+          "actual3D": {
+            "calls": 181,
+            "meanMs": 16.66500000026491,
+            "p95Ms": 19
+          }
+        },
+        "costs": {
+          "TaskDuration": 1890.0739999999998,
+          "ScriptDuration": 357.08,
+          "LayoutDuration": 3.342,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 13428532,
+          "after": 14026252
+        },
+        "hostLoadAverage": [
+          3.2138671875,
+          6.90185546875,
+          6.576171875
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "3d",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 105.63499999046326,
+          "wasmInstalledMs": 109.9099999666214,
+          "domContentLoadedMs": 52.6949999332428,
+          "loadMs": 52.72500002384186,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 36.93499994277954
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 95.16999995708466
+            }
+          ],
+          "wasmResponseEndMs": 104.00499999523163
+        },
+        "cadence": {
+          "meanMs": 16.665972222222223,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.875,
+          "actual3D": {
+            "calls": 181,
+            "meanMs": 16.66705555518468,
+            "p95Ms": 18.97000002861023
+          }
+        },
+        "costs": {
+          "TaskDuration": 1837.766,
+          "ScriptDuration": 327.919,
+          "LayoutDuration": 2.709,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 15940100,
+          "after": 13526024
+        },
+        "hostLoadAverage": [
+          4.0771484375,
+          7.01953125,
+          6.61962890625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "3d",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 73.30000007152557,
+          "wasmInstalledMs": 77.39999997615814,
+          "domContentLoadedMs": 20.5,
+          "loadMs": 20.5,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 12
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 44
+            }
+          ],
+          "wasmResponseEndMs": 71.5
+        },
+        "cadence": {
+          "meanMs": 16.665555555555557,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.8,
+          "actual3D": {
+            "calls": 181,
+            "meanMs": 16.666111110978655,
+            "p95Ms": 18.799999952316284
+          }
+        },
+        "costs": {
+          "TaskDuration": 1833.142,
+          "ScriptDuration": 335.96700000000004,
+          "LayoutDuration": 2.8240000000000003,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 17895188,
+          "after": 13846544
+        },
+        "hostLoadAverage": [
+          3.83056640625,
+          6.91943359375,
+          6.58642578125
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "3d",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 98.41999995708466,
+          "wasmInstalledMs": 102.6800000667572,
+          "domContentLoadedMs": 48.22000002861023,
+          "loadMs": 48.24500000476837,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 33.82000005245209
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 89.49500000476837
+            }
+          ],
+          "wasmResponseEndMs": 96.7150000333786
+        },
+        "cadence": {
+          "meanMs": 16.666,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.88,
+          "actual3D": {
+            "calls": 181,
+            "meanMs": 16.666527777910233,
+            "p95Ms": 19.240000009536743
+          }
+        },
+        "costs": {
+          "TaskDuration": 1819.446,
+          "ScriptDuration": 325.204,
+          "LayoutDuration": 3.035,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 17509056,
+          "after": 13554220
+        },
+        "hostLoadAverage": [
+          3.46826171875,
+          6.740234375,
+          6.5263671875
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "3d",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 73.10000002384186,
+          "wasmInstalledMs": 77.29999995231628,
+          "domContentLoadedMs": 20.5,
+          "loadMs": 20.5,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 12
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 48
+            }
+          ],
+          "wasmResponseEndMs": 71.60000002384186
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.799999999999272,
+          "over25ms": 0,
+          "wallMs": 2999.8999999999996,
+          "actual3D": {
+            "calls": 181,
+            "meanMs": 16.666666666666668,
+            "p95Ms": 19.399999976158142
+          }
+        },
+        "costs": {
+          "TaskDuration": 1819.848,
+          "ScriptDuration": 333.371,
+          "LayoutDuration": 3.023,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 16379040,
+          "after": 13968852
+        },
+        "hostLoadAverage": [
+          4.3916015625,
+          6.876953125,
+          6.57568359375
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "3d",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "3d",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 98.87000000476837,
+          "wasmInstalledMs": 103.125,
+          "domContentLoadedMs": 47.87000000476837,
+          "loadMs": 47.89999997615814,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 33.40500009059906
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 89.74000000953674
+            }
+          ],
+          "wasmResponseEndMs": 97.14999997615814
+        },
+        "cadence": {
+          "meanMs": 16.666,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.88,
+          "actual3D": {
+            "calls": 181,
+            "meanMs": 16.663166666693158,
+            "p95Ms": 18.7849999666214
+          }
+        },
+        "costs": {
+          "TaskDuration": 1797.712,
+          "ScriptDuration": 319.139,
+          "LayoutDuration": 2.8890000000000002,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 15981480,
+          "after": 13640348
+        },
+        "hostLoadAverage": [
+          4.11962890625,
+          6.779296875,
+          6.54296875
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "comparison",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 79.60000002384186,
+          "wasmInstalledMs": 84,
+          "domContentLoadedMs": 27.299999952316284,
+          "loadMs": 27.299999952316284,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 72
+            }
+          ],
+          "wasmResponseEndMs": 77.79999995231628
+        },
+        "cadence": {
+          "meanMs": 16.666111111111114,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "over25ms": 0,
+          "wallMs": 2999.9000000000005,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1054.171,
+          "ScriptDuration": 849.505,
+          "LayoutDuration": 8.661999999999999,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 11043912,
+          "after": 10985496
+        },
+        "hostLoadAverage": [
+          3.94970703125,
+          6.69970703125,
+          6.51611328125
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "comparison",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 115.97000002861023,
+          "wasmInstalledMs": 120.22000002861023,
+          "domContentLoadedMs": 59.455000042915344,
+          "loadMs": 59.49000000953674,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 44.2150000333786
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 83.9650000333786
+            }
+          ],
+          "wasmResponseEndMs": 115.27499997615814
+        },
+        "cadence": {
+          "meanMs": 16.665999999999997,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8799999999997,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 885.3760000000001,
+          "ScriptDuration": 699.5799999999999,
+          "LayoutDuration": 7.131,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 9468624,
+          "after": 8824672
+        },
+        "hostLoadAverage": [
+          3.79345703125,
+          6.62158203125,
+          6.4892578125
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "comparison",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 86.60000002384186,
+          "wasmInstalledMs": 91,
+          "domContentLoadedMs": 26.699999928474426,
+          "loadMs": 26.699999928474426,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 76
+            }
+          ],
+          "wasmResponseEndMs": 85.5
+        },
+        "cadence": {
+          "meanMs": 16.66611111111111,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.800000000000182,
+          "over25ms": 0,
+          "wallMs": 2999.9,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 951.768,
+          "ScriptDuration": 765.839,
+          "LayoutDuration": 6.752,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 7884992,
+          "after": 9466752
+        },
+        "hostLoadAverage": [
+          4.2900390625,
+          6.67724609375,
+          6.509765625
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "comparison",
+        "pair": 2,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 128.17499995231628,
+          "wasmInstalledMs": 132.51499998569489,
+          "domContentLoadedMs": 65.44500005245209,
+          "loadMs": 65.49500000476837,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 48.90499997138977
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 95.46000003814697
+            }
+          ],
+          "wasmResponseEndMs": 126.7849999666214
+        },
+        "cadence": {
+          "meanMs": 16.665999999999997,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8799999999997,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1030.354,
+          "ScriptDuration": 829.696,
+          "LayoutDuration": 8.241,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 10401164,
+          "after": 9463316
+        },
+        "hostLoadAverage": [
+          3.9462890625,
+          6.56591796875,
+          6.47119140625
+        ]
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "workload": "comparison",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 87.5,
+          "wasmInstalledMs": 91.79999995231628,
+          "domContentLoadedMs": 26.100000023841858,
+          "loadMs": 26.100000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 16
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 76
+            }
+          ],
+          "wasmResponseEndMs": 85.69999992847443
+        },
+        "cadence": {
+          "meanMs": 16.666666666666664,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.799999999999727,
+          "over25ms": 0,
+          "wallMs": 2999.9999999999995,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1061.4320000000002,
+          "ScriptDuration": 854.129,
+          "LayoutDuration": 7.922000000000001,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 11155412,
+          "after": 8532508
+        },
+        "hostLoadAverage": [
+          3.7099609375,
+          6.47314453125,
+          6.43896484375
+        ]
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "workload": "comparison",
+        "pair": 3,
+        "settings": {
+          "backend": "WASM",
+          "cells": 21632,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 220,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            640,
+            320
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 121.57500004768372,
+          "wasmInstalledMs": 125.88999998569489,
+          "domContentLoadedMs": 62.3400000333786,
+          "loadMs": 62.38499999046326,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 47.81000006198883
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 112.10000002384186
+            }
+          ],
+          "wasmResponseEndMs": 120.89499998092651
+        },
+        "cadence": {
+          "meanMs": 16.666000000000004,
+          "medianMs": 16.664999999999964,
+          "p95Ms": 16.670000000000073,
+          "over25ms": 0,
+          "wallMs": 2999.8800000000006,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1110.269,
+          "ScriptDuration": 897.3050000000001,
+          "LayoutDuration": 9.12,
+          "RecalcStyleDuration": 0
+        },
+        "heap": {
+          "before": 8601024,
+          "after": 7840144
+        },
+        "hostLoadAverage": [
+          3.65283203125,
+          6.4150390625,
+          6.41845703125
+        ]
+      }
+    ],
+    "errors": [],
+    "completedAt": "2026-10-17T11:45:54.528Z"
+  },
+  "summary": [
+    {
+      "width": 1440,
+      "mode": "velocity",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.66611111111111,
+        "taskMedianMs": 1106.192,
+        "taskRangeMs": [
+          1085.708,
+          1132.0890000000002
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.666,
+        "taskMedianMs": 1129.7820000000002,
+        "taskRangeMs": [
+          1040.5739999999998,
+          1154.3129999999999
+        ]
+      }
+    },
+    {
+      "width": 1440,
+      "mode": "streamlines",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.66611111111111,
+        "taskMedianMs": 1025.3419999999999,
+        "taskRangeMs": [
+          972.252,
+          1101.444
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.665999999999997,
+        "taskMedianMs": 1029.2060000000001,
+        "taskRangeMs": [
+          1020.524,
+          1172.1730000000002
+        ]
+      }
+    },
+    {
+      "width": 1440,
+      "mode": "3d",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 29.351111111111116,
+        "taskMedianMs": 5025.047,
+        "taskRangeMs": [
+          4964.8240000000005,
+          5098.313
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 28.795166666666667,
+        "taskMedianMs": 4942.47,
+        "taskRangeMs": [
+          4941.803,
+          4999.289999999999
+        ]
+      }
+    },
+    {
+      "width": 1440,
+      "mode": "comparison",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.665555555555553,
+        "taskMedianMs": 1221.8700000000001,
+        "taskRangeMs": [
+          1200.791,
+          1242.648
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.665972222222226,
+        "taskMedianMs": 1248.526,
+        "taskRangeMs": [
+          1202.08,
+          1256.2640000000001
+        ]
+      }
+    },
+    {
+      "width": 375,
+      "mode": "velocity",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.66611111111111,
+        "taskMedianMs": 958.4970000000001,
+        "taskRangeMs": [
+          892.249,
+          1011.1600000000001
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.666,
+        "taskMedianMs": 965.028,
+        "taskRangeMs": [
+          915.123,
+          994.5339999999999
+        ]
+      }
+    },
+    {
+      "width": 375,
+      "mode": "streamlines",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.66611111111111,
+        "taskMedianMs": 868.221,
+        "taskRangeMs": [
+          781.048,
+          901.8249999999999
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.665972222222223,
+        "taskMedianMs": 905.729,
+        "taskRangeMs": [
+          769.842,
+          928.7489999999999
+        ]
+      }
+    },
+    {
+      "width": 375,
+      "mode": "3d",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.66611111111111,
+        "taskMedianMs": 1833.142,
+        "taskRangeMs": [
+          1819.848,
+          1890.0739999999998
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.666,
+        "taskMedianMs": 1819.446,
+        "taskRangeMs": [
+          1797.712,
+          1837.766
+        ]
+      }
+    },
+    {
+      "width": 375,
+      "mode": "comparison",
+      "before": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.666111111111114,
+        "taskMedianMs": 1054.171,
+        "taskRangeMs": [
+          951.768,
+          1061.4320000000002
+        ]
+      },
+      "after": {
+        "samples": 3,
+        "medianMeanFrameMs": 16.665999999999997,
+        "taskMedianMs": 1030.354,
+        "taskRangeMs": [
+          885.3760000000001,
+          1110.269
+        ]
+      }
+    }
+  ],
+  "startupIdenticalStaticHosts": {
+    "at": "2026-10-17T19:04:44.834Z",
+    "browser": "156.0.8078.4",
+    "method": "7 alternating-order pairs, fresh contexts,DPR1,1440x900,OSlight,paused defaultF1; identical Pythonstaticservers5175/5177. Browser timestamps,not harness polling durations.",
+    "samples": [
+      {
+        "pair": 1,
+        "edition": "before",
+        "wasmInstalledMs": 103.29999995231628,
+        "domContentLoadedMs": 22.799999952316284,
+        "wasmResponseEndMs": 93
+      },
+      {
+        "pair": 1,
+        "edition": "after",
+        "wasmInstalledMs": 103.60000002384186,
+        "domContentLoadedMs": 25.600000023841858,
+        "wasmResponseEndMs": 92.70000004768372
+      },
+      {
+        "pair": 2,
+        "edition": "after",
+        "wasmInstalledMs": 109.80000007152557,
+        "domContentLoadedMs": 20.200000047683716,
+        "wasmResponseEndMs": 101.90000009536743
+      },
+      {
+        "pair": 2,
+        "edition": "before",
+        "wasmInstalledMs": 110.70000004768372,
+        "domContentLoadedMs": 20.299999952316284,
+        "wasmResponseEndMs": 102.89999997615814
+      },
+      {
+        "pair": 3,
+        "edition": "before",
+        "wasmInstalledMs": 110.10000002384186,
+        "domContentLoadedMs": 19.799999952316284,
+        "wasmResponseEndMs": 102.29999995231628
+      },
+      {
+        "pair": 3,
+        "edition": "after",
+        "wasmInstalledMs": 110,
+        "domContentLoadedMs": 20,
+        "wasmResponseEndMs": 102.10000002384186
+      },
+      {
+        "pair": 4,
+        "edition": "after",
+        "wasmInstalledMs": 111.19999992847443,
+        "domContentLoadedMs": 20.09999990463257,
+        "wasmResponseEndMs": 103
+      },
+      {
+        "pair": 4,
+        "edition": "before",
+        "wasmInstalledMs": 111.70000004768372,
+        "domContentLoadedMs": 19.600000023841858,
+        "wasmResponseEndMs": 103.60000002384186
+      },
+      {
+        "pair": 5,
+        "edition": "before",
+        "wasmInstalledMs": 111.29999995231628,
+        "domContentLoadedMs": 23.399999976158142,
+        "wasmResponseEndMs": 102.69999992847443
+      },
+      {
+        "pair": 5,
+        "edition": "after",
+        "wasmInstalledMs": 121.60000002384186,
+        "domContentLoadedMs": 24.200000047683716,
+        "wasmResponseEndMs": 111.20000004768372
+      },
+      {
+        "pair": 6,
+        "edition": "after",
+        "wasmInstalledMs": 110.19999992847443,
+        "domContentLoadedMs": 18.899999976158142,
+        "wasmResponseEndMs": 102.19999992847443
+      },
+      {
+        "pair": 6,
+        "edition": "before",
+        "wasmInstalledMs": 111.60000002384186,
+        "domContentLoadedMs": 19.699999928474426,
+        "wasmResponseEndMs": 103.69999992847443
+      },
+      {
+        "pair": 7,
+        "edition": "before",
+        "wasmInstalledMs": 110.30000007152557,
+        "domContentLoadedMs": 20.200000047683716,
+        "wasmResponseEndMs": 102.39999997615814
+      },
+      {
+        "pair": 7,
+        "edition": "after",
+        "wasmInstalledMs": 109.5,
+        "domContentLoadedMs": 20.09999990463257,
+        "wasmResponseEndMs": 101.59999990463257
+      }
+    ]
+  },
+  "startupSummary": {
+    "before": {
+      "n": 7,
+      "medianMs": 110.70000004768372,
+      "rangeMs": [
+        103.29999995231628,
+        111.70000004768372
+      ]
+    },
+    "after": {
+      "n": 7,
+      "medianMs": 110,
+      "rangeMs": [
+        103.60000002384186,
+        121.60000002384186
+      ]
+    }
+  },
+  "allocation": {
+    "environment": {
+      "at": "2026-10-17T18:46:37.771Z",
+      "platform": "darwin",
+      "release": "25.6.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "logicalCPUs": 12,
+      "totalMemoryBytes": 38654705664,
+      "node": "v26.12.0",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "HeadlessChrome/156.0.8078.4",
+        "revision": "@f842f52ef39fd97b449eb27cff414bf05a98ddce",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+        "jsVersion": "15.6.75"
+      },
+      "initialLoadAverage": [
+        2.56103515625,
+        2.58056640625,
+        2.55078125
+      ],
+      "finalLoadAverage": [
+        3.4765625,
+        2.77001953125,
+        2.61767578125
+      ]
+    },
+    "method": {
+      "kind": "allocation",
+      "warmupFrames": 60,
+      "measuredIntervals": 180,
+      "pairs": 3,
+      "dpr": 1,
+      "geometry": "Cylinder",
+      "velocity": 0.12,
+      "viscosity": 0.015,
+      "turbulence": 0,
+      "stepsPerFrame": 1,
+      "theme": "light",
+      "serialPagesOnly": true,
+      "baseline": "Phase10-start production snapshot :5175",
+      "candidate": "current production :5174"
+    },
+    "samples": [
+      {
+        "edition": "before",
+        "width": 1440,
+        "afterAnalysis": {
+          "allocations": {
+            "56": 0,
+            "80": 12000
+          },
+          "retainedPool": true
+        },
+        "afterReturn": {
+          "allocations": {
+            "56": 0,
+            "80": 16000
+          },
+          "retainedPool": true
+        }
+      },
+      {
+        "edition": "after",
+        "width": 1440,
+        "afterAnalysis": {
+          "allocations": {
+            "56": 0,
+            "80": 0
+          },
+          "retainedPool": true
+        },
+        "afterReturn": {
+          "allocations": {
+            "56": 0,
+            "80": 0
+          },
+          "retainedPool": true
+        }
+      },
+      {
+        "edition": "before",
+        "width": 375,
+        "afterAnalysis": {
+          "allocations": {
+            "56": 1800,
+            "80": 0
+          },
+          "retainedPool": true
+        },
+        "afterReturn": {
+          "allocations": {
+            "56": 5400,
+            "80": 0
+          },
+          "retainedPool": true
+        }
+      },
+      {
+        "edition": "after",
+        "width": 375,
+        "afterAnalysis": {
+          "allocations": {
+            "56": 0,
+            "80": 0
+          },
+          "retainedPool": true
+        },
+        "afterReturn": {
+          "allocations": {
+            "56": 0,
+            "80": 0
+          },
+          "retainedPool": true
+        }
+      }
+    ],
+    "errors": [],
+    "completedAt": "2026-10-17T18:46:42.315Z"
+  },
+  "resourceBeforeFix": {
+    "environment": {
+      "at": "2026-10-17T18:46:45.919Z",
+      "platform": "darwin",
+      "release": "25.6.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "logicalCPUs": 12,
+      "totalMemoryBytes": 38654705664,
+      "node": "v26.12.0",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "HeadlessChrome/156.0.8078.4",
+        "revision": "@f842f52ef39fd97b449eb27cff414bf05a98ddce",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+        "jsVersion": "15.6.75"
+      },
+      "initialLoadAverage": [
+        3.27783203125,
+        2.740234375,
+        2.60791015625
+      ],
+      "finalLoadAverage": [
+        11.9912109375,
+        5.80517578125,
+        3.80224609375
+      ]
+    },
+    "method": {
+      "kind": "resources",
+      "warmupFrames": 60,
+      "measuredIntervals": 180,
+      "pairs": 3,
+      "dpr": 1,
+      "geometry": "Cylinder",
+      "velocity": 0.12,
+      "viscosity": 0.015,
+      "turbulence": 0,
+      "stepsPerFrame": 1,
+      "theme": "light",
+      "serialPagesOnly": true,
+      "baseline": "Phase10-start production snapshot :5175",
+      "candidate": "current production :5174"
+    },
+    "samples": [
+      {
+        "edition": "before",
+        "cycles": [
+          {
+            "cycle": 0,
+            "live": {
+              "canvases": 2,
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 8919796,
+            "workers": [
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              }
+            ]
+          },
+          {
+            "cycle": 1,
+            "live": {
+              "canvases": 2,
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 9183092,
+            "workers": [
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/0f3d55ac-f3dd-467b-b317-6ec50e03abf1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/0f3d55ac-f3dd-467b-b317-6ec50e03abf1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/0f3d55ac-f3dd-467b-b317-6ec50e03abf1"
+              }
+            ]
+          },
+          {
+            "cycle": 2,
+            "live": {
+              "canvases": 2,
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 9990848,
+            "workers": [
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/19175f9c-4955-4347-bd3d-929dcb01c66c"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/0f3d55ac-f3dd-467b-b317-6ec50e03abf1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/0f3d55ac-f3dd-467b-b317-6ec50e03abf1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/0f3d55ac-f3dd-467b-b317-6ec50e03abf1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/a871d6bb-e9f6-4b72-b0dc-61a56620be89"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/a871d6bb-e9f6-4b72-b0dc-61a56620be89"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5175/a871d6bb-e9f6-4b72-b0dc-61a56620be89"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "edition": "after",
+        "cycles": [
+          {
+            "cycle": 0,
+            "live": {
+              "canvases": 2,
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 8911204,
+            "workers": [
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              }
+            ]
+          },
+          {
+            "cycle": 1,
+            "live": {
+              "canvases": 2,
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 9589084,
+            "workers": [
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7a21a54f-3e3b-43f7-b7fc-9bcf61cd8705"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7a21a54f-3e3b-43f7-b7fc-9bcf61cd8705"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7a21a54f-3e3b-43f7-b7fc-9bcf61cd8705"
+              }
+            ]
+          },
+          {
+            "cycle": 2,
+            "live": {
+              "canvases": 2,
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 9822068,
+            "workers": [
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7934e66c-d288-4767-a6e2-bf836b0ac9a1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/804bfd28-a8ea-4455-9f8b-9364d28ae6d1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7a21a54f-3e3b-43f7-b7fc-9bcf61cd8705"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7a21a54f-3e3b-43f7-b7fc-9bcf61cd8705"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/804bfd28-a8ea-4455-9f8b-9364d28ae6d1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/804bfd28-a8ea-4455-9f8b-9364d28ae6d1"
+              },
+              {
+                "type": "worker",
+                "url": "blob:http://127.0.0.1:5174/7a21a54f-3e3b-43f7-b7fc-9bcf61cd8705"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "completedAt": "2026-10-17T18:48:19.289Z"
+  },
+  "resourceAfterFix": {
+    "environment": {
+      "at": "2026-10-17T18:48:41.243Z",
+      "platform": "darwin",
+      "release": "25.6.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "logicalCPUs": 12,
+      "totalMemoryBytes": 38654705664,
+      "node": "v26.12.0",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "HeadlessChrome/156.0.8078.4",
+        "revision": "@f842f52ef39fd97b449eb27cff414bf05a98ddce",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+        "jsVersion": "15.6.75"
+      },
+      "initialLoadAverage": [
+        8.880859375,
+        5.57666015625,
+        3.77783203125
+      ],
+      "finalLoadAverage": [
+        12.00146484375,
+        6.9833984375,
+        4.40234375
+      ]
+    },
+    "method": {
+      "kind": "resources",
+      "warmupFrames": 60,
+      "measuredIntervals": 180,
+      "pairs": 3,
+      "dpr": 1,
+      "geometry": "Cylinder",
+      "velocity": 0.12,
+      "viscosity": 0.015,
+      "turbulence": 0,
+      "stepsPerFrame": 1,
+      "theme": "light",
+      "serialPagesOnly": true,
+      "baseline": "Phase10-start production snapshot :5175",
+      "candidate": "current production :5174"
+    },
+    "samples": [
+      {
+        "edition": "after",
+        "cycles": [
+          {
+            "cycle": 0,
+            "live": {
+              "canvases": 2,
+              "rendererIdentity": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 8904224,
+            "workers": []
+          },
+          {
+            "cycle": 1,
+            "live": {
+              "canvases": 2,
+              "rendererIdentity": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 9189500,
+            "workers": []
+          },
+          {
+            "cycle": 2,
+            "live": {
+              "canvases": 2,
+              "rendererIdentity": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+              "rendererMemory": {
+                "geometries": 63,
+                "textures": 1
+              },
+              "notice": []
+            },
+            "canvasesAfterExit": 0,
+            "heapAfterGC": 9422408,
+            "workers": []
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "completedAt": "2026-10-17T18:49:32.776Z"
+  },
+  "oneMinuteScreen": {
+    "method": "One60s 2D Velocity screening peredition,serial,Cylinder,.12/.015,turb0,one step/frame,DPR1,1440x900. ForcedGC at0/30/60s. Not a leak proof or general performance benchmark.",
+    "at": "2026-10-17T18:51:53.816Z",
+    "samples": [
+      {
+        "edition": "before",
+        "observations": [
+          {
+            "seconds": 0,
+            "heapAfterGC": 5394156,
+            "taskSeconds": 0.007321,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "4 fps \u00b7 \u0394 1.0e+0"
+          },
+          {
+            "seconds": 30,
+            "heapAfterGC": 5643648,
+            "taskSeconds": 0.537615,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.3e-3"
+          },
+          {
+            "seconds": 60,
+            "heapAfterGC": 5688428,
+            "taskSeconds": 0.966439,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.2e-3"
+          }
+        ],
+        "errors": []
+      },
+      {
+        "edition": "after",
+        "observations": [
+          {
+            "seconds": 0,
+            "heapAfterGC": 5226284,
+            "taskSeconds": 0.00628,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "0 fps \u00b7 \u0394 1.0e+0"
+          },
+          {
+            "seconds": 30,
+            "heapAfterGC": 5630820,
+            "taskSeconds": 0.444896,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.3e-3"
+          },
+          {
+            "seconds": 60,
+            "heapAfterGC": 5789432,
+            "taskSeconds": 0.779427,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.1e-3"
+          }
+        ],
+        "errors": []
+      }
+    ]
+  },
+  "earlierSchedulingLimitedScreen": {
+    "method": "One60s 2D Velocity screening peredition,serial,Cylinder,.12/.015,turb0,one step/frame,DPR1,1440x900. ForcedGC at0/30/60s. Not a leak proof or general performance benchmark.",
+    "at": "2026-10-17T18:49:50.309Z",
+    "samples": [
+      {
+        "edition": "before",
+        "observations": [
+          {
+            "seconds": 0,
+            "heapAfterGC": 5437840,
+            "taskSeconds": 0.008735,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "0 fps \u00b7 \u0394 6.4e-3"
+          },
+          {
+            "seconds": 30,
+            "heapAfterGC": 5650500,
+            "taskSeconds": 2.803287,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.4e-3"
+          },
+          {
+            "seconds": 60,
+            "heapAfterGC": 5680952,
+            "taskSeconds": 3.227138,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.1e-3"
+          }
+        ],
+        "errors": []
+      },
+      {
+        "edition": "after",
+        "observations": [
+          {
+            "seconds": 0,
+            "heapAfterGC": 5364776,
+            "taskSeconds": 0.006881,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "0 fps \u00b7 \u0394 1.0e+0"
+          },
+          {
+            "seconds": 30,
+            "heapAfterGC": 5637608,
+            "taskSeconds": 0.427159,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.4e-3"
+          },
+          {
+            "seconds": 60,
+            "heapAfterGC": 5676572,
+            "taskSeconds": 0.758587,
+            "running": true,
+            "backend": "WASM",
+            "cells": 40500,
+            "wasmMemoryBytes": 5373952,
+            "finite": true,
+            "warning": null,
+            "fps": "3 fps \u00b7 \u0394 1.1e-3"
+          }
+        ],
+        "errors": []
+      }
+    ]
+  },
+  "discardedInitialTiming": {
+    "environment": {
+      "at": "2026-10-17T11:38:22.033Z",
+      "platform": "darwin",
+      "release": "25.6.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "logicalCPUs": 12,
+      "totalMemoryBytes": 38654705664,
+      "node": "v26.12.0",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/155.0.8059.85",
+        "revision": "@0e66b94549a8bd85f03fbdf189b752d6e7b63c32",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "jsVersion": "15.5.35.25"
+      },
+      "initialLoadAverage": [
+        13.93994140625,
+        11.1123046875,
+        6.830078125
+      ]
+    },
+    "method": {
+      "kind": "performance",
+      "warmupFrames": 60,
+      "measuredIntervals": 180,
+      "pairs": 3,
+      "dpr": 1,
+      "geometry": "Cylinder",
+      "velocity": 0.12,
+      "viscosity": 0.015,
+      "turbulence": 0,
+      "stepsPerFrame": 1,
+      "theme": "light",
+      "serialPagesOnly": true,
+      "baseline": "Phase10-start production snapshot :5175",
+      "candidate": "current production :5174"
+    },
+    "samples": [
+      {
+        "edition": "before",
+        "width": 1440,
+        "workload": "velocity",
+        "pair": 1,
+        "settings": {
+          "backend": "WASM",
+          "cells": 40500,
+          "vel": 0.12,
+          "nu": 0.015,
+          "turb": 0,
+          "particles": 420,
+          "steps": 1,
+          "mode": "velocity",
+          "backing": [
+            1000,
+            450
+          ],
+          "dpr": 1
+        },
+        "startup": {
+          "wasmLoadedMs": 107.10000002384186,
+          "wasmInstalledMs": 114.70000004768372,
+          "domContentLoadedMs": 31,
+          "loadMs": 31.100000023841858,
+          "paints": [
+            {
+              "name": "first-paint",
+              "at": 48
+            },
+            {
+              "name": "first-contentful-paint",
+              "at": 140
+            }
+          ],
+          "wasmResponseEndMs": 106.5
+        },
+        "cadence": {
+          "meanMs": 353.04111111111115,
+          "medianMs": 350,
+          "p95Ms": 366.7000000000007,
+          "over25ms": 180,
+          "wallMs": 63547.40000000001,
+          "actual3D": null
+        },
+        "costs": {
+          "TaskDuration": 1174.509,
+          "ScriptDuration": 1061.462,
+          "LayoutDuration": 7.007000000000001,
+          "RecalcStyleDuration": 2.511
+        },
+        "heap": {
+          "before": 14192900,
+          "after": 6933208
+        },
+        "hostLoadAverage": [
+          13.79638671875,
+          11.810546875,
+          7.52880859375
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "calibration": {
+    "environment": {
+      "at": "2026-10-17T11:41:04.050Z",
+      "platform": "darwin",
+      "release": "25.6.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "logicalCPUs": 12,
+      "totalMemoryBytes": 38654705664,
+      "node": "v26.12.0",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "HeadlessChrome/156.0.8078.4",
+        "revision": "@f842f52ef39fd97b449eb27cff414bf05a98ddce",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+        "jsVersion": "15.6.75"
+      },
+      "initialLoadAverage": [
+        9.12646484375,
+        11.0078125,
+        7.57275390625
+      ],
+      "finalLoadAverage": [
+        8.5556640625,
+        10.85791015625,
+        7.5400390625
+      ]
+    },
+    "method": {
+      "kind": "calibration",
+      "warmupFrames": 60,
+      "measuredIntervals": 180,
+      "pairs": 3,
+      "dpr": 1,
+      "geometry": "Cylinder",
+      "velocity": 0.12,
+      "viscosity": 0.015,
+      "turbulence": 0,
+      "stepsPerFrame": 1,
+      "theme": "light",
+      "serialPagesOnly": true,
+      "baseline": "Phase10-start production snapshot :5175",
+      "candidate": "current production :5174"
+    },
+    "samples": [
+      {
+        "intervals": 60,
+        "meanMs": 16.666666666666668,
+        "wallMs": 1010.4000000953674,
+        "visibility": "visible",
+        "focused": true
+      }
+    ],
+    "errors": [],
+    "completedAt": "2026-10-17T11:41:06.094Z"
+  }
+}

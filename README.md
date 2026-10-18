@@ -1,4 +1,8 @@
-# AeroTunnel
+# AEROTUNNEL
+
+**Aerodynamics & Flow Simulation — F1 STORIES**
+
+Το AEROTUNNEL είναι η εφαρμογή αεροδυναμικής προσομοίωσης του [F1 STORIES](https://f1-stories.gr).
 
 **Διαδραστικός Προσομοιωτής Υπολογιστικής Ρευστοδυναμικής (CFD) στον Browser**
 
@@ -32,7 +36,7 @@
 
 ## Επισκόπηση
 
-Το AeroTunnel είναι ένας ολοκληρωμένος προσομοιωτής αεροδυναμικής σήραγγας που εκτελείται εξ ολοκλήρου στον browser. Απευθύνεται σε μηχανικούς, φοιτητές και λάτρεις της αεροδυναμικής — ιδιαίτερα της Formula 1 — που θέλουν να πειραματιστούν με ροές γύρω από διάφορα αεροδυναμικά προφίλ σε πραγματικό χρόνο.
+Το AEROTUNNEL είναι ένας ολοκληρωμένος προσομοιωτής αεροδυναμικής σήραγγας που εκτελείται εξ ολοκλήρου στον browser. Απευθύνεται σε μηχανικούς, φοιτητές και λάτρεις της αεροδυναμικής — ιδιαίτερα της Formula 1 — που θέλουν να πειραματιστούν με ροές γύρω από διάφορα αεροδυναμικά προφίλ σε πραγματικό χρόνο.
 
 Η εφαρμογή λύνει τις εξισώσεις ροής χρησιμοποιώντας τη μέθοδο **Lattice Boltzmann** αντί των παραδοσιακών εξισώσεων Navier-Stokes. Αυτή η προσέγγιση είναι ιδανική για παράλληλους υπολογισμούς και παρέχει εξαιρετική απόδοση σε JavaScript, επιτρέποντας προσομοίωση σε πραγματικό χρόνο χωρίς GPU computing ή server-side επεξεργασία.
 
@@ -59,7 +63,7 @@ f_i(x + c_i·Δt, t + Δt) = f_i(x, t) + Ω_i(x, t)
 
 ### Πλέγμα D2Q9
 
-Το AeroTunnel χρησιμοποιεί πλέγμα **D2Q9** — δηλαδή 2 Διαστάσεις με 9 Ταχύτητες ανά κόμβο. Κάθε κόμβος του πλέγματος έχει 9 κατευθύνσεις κίνησης:
+Το AEROTUNNEL χρησιμοποιεί πλέγμα **D2Q9** — δηλαδή 2 Διαστάσεις με 9 Ταχύτητες ανά κόμβο. Κάθε κόμβος του πλέγματος έχει 9 κατευθύνσεις κίνησης:
 
 ```
   6   2   5
@@ -137,7 +141,7 @@ f_i^eq = w_i · ρ · (1 + 3·(c_i · u) + 4.5·(c_i · u)² - 1.5·|u|²)
 | **Μέτρο ταχύτητας** | `\|u\| = √(ux² + uy²)` | Για χρωματική απεικόνιση |
 | **Στροβιλότητα (curl)** | `ω_z = ∂uy/∂x - ∂ux/∂y` | Υπολογίζεται με κεντρικές διαφορές |
 
-Η **πίεση** υπολογίζεται από την καταστατική εξίσωση του πλέγματος: `p = ρ·c_s²` όπου `c_s = 1/√3` η ταχύτητα ήχου στο πλέγμα.
+Η καταστατική εξίσωση του πλέγματος δίνει **πίεση** `p = ρ·c_s² = ρ/3`, με `c_s = 1/√3`. Η προβολή **Pressure** χρωματίζει απευθείας την πυκνότητα `ρ`, ως δείκτη πίεσης· δεν εμφανίζει `p`, σχετική πίεση ή Pascal. Δεν υπάρχει επικυρωμένη μετατροπή σε SI.
 
 ---
 
@@ -227,14 +231,16 @@ f_i^eq = w_i · ρ · (1 + 3·(c_i · u) + 4.5·(c_i · u)² - 1.5·|u|²)
 | Λειτουργία | Περιγραφή |
 |------------|-----------|
 | **Velocity** | Χρωματική απεικόνιση μέτρου ταχύτητας (colormap Turbo) |
-| **Pressure** | Χρωματική απεικόνιση πίεσης (colormap CoolWarm) |
+| **Pressure** | Πυκνότητα `ρ` σε μονάδες πλέγματος, ως δείκτης πίεσης (CoolWarm), όχι Pa |
 | **Streamlines** | Τροχιές σωματιδίων — ημιδιαφανή trails με fade-out |
-| **Vorticity** | Στροβιλότητα (curl) — αναδεικνύει δίνες και αποκόλληση |
+| **Vorticity** | Προσημασμένη στροβιλότητα `ω_z`, σε `1/step` (Turbo, αυτόματη κλίμακα) |
+| **Vectors** | Διανύσματα `ux,uy` με περιορισμένο μήκος βέλους και αμυδρό υπόβαθρο ταχύτητας |
+| **Schlieren** | Κατακόρυφη διαφορά πυκνότητας `|∂ρ/∂y|`, κανονικοποιημένη στο μέγιστο κάθε καρέ, ανοιχτό→σκούρο sepia |
 | **3D View** | Τρισδιάστατη εξώθηση (extrusion) του προφίλ με χρωματισμό επιφάνειας μέσω Three.js |
 
 Η 2D απεικόνιση χρησιμοποιεί **Canvas 2D API** με `ImageData` και `Uint32Array` buffer για άμεσο pixel manipulation. Κάθε κόμβος αντιστοιχίζεται σε pixel, η τιμή κανονικοποιείται, και αναζητείται στον πίνακα χρωμάτων (LUT) 256 εισόδων.
 
-Η 3D απεικόνιση φορτώνει δυναμικά το **Three.js r128** από CDN, δημιουργεί εξωθημένη γεωμετρία από το 2D πολύγωνο, και εφαρμόζει vertex colors από τα δεδομένα του solver. Περιλαμβάνει orbit controls, fog, πολλαπλά φώτα, και grid helper.
+Η 3D απεικόνιση φορτώνει δυναμικά το **Three.js r128** από CDN και εξωθεί το επιλεγμένο 2D περίγραμμα με ενιαία κλίμακα, σωστή γωνία και ανεξάρτητο ενδεικτικό βάθος. Οι τροχιές προέρχονται από ξεχωριστή προσέγγιση potential flow (Laplace/SOR), ενώ ο χρωματισμός επιφάνειας είναι ευρετικός· δεν αποτελούν τρισδιάστατη λύση LBM ή μετρημένη πίεση/ταχύτητα. Το προαιρετικό μοντέλο αυτοκινήτου είναι μόνο οπτική αναφορά για το F1 Car, όχι η προσομοιωμένη γεωμετρία. Η κάμερα μένει σταθερή εκτός αν ενεργοποιηθεί Auto orbit.
 
 ---
 
@@ -254,20 +260,21 @@ f_i^eq = w_i · ρ · (1 + 3·(c_i · u) + 4.5·(c_i · u)² - 1.5·|u|²)
 - Μετατόπιση, κλιμάκωση, περιστροφή (γωνία πρόσπτωσης -25° έως +35°)
 - Απλοποίηση πολυγώνου (polygon simplification)
 
-### Ζωντανές Μετρήσεις
-- **CL** (Lift Coefficient): Συντελεστής άνωσης — υπολογίζεται από τη διαφορά πίεσης πάνω/κάτω
-- **CD** (Drag Coefficient): Συντελεστής οπισθέλκουσας — αντίσταση στη ροή
-- **Re** (Reynolds Number): Αριθμός Reynolds — λόγος αδρανειακών/ιξωδών δυνάμεων
-- **L/D** (Lift-to-Drag Ratio): Αεροδυναμική αποδοτικότητα
-- Sparklines ιστορικού μετρήσεων
-- Ταξινόμηση καθεστώτος ροής (Laminar / Transitional / Turbulent)
+### Ζωντανοί Ευρετικοί Δείκτες
+- **CL proxy:** `abs(mean(uy) × 2 × (1 + aoa × 0.06))`
+- **CD proxy:** `mean(abs(ux − inlet)) × 0.5 + 0.008`
+- **L/D proxy:** λόγος των παραπάνω δεικτών
+- **Re\*:** `(inlet × sx) / (nu + 1e-6) × 10`, υπάρχουσα κλιμακωμένη εκτίμηση πλέγματος
+- Οι μέσοι όροι υπολογίζονται στους κόμβους ρευστού. Δεν γίνεται ολοκλήρωση δυνάμεων στην επιφάνεια ή κανονικοποίηση με δυναμική πίεση/επιφάνεια αναφοράς. Οι δείκτες **δεν είναι επικυρωμένοι συντελεστές άνωσης/οπισθέλκουσας**.
+- Οι ιστορικές ετικέτες Laminar / Transitional / Turbulent προκύπτουν από όρια Re* 2300/4000. Δεν συνιστούν διάγνωση πραγματικής μετάβασης ή μοντέλο τύρβης.
+- Τα ιστορικά κλειδιά `cl`, `cd`, `re`, `ld_ratio`, `regime` στα exports παραμένουν αμετάβλητα για συμβατότητα. Δεν πρέπει να συγκρίνονται απευθείας με δημοσιευμένους αεροδυναμικούς συντελεστές ή παλαιούς ενδεικτικούς πίνακες αναφοράς.
 
-### Αναφορές Σύγκρισης
-Ενσωματωμένα δεδομένα αναφοράς για σύγκριση:
-- NACA 0012: CL 0.00-1.20, CD 0.006-0.020
-- NACA 2412: CL 0.30-1.60, CD 0.006-0.020
-- F1 rear wing: CL 2.50+, CD 0.80-1.20
-- Flat plate: CL 0.00-1.00, CD 0.02-1.28
+### Ερμηνεία Χρωμάτων και Μονάδων
+- Ταχύτητα: `|u|` σε κελιά ανά βήμα solver. Ιξώδες: κελιά² ανά βήμα. Πυκνότητα: μονάδες πλέγματος. Καμία μετατροπή σε m/s ή Pa δεν εφαρμόζεται.
+- Οι heatmaps διατηρούν Turbo/CoolWarm. Οι λεζάντες παράγονται από τα ίδια LUTs. Η στροβιλότητα παραμένει προσημασμένη με αυτόματη κλίμακα· το μηδέν δεν έχει σταθερό ουδέτερο χρώμα.
+- Οι τροχιές του Streamlines είναι χρονικές particle pathlines του 2D LBM. Τα σταθερά cyan/green/white bands δείχνουν ηλικία ίχνους, όχι βαθμονομημένη ταχύτητα.
+- Κάθε πλευρά A/B κανονικοποιείται ανεξάρτητα. Το προαιρετικό Δ είναι `|normalized(A) − normalized(B)|`, αδιάστατη διαφορά χρωματικών δεικτών, όχι αφαίρεση διαφορετικών φυσικών μεγεθών.
+- Η 3D προβολή είναι ποιοτική εικονογράφηση, με ξεχωριστές κλίμακες και χωρίς αριθμητική λεζάντα LBM.
 
 ### Περιβάλλον Χρήστη
 - Σκούρο/φωτεινό θέμα
@@ -361,21 +368,18 @@ aerotunnel/
 │   │   ├── lut.js                # Πίνακες χρωμάτων (Turbo, CoolWarm)
 │   │   └── index.js              # Barrel export
 │   ├── components/
-│   │   ├── ControlPanel.jsx      # Κύριο panel ελέγχου (Shape/Flow/Transform/Visual)
+│   │   ├── ControlPanel.jsx      # Geometry / Flow / Visualization / Advanced
 │   │   ├── AnalysisPanel.jsx     # Panel ανάλυσης με γραφήματα
-│   │   ├── LiveMetricsColumn.jsx # Ζωντανές μετρήσεις CL/CD/Re
 │   │   ├── View3D.jsx            # 3D απεικόνιση με Three.js
-│   │   ├── IconRail.jsx          # Πλευρική γραμμή εικονιδίων
-│   │   ├── CommandBar.jsx        # Γραμμή εντολών (/)
-│   │   ├── MetricCard.jsx        # Κάρτα μέτρησης
+│   │   ├── IconRail.jsx          # Πλοήγηση εφαρμογής και έλεγχοι
+│   │   ├── CommandBar.jsx        # Ταυτότητα εφαρμογής και έναρξη
 │   │   ├── AboutPanel.jsx        # Panel πληροφοριών
 │   │   ├── ThemeToggle.jsx       # Εναλλαγή θέματος
-│   │   ├── F1Logo.jsx            # Λογότυπο F1
+│   │   ├── F1Logo.jsx            # Λογότυπο F1 STORIES
 │   │   └── iconRailConfig.js     # Ρυθμίσεις icon rail
 │   ├── CFDLab.jsx                # Κύριο component — ενορχήστρωση
 │   ├── cfdlab.css                # Κύρια στυλ
 │   ├── ThemeContext.jsx          # Context θέματος
-│   ├── ThemeToggle.jsx           # Εναλλαγή θέματος (root)
 │   └── main.jsx                  # Entry point
 ├── vite.config.js                # Ρυθμίσεις Vite
 ├── package.json
@@ -402,7 +406,7 @@ aerotunnel/
 Ο solver χρησιμοποιεί μερικές τεχνικές ασφαλείας:
 - **Clamping πυκνότητας:** Αν `ρ < 0.01`, επαναφέρεται σε 1 (αποφυγή διαίρεσης με μηδέν)
 - **Clamping omega:** Περιορίζεται στο [0.5, 1.95] (αποφυγή αρνητικού ιξώδους)
-- **Turbulence perturbation:** Μικρές τυχαίες διαταραχές (`±0.004×turb`) στην είσοδο
+- **Inlet perturbation:** Τυχαία εγκάρσια διαταραχή `(random − 0.5) × turb × 0.004` στην είσοδο. Το `turb` είναι πλάτος διαταραχής, όχι επικυρωμένο μοντέλο τύρβης
 
 ### Μονάδες Πλέγματος (Lattice Units)
 
@@ -416,4 +420,46 @@ aerotunnel/
 
 ---
 
-*Αναπτύχθηκε από τον [f1stories.gr](https://f1stories.gr)*
+*Αναπτύχθηκε από τον [F1 STORIES](https://f1-stories.gr)*
+
+## Redesign verification
+
+The Phase 01–10 audit trail is in [`docs/redesign/`](docs/redesign/). Persisted
+`aerolab-session` / `aerolab-sessions` keys and the version-2 `app: "aerolab"`
+JSON identity remain compatibility contracts; public naming is AEROTUNNEL.
+
+```sh
+npm ci
+npx playwright install chromium
+npm run lint
+npm test
+npm run build
+npm run test:e2e
+```
+
+The browser suite starts its own production build and preview on port **5180**,
+under the real `/aerotunnel/` base. It uses one Chromium worker to avoid competing
+CFD simulations. Downloads, traces and failure screenshots are local test
+artifacts in `test-results/`; `playwright-report/` contains the HTML report.
+The 3D smoke test requires the existing Three.js CDN resources and WebGL support.
+
+`npm run test:visual` compares representative masthead, empty-analysis and
+publishing views at 375/1440px in both themes. Reviewed reference PNGs live beside
+the tests, with platform-specific filenames. Establish references on a new
+platform using `npm run test:visual -- --update-snapshots`, then inspect every
+changed image before accepting it. Live CFD pixels, stochastic traces and timing
+labels are excluded from visual goldens; separate tests check solver continuity
+and recorded numerical fixtures. Tests do not assert calibrated physical accuracy
+or deterministic replay from a JSON session.
+
+
+## Asset attribution
+
+The optional illustrative car reference is based on
+[“NEW F1 CAR 2026 NEW CAR”](https://sketchfab.com/3d-models/new-f1-car-2026-new-car-a5bd945a823e43ea958edb930548bd3b)
+by [Abu Saif](https://sketchfab.com/abuhossain844), licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The runtime GLB is an optimized derivative, and the viewer applies its own
+materials. It is separate from the simulated two-dimensional contour.
+Full attribution and font licenses ship in [`public/licenses/`](public/licenses/)
+and are linked from About.

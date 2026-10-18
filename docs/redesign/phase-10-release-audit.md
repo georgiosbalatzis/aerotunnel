@@ -1,0 +1,149 @@
+# Phase 10 — Full redesign QA and release readiness
+
+Completed 2026-10-17. **GO for the reviewed static production build**, within the Chromium coverage and limitations below. Lint, build, all 36 existing unit tests and all 38 browser tests pass. No commit, push, deployment or PR was performed. Stopped after Phase 10.
+
+## Scope, baseline and prior reports
+
+Read AGENTS.md and the Phase 01–09 reports before implementation. Preserved their uncommitted changes, along with unrelated `.codex/`, `AGENTS.md` and `f1car/` work. A separate Phase 09 source/hash snapshot and built baseline were retained before changes; no comparison used obsolete pre-redesign screenshots as pixel requirements.
+
+| Prior phase | Final disposition |
+| --- | --- |
+| 01 identity | Public AEROTUNNEL / F1 STORIES naming, sourced logo and metadata retained; internal protocol identities remain intentional. |
+| 02 tokens | Canonical paper/charcoal, readable accents, hosted Plex/Greek and Barlow retained. Scientific colors remain separate. Compatibility aliases still have consumers. |
+| 03 themes | Both editions, saved preference, OS changes before explicit choice, blocked storage, keyboard and first paint covered. Origin-scoped preference limits remain. |
+| 04 navigation | Global/local navigation remains separate; real standalone destinations and `/aerotunnel/` base retained. Five-product scrolling is intentional. |
+| 05 workspace | First visit, active workspace, Simulation/Analysis/About, resize, fullscreen and solver identity checked. Physical-device safe areas remain unverified. |
+| 06 controls | Presets, six geometry file fixtures, JSON/drop, transformations, numeric validation, retained drafts, generators, sketch and Undo/Redo covered. Existing parser/resource limits remain. |
+| 07 visualization | All seven modes, comparison, 3D, independent LUTs and per-backend numerical fixtures covered. No validated SI or full 3D CFD claim. |
+| 08 analysis | Empty/live/paused/unavailable interpretation, recorded data, gallery restore and sweep completion/cancellation/CSV preserved. Inherited viscosity-sweep Re* limitation remains explicit. |
+| 09 publishing | PNG decoding, CSV precision, JSON re-import, binary STL, recording ZIP/late-encoding retry and isolated default embed covered. Production-host iframe/CSP availability still requires deployment-time verification. |
+
+Baseline: build passed, 36 unit tests passed, lint failed with **11 inherited errors / 0 warnings**. These were unused authored symbols/catch bindings and two generated WASM-glue diagnostics. Their baseline origin was independently checked by the code mapper. No baseline browser regression suite existed in the repository.
+
+## Implemented fixes
+
+- **Particle allocation:** `useRef(createPool())` constructed and discarded a full pool on every React render. A lazy state initializer now owns one pool; the existing ref and all consumers retain its identity. In the controlled navigation probe, desktop trail-array constructions fell from 16,000 to zero, and mobile from 5,400 to zero. This avoids allocation; it is not a claim of a general FPS increase. Removing discarded construction also stops its incidental RNG consumption; controlled numerical checks seed only their explicit test steps.
+- **3D decoder cleanup:** actual reference-model cycles left 3, 6 and 9 workers alive. The loader is now disposed on successful/error completion and unmount. Callbacks capture their own decoder so late completion also releases it. A disposed guard prevents late loader-script callbacks starting a new load. Three repeated visits now leave zero workers and zero scene canvases; permanent tests also exit during delayed GLB and decoder-script responses.
+- **Modal keyboard behavior:** Tab from the last native-dialog control reached document/body focus. Tab/Shift+Tab now wrap between visible enabled controls; Escape and native opener-focus restoration remain intact. Global simulation shortcuts ignore an open publishing dialog.
+- **Metric provenance:** live cards previously used `hasRun`, which could expose initial zeros or stale reset/setup values as measurements. They now require an actual sample matching the current setup; fluid proxies require fluid cells and finite values. Valid measured zeros remain valid. Existing ratio-formatting guards are reused. Solver formulas, history and exported values are unchanged.
+- **Readability/semantics:** disabled Save Image uses canonical secondary text on a surface without compounded opacity. About uses an h2 under the page h1, and its usage section has an h3. The mobile Reset icon selector now matches `Reset simulation`.
+- **Verified cleanup:** removed orphaned rail/compact-metric selectors from 25 rules; removed the unused 3D `localVelocity` helper and authored unused values/catch bindings. Kept live `.floating-rail-btn` / `.floating-rail-action` rules and required responsive overrides/aliases. Generated wasm-bindgen output is lint-excluded, without editing generated bytes. Authored browser/config MJS is linted with its Node/browser globals.
+
+No solver mathematics, WASM implementation, parameter meaning, session key, JSON/CSV/STL/ZIP format or application base path changed. No new backend or production dependency was added.
+
+## Automated coverage and reproduction
+
+Only Playwright was added, as development tooling. Existing dependency-free Node tests remain the unit suite. No parallel CFD test workers, automatic retries or assertion-threshold increases are used.
+
+```sh
+npm ci
+npx playwright install chromium
+npm run lint
+npm test
+npm run build
+npm run test:e2e
+```
+
+The browser command builds and starts its own production preview on port **5180** under **`/aerotunnel/`**, rather than relying on development-server behavior. `npm run test:visual` runs its representative visual subset. Reference PNGs live in `tests/browser/visual.spec.mjs-snapshots/`; all 12 were opened and reviewed. The final 38-test run compared them **without** `--update-snapshots` and passed with zero retries. Do not regenerate references to hide failures. New operating systems need separately reviewed platform references, as documented in README.
+
+Coverage includes startup and actual field evolution on WASM and forced JS fallback; preset selection; one Run/Pause control; Reset preserving geometry and paused state; all modes; navigation; keyboard theme persistence without resetting the solver; first paint before the React bundle is released; OS/storage-failure cases; saved gallery load after reload; imports/drop/invalid retention; CSV/JSON/STL/PNG/ZIP; sweep automatic/manual CSV equality and nonzero-parameter cancellation; mobile menu/drawer focus; NACA/F1 tuning and pointer sketching; real fullscreen; comparison; 3D remount/teardown and late resources; embed editor isolation; long Greek session names; and visual references.
+
+Read-only React-ref inspection in browser helpers verifies real solver/canvas/pool identity and paused field arrays without adding production test hooks. It is coupled to the current React architecture and should fail explicitly if that architecture changes.
+
+A fixed 700ms recording wait initially missed asynchronous PNG completion. The test now exercises the documented empty-Stop retry after observing a completed Blob. This preserves the existing recording contract rather than pretending Stop synchronizes outstanding encodes. The initial theme test also needed to await Start Simulation’s intentional focus move before using the toggle; no theme-controller change was required.
+
+## Responsive and accessibility audit
+
+The matrix covers fresh initial state and active/paused workspace, controls, Analysis, About and publishing in both themes. Phone contexts use 812px height; 768/1024/1440 use 900px. Captures show the active workspace paused shortly after Start; they are presentation evidence, not converged CFD results.
+
+| Width | Light | Dark | Screenshot |
+| --- | --- | --- | --- |
+| 320px | Pass | Pass | [Light](screenshots/phase-10-320-light.png) · [Dark](screenshots/phase-10-320-dark.png) |
+| 375px | Pass | Pass | [Light](screenshots/phase-10-375-light.png) · [Dark](screenshots/phase-10-375-dark.png) |
+| 768px | Pass | Pass | [Light](screenshots/phase-10-768-light.png) · [Dark](screenshots/phase-10-768-dark.png) |
+| 1024px | Pass | Pass | [Light](screenshots/phase-10-1024-light.png) · [Dark](screenshots/phase-10-1024-dark.png) |
+| 1440px | Pass | Pass | [Light](screenshots/phase-10-1440-light.png) · [Dark](screenshots/phase-10-1440-dark.png) |
+
+No document-level horizontal overflow was found. Named horizontal scrollers retain products, modes and dense technical content. Canvas and solver references plus all six paused arrays survive navigation, theme and mode operations where applicable. Important mobile actions remain reachable; the drawer closes with Escape and restores the opener’s focus. Native file selection, mouse/pointer sketching and browser fullscreen were exercised. CSS safe-area padding is retained; this does not establish physical-notch or touch-device behavior.
+
+Automated checks verify visible control names; selected/pressed states; skip-to-main; mobile menu exposed state and Escape; focused theme-control solid outline ≥2px and 44×44 target; numeric invalid state and error recovery; reduced-motion styles; modal Tab/Shift+Tab/Escape containment and focus return; and canonical contrast pairs. Primary/base, secondary/surface, accent/surface and accent-fill pairs all exceed 4.5:1 in both themes. Existing exact token measurements are recorded in Phase 02; light secondary/surface is approximately 4.94:1 and dark approximately 8.00:1. Disabled publication text now uses that pair at opacity 1.
+
+This is not a WCAG certification. Screen-reader announcement quality, Safari/Firefox, physical touch/safe areas and a complete nonvisual alternative to every scientific canvas remain follow-ups. Some compact controls and disabled controls are exceptions to a universal 44px/contrast claim. The canonical light secondary/surface-alt pairing remains approximately 4.48:1; do not introduce small text on it without a verified pairing. Scientific trace/heatmap colors encode data and are not repurposed as ordinary UI text.
+
+## Scientific and compatibility preservation
+
+- All four recorded reference cases pass: JS and WASM separately at 375px/21,632 cells and 1440px/40,500 cells. After 30 controlled Cylinder steps at inlet .12, viscosity .015, turbulence 0 and seed 12345, SHA-256 matches for **ux, uy, rho, spd, curl and solid**. References were recorded before the visualization redesign; JS and WASM are not asserted bit-identical to each other. This guards numerical changes, not physical validity.
+- Of 199 snapshotted engine files, **198 are byte-identical**. The only changed engine file is `exporters.js`, solely removal of an unused catch binding. Solver JS/Rust/WASM, wrapper, geometry/parsers, constants, particles and LUTs are unchanged.
+- CL/CD remain heuristic bulk-velocity proxies; Re* is the inherited scaled lattice estimate. Pressure display/export identifies raw lattice density, not Pa; velocity uses lattice cells/step. The 3D extrusion/reference is qualitative and is not full 3D CFD. The viscosity-sweep preceding-viscosity Re* limitation remains documented; it was not numerically “corrected” here.
+- CSV retains its exact header, ordering, raw precision and valid zero values; malformed/nonfinite histories retain JSON as their preservation path. Exported JSON re-imports with `app: "aerolab"`, version 2. Saved-gallery restoration verifies actual restored inlet settings. Binary STL length/triangle records and ZIP containing real PNG bytes are checked. The publication PNG decodes at 2400px width and was opened: field, units, geometry, setup, credit, fallback scale and methodology are legible without overlapping controls.
+- `aerolab-session`, `aerolab-sessions`, `f1stories-theme`, version/schema semantics, historical imports, exports and `/aerotunnel/` are unchanged. JSON remains setup/history, **not deterministic replay**. No private session state was added to URLs or embeds.
+
+## Performance and resource evidence
+
+[Raw measurements and environment](phase-10-performance.json). Main paired run: Apple M3 Pro, macOS arm64, Node 26.12.0, headless Chromium 156, DPR 1, light UI, one serial page, Cylinder, .12/.015, turbulence 0, one step/frame, standard device particle counts. Each workload warms 60 frames and measures 180 RAF intervals; three pairs per workload/width give **48 samples**, with zero page errors. CDP TaskDuration measures browser main-thread task time, not GPU time or whole-machine CPU usage. Renderer identification during resource checks was ANGLE/SwiftShader.
+
+| Width / workload | Frame ms before → after | Before task ms median [range] | After task ms median [range] |
+| --- | --- | --- | --- |
+| 1440 / velocity | 16.67 → 16.67 | 1106.2 [1085.7–1132.1] | 1129.8 [1040.6–1154.3] |
+| 1440 / streamlines | 16.67 → 16.67 | 1025.3 [972.3–1101.4] | 1029.2 [1020.5–1172.2] |
+| 1440 / 3d | 29.35 → 28.80 | 5025.0 [4964.8–5098.3] | 4942.5 [4941.8–4999.3] |
+| 1440 / comparison | 16.67 → 16.67 | 1221.9 [1200.8–1242.6] | 1248.5 [1202.1–1256.3] |
+| 375 / velocity | 16.67 → 16.67 | 958.5 [892.2–1011.2] | 965.0 [915.1–994.5] |
+| 375 / streamlines | 16.67 → 16.67 | 868.2 [781.0–901.8] | 905.7 [769.8–928.7] |
+| 375 / 3d | 16.67 → 16.67 | 1833.1 [1819.8–1890.1] | 1819.4 [1797.7–1837.8] |
+| 375 / comparison | 16.67 → 16.67 | 1054.2 [951.8–1061.4] | 1030.4 [885.4–1110.3] |
+
+Frame cells are the median of three sample mean intervals. Task windows span the same 180 intervals, so 3D wall times differ from refresh-limited 2D. Ranges overlap. These results show no significant unexplained paired regression; they do not demonstrate a general speedup, mobile hardware FPS, energy use or GPU capacity. Desktop 3D is software-render limited here and cannot be compared directly to Phase 07’s refresh-limited run.
+
+The first Chrome 155 attempt had roughly 350ms scheduling intervals with low CPU task time. It was retained as a discarded environment artifact, excluded from the performance table, and replaced only after a Chromium 156 calibration measured 16.67ms intervals. A later restart’s one-minute screens again had a low approximately 3fps application readout in **both** editions. They establish only that the simulation kept running, fields remained finite, no warning/error appeared and WASM memory remained 5,373,952 bytes during those screens. Post-GC JS heap grew approximately .29MB baseline / .56MB candidate in the first minute, including startup/history work; this is **not** a long-term no-leak claim. A longer warmed device profile remains advisable.
+
+Original startup timestamps were confounded by Python baseline hosting versus Vite candidate hosting. A separate **seven alternating-order pairs on identical Python static servers** resolved that concern: WASM installed median **110.7ms baseline** [103.3–111.7] and **110.0ms candidate** [103.6–121.6]. No startup regression was observed with matched hosting. These are local cold-context browser timestamps, not internet load times.
+
+The 48 frame samples precede final narrow focus/value-state polish; no numerical loop or canvas-dimension changes followed. Optional car-reference disposal was verified separately, including delayed resources in the final suite. No thresholds were relaxed to hide regressions.
+
+## Final suite consistency and CSS review
+
+The shared identity, actual parent logo, Greek main-site navigation, five-product Race Desk, hosted Plex/Barlow hierarchy, flat controls, readable theme accents and restrained red rules match the canonical sources/provenance already recorded in Phases 01/02/04. GhostCar, Tyres and THE GRID provide shared masthead/navigation/token/report conventions. AeroTunnel intentionally keeps a denser specialist workspace, dark scientific plot inside paper UI, independent colormaps and technical captions. These are functional differences, not alternate brand palettes. No sibling/main-site repository was changed.
+
+All twelve focused references and representative desktop/mobile workspace plus actual publication output were visually inspected. Only stable UI regions are pixel-compared; stochastic CFD pixels and timing labels are excluded. The single final mechanical detector run exits **2**, with three pre-existing stripe warnings in the legacy warning HUD/KPI/toast CSS. Those declarations remain unchanged from baseline, are documented historical exceptions, and are not lint/build/test failures. No new warning declaration was introduced. Other legacy Analysis/overlay selectors and compatibility aliases remain for a future scoped dependency/coverage review; this phase does not claim a complete stylesheet purge.
+
+## Validation and release limits
+
+| Check | Result |
+| --- | --- |
+| npm run lint | Pass, 0 errors / 0 warnings; authored JS/JSX and browser/config MJS; generated glue explicitly excluded |
+| npm test | 36/36 pass |
+| npm run build | Pass, 62 modules, no build warning |
+| npm run test:e2e | 38/38 pass, zero skipped/flaky/unexpected, zero retries; production base path; final run without reference updates |
+| Visual references | 12 reviewed PNGs; all final comparisons pass |
+| git diff --check | Pass |
+| Production dependency audit | 0 reported vulnerabilities |
+| Development/deployment tooling audit | 15 reported: 1 low, 2 moderate, 12 high; inherited toolchain debt, not silently upgraded in this UI QA phase |
+| Independent completed-source review | No blocking finding, including late decoder cleanup and final focus/metric changes |
+
+Final main bundles: JS **346.87kB / 113.11kB gzip**, CSS **93.02kB / 19.43kB gzip**. Phase 09 baseline: JS 346.19/112.88, CSS 95.49/19.75kB. New test tooling is development-only.
+
+Follow-ups, in priority order:
+
+1. Check Safari/Firefox, screen readers and physical phones/safe areas before claiming broad-device accessibility support. Keep the current Chromium scope explicit.
+2. Address the reported development/deployment-tool advisories in a separate dependency update with its own checks; public static-bundle production dependencies report zero. Development servers were local-only for this audit.
+3. Investigate the historical development-mode WASM memory-access errors documented in Phases 01–03. They are inherited, were not repaired here, and were not reproduced in the completed production browser checks; no exhaustive development-mode guarantee is made.
+4. Extend warmed long-run/device memory and power profiling. Retain the recording asynchronous-Stop/retry caveat, manual-import resource bounds, scientific approximation limits and inherited sweep Re* limitation.
+5. Validate the actual deployed article host’s iframe/CSP policy and site-directory integration when deployment is separately authorized. No new-version deployment or main-site integration was attempted.
+
+## Actual delegation and changed files
+
+The registered `design_auditor`, `code_mapper` and `regression_reviewer` ran independent initial read-only investigations concurrently and returned before application edits. Registered fixed profiles are Luna/high for the design auditor/mapper and Sol/high for the regression reviewer; requested role-model substitutions were not simulated. The design auditor completed a light-width/initial-tree subset; its report explicitly left dark/interactive coverage untested. The lead completed that coverage with the real suite. The regression reviewer prepared and ran the 48-sample timing investigation, identified the pool issue, and reviewed meaningful completed source changes. After interruption/restart, the lead completed allocation/resource/one-minute/startup measurements. The mapper distinguished baseline lint debt, verified dead selector consumers and strengthened test assertions. Only the lead edited application files.
+
+Phase 10 file groups (prior phase edits remain in the working tree):
+
+- `src/CFDLab.jsx`: one-time pool, unused cleanup, modal shortcut guard and honest metric availability.
+- `src/components/View3D.jsx`: dead helper removal and decoder lifecycle cleanup.
+- `src/components/PublishingDialog.jsx`: modal keyboard boundaries; `AboutPanel.jsx`: semantic headings.
+- `src/cfdlab.css`, `src/styles/navigation.css`, `workspace.css`, `publishing.css`: verified dead rules, Reset selector, disabled label contrast.
+- `src/engine/exporters.js`: unused catch binding only.
+- `eslint.config.js`, `.gitignore`, `package.json`, `package-lock.json`, new `playwright.config.mjs`: clean authored-source linting and browser tooling/scripts/artifact exclusions.
+- `tests/browser/{helpers,smoke,numerical,theme,accessibility,visual}.*`, `tests/fixtures/solver-reference.json`, twelve browser reference PNGs: meaningful smoke/numerical/visual coverage.
+- `README.md`: reproducible verification instructions; this report, verification/performance JSON, ten responsive screenshots and one actual publication PNG: release evidence.
+
+Detailed changed paths, test-case results, compatibility/protection checks and screenshot paths are in [phase-10-verification.json](phase-10-verification.json). No source files in other repositories, persisted schemas, solver mathematics or deployment paths were changed. **GO recommendation does not authorize deployment.**

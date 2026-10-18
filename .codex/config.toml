@@ -1,0 +1,12 @@
+
+# AeroTunnel — Codex multi-agent configuration
+
+[agents]
+enabled = true
+
+# Three subagents, in addition to the main agent.
+max_concurrent_threads_per_session = 3
+
+# Defaults when a role does not override them.
+default_subagent_model = "gpt-6-luna"
+default_subagent_reasoning_effort = "medium"

@@ -1,0 +1,54 @@
+/* Publication tools extend the canonical workspace controls. */
+.publishing-dialog { width: min(820px,calc(100% - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 28px; border: 1px solid var(--border-control); border-radius: var(--radius-control); background: var(--bg-base); color: var(--text-primary); font-family: var(--font-body); }
+.publishing-dialog::backdrop { background: rgba(0,0,0,.65); }
+.publishing-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.publishing-dialog h2 { font-size: 28px; line-height: 1.2; font-weight: 500; }
+.publishing-dialog h3 { font-size: 20px; font-weight: 500; margin-bottom: 12px; }
+.publishing-heading p { color: var(--text-secondary); font-size: 14px; margin-top: 8px; line-height: 1.5; }
+.publishing-dialog section { border-top: 1px solid var(--border); padding-block: 24px; margin-top: 24px; scroll-margin-top: 16px; }
+.publishing-dialog section + section { margin-top: 0; }
+.publishing-dialog button, .publishing-actions button { min-height: 44px; padding: 10px 14px; border: 1px solid var(--border-control); border-radius: var(--radius-control); background: var(--bg-base); color: var(--text-primary); font: 400 14px/1.4 var(--font-body); cursor: pointer; }
+.publishing-dialog button:hover:not(:disabled), .publishing-actions button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.publishing-dialog button:disabled, .publishing-actions button:disabled { color: var(--text-secondary); opacity: .65; cursor: default; }
+.publishing-dialog .publishing-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); margin-top: 16px; }
+.publishing-dialog .publishing-primary:disabled { background: var(--bg-surface); color: var(--text-secondary); border-color: var(--border-control); opacity: 1; }
+.publishing-dialog .publishing-primary:hover:not(:disabled) { background: var(--accent-hover); color: var(--accent-contrast); }
+.publishing-dialog label { display: grid; gap: 8px; font-size: 14px; line-height: 1.4; }
+.publishing-dialog label span { font-size: 13px; color: var(--text-secondary); }
+.publishing-dialog :is(input:not([type='checkbox']),select,textarea) { min-width: 0; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border-control); border-radius: var(--radius-control); background: var(--bg-base); color: var(--text-primary); font: 400 16px/1.5 var(--font-body); }
+.publishing-dialog input::placeholder { color: var(--text-secondary); opacity: 1; }
+.publishing-image-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.publishing-image-form > label:first-child { grid-column: 1/-1; }
+.publishing-dialog .publishing-check { display: flex; align-items: center; min-height: 44px; }
+.publishing-check input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+.publishing-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.publishing-note, .analysis-report .publishing-note { color: var(--text-secondary); font-size: 13px; line-height: 1.6; max-width: 75ch; margin-top: 12px; }
+.publishing-actions .publishing-note { width: 100%; margin-top: 0; }
+.publishing-error { color: var(--accent); margin-top: 12px; font-size: 14px; }
+.publishing-dialog a { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); font-size: 14px; }
+.publishing-dialog textarea { resize: vertical; overflow-wrap: anywhere; margin-bottom: 12px; }
+.publishing-dialog :is(input,select,textarea,button,a):focus-visible, .publishing-actions button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.editorial-workspace .workspace-context-actions > button { min-height: 44px; font-size: 13px; }
+.lab-shell.is-embed { height: 100dvh; min-height: 480px; overflow: auto; }
+.is-embed .editorial-workspace { flex: 1; min-height: 0; padding: 0 12px 12px; overflow: visible; }
+.is-embed .workspace-grid { display: block; flex: 1; min-height: 280px; height: auto; }
+.is-embed .lab-canvas-zone { height: 100%; }
+.is-embed .canvas-wrapper { min-height: 130px; }
+.embed-header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); background: var(--bg-base); color: var(--text-primary); }
+.embed-header a { min-height: 44px; display: inline-flex; align-items: center; color: var(--accent); font: 500 14px var(--font-body); }
+.embed-header strong { font-family: var(--font-brand); font-size: 23px; margin-left: 6px; color: var(--text-primary); }
+.embed-header button { --focus-ring: var(--accent-contrast); min-height: 44px; padding: 8px 14px; background: var(--accent); color: var(--accent-contrast); border: 1px solid var(--accent); font: 500 14px var(--font-body); cursor: pointer; }
+.embed-note { padding: 10px 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; background: var(--bg-base); }
+.is-embed .plot-legend { flex: none; }
+.is-embed .session-toast { position: static; }
+@media (max-width: 600px) {
+  .publishing-dialog { padding: 20px; }
+  .publishing-image-form { grid-template-columns: minmax(0,1fr); }
+  .publishing-image-form > label:first-child { grid-column: auto; }
+  .publishing-heading { gap: 12px; }
+  .publishing-dialog h2 { font-size: 24px; }
+  .publishing-actions { flex-direction: column; align-items: stretch; }
+}
+
+.embed-mode-hint { display: none; }
+@media (max-width: 767px) { .embed-mode-hint { display: block; padding: 8px 12px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.4; } }

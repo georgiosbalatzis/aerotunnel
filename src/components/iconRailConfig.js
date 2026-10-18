@@ -1,6 +1,6 @@
 export const CONTROL_SECTIONS = [
-  { id: "shape", label: "Shape", icon: "shape" },
+  { id: "shape", label: "Geometry", icon: "shape" },
   { id: "flow", label: "Flow", icon: "flow" },
-  { id: "visual", label: "Visual", icon: "visual" },
-  { id: "transform", label: "Transform", icon: "transform" },
+  { id: "visual", label: "Visualization", icon: "visual" },
+  { id: "advanced", label: "Advanced", icon: "transform" },
 ];

@@ -43,7 +43,7 @@ export function exportSessionJSON(state) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `aerolab-${Date.now()}.json`;
+  a.download = `aerotunnel-${Date.now()}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -53,7 +53,7 @@ export function parseSessionJSON(text) {
     const data = JSON.parse(text);
     if (data.app !== "aerolab" || !data.version) return null;
     return data;
-  } catch (_) {
+  } catch {
     return null;
   }
 }
@@ -80,7 +80,7 @@ export function exportBinarySTL(poly, cx, cy, sx, sy, aoa, simplifyAmt = 0) {
   const view = new DataView(buf);
   const header = new Uint8Array(buf, 0, 80);
   const enc = new TextEncoder();
-  header.set(enc.encode("AeroLab STL Export").slice(0, 80));
+  header.set(enc.encode("AEROTUNNEL STL Export").slice(0, 80));
   view.setUint32(80, numTri, true);
 
   let off = 84;
@@ -112,7 +112,7 @@ export function exportBinarySTL(poly, cx, cy, sx, sy, aoa, simplifyAmt = 0) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "aerolab-profile.stl";
+  a.download = "aerotunnel-profile.stl";
   a.click();
   URL.revokeObjectURL(url);
 }

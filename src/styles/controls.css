@@ -1,0 +1,62 @@
+/* Task controls extend the canonical workspace without changing scientific colors. */
+.professional-controls [hidden] { display: none !important; }
+.editorial-workspace .professional-controls { font-size: 14px; }
+.editorial-workspace .professional-controls .control-panel__header { min-height: 48px; }
+.editorial-workspace .professional-controls .control-panel__header button { width: 44px; height: 44px; }
+.editorial-workspace .professional-controls .control-tabs { display: flex; flex-shrink: 0; height: auto; min-height: 48px; overflow-x: auto; overflow-y: hidden; padding: 0 0 4px; gap: 0; border-bottom: 1px solid var(--border); }
+.editorial-workspace .professional-controls .control-tab { flex: 0 0 auto; min-height: 44px; padding: 8px 7px; font-size: 13px; text-transform: none; letter-spacing: 0; }
+.editorial-workspace .professional-controls .control-tab[aria-selected='true'] { color: var(--text-primary); background: var(--bg-base); border-bottom: 2px solid var(--signal); }
+.professional-controls .control-panel__content { scroll-padding: 12px; }
+.professional-controls .control-current-profile { font-weight: 500; font-size: 15px; margin-bottom: 12px; }
+.professional-controls .control-help { color: var(--text-secondary); font-size: 13px; line-height: 1.5; margin-block: 8px 12px; text-transform: none; letter-spacing: 0; }
+.professional-controls .control-error { color: var(--accent-readable); font-size: 13px; line-height: 1.5; margin-block: 8px 12px; }
+.professional-controls .control-import-error { padding: 12px; border: 1px solid var(--border-control); background: var(--bg-base); }
+.professional-controls .import-tabs { gap: 4px; margin-bottom: 16px; }
+.professional-controls .import-tab { min-height: 40px; padding: 8px 10px; font-size: 13px; text-transform: none; letter-spacing: 0; }
+.professional-controls .import-tab[aria-pressed='true'] { color: var(--text-primary); background: var(--bg-base); border-color: var(--accent); }
+.professional-controls .preset-group-label { color: var(--text-secondary); font-size: 13px; font-weight: 500; text-transform: none; letter-spacing: 0; padding-block: 8px; }
+.professional-controls .preset-grid { gap: 6px; }
+.professional-controls .preset-btn { min-height: 64px; padding: 10px; background: var(--bg-surface); border: 1px solid var(--border-control); }
+.professional-controls .preset-btn__name { font-size: 14px; font-weight: 500; text-transform: none; letter-spacing: 0; line-height: 1.3; }
+.professional-controls .preset-btn__desc { font-size: 12px; text-transform: none; letter-spacing: 0; line-height: 1.4; margin-top: 3px; }
+.professional-controls .preset-btn[aria-pressed='true'] { border-color: var(--accent); background: var(--bg-base); }
+.professional-controls .preset-btn[aria-pressed='true'] { border-bottom: 3px solid var(--signal); }
+.professional-controls .naca-designation { font: 500 20px/1.3 var(--font-body); letter-spacing: 0; margin-block: 12px; }
+.professional-controls .engineering-setting { margin-block: 16px 20px; min-width: 0; }
+.professional-controls .engineering-setting__heading { display: flex; flex-direction: column; gap: 6px; }
+.professional-controls .engineering-setting__heading > label { font-size: 14px; font-weight: 500; }
+.professional-controls .engineering-setting__number { display: flex; align-items: center; gap: 8px; }
+.professional-controls .engineering-setting__number input { width: 110px; min-width: 0; min-height: 40px; padding: 6px 8px; border: 1px solid var(--border-control); background: var(--bg-base); color: var(--text-primary); font-size: 15px; font-variant-numeric: tabular-nums; }
+.professional-controls .engineering-setting__number > span { font-size: 12px; color: var(--text-secondary); }
+.professional-controls .engineering-setting input[type='range'] { display: block; width: 100%; height: 40px; margin: 0; cursor: pointer; accent-color: var(--accent); }
+.professional-controls .engineering-setting__bounds { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.professional-controls .engineering-setting input[aria-invalid='true'] { border-color: var(--accent); }
+.professional-controls .profile-import > label { display: block; font-size: 14px; font-weight: 500; margin-block: 12px 8px; }
+.professional-controls .profile-import input[type='file'] { width: 100%; max-width: 100%; font-size: 13px; color: var(--text-primary); }
+.professional-controls input[type='file']::file-selector-button { min-height: 44px; margin-right: 8px; padding: 8px 10px; font: inherit; color: var(--text-primary); background: var(--bg-base); border: 1px solid var(--border-control); border-radius: var(--radius-control); cursor: pointer; }
+.professional-controls .control-disclosure { border-block: 1px solid var(--border); margin-block: 20px; }
+.professional-controls .control-disclosure > summary { min-height: 44px; padding-block: 10px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.professional-controls .control-disclosure > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -3px; }
+.professional-controls .control-secondary { min-height: 44px; padding: 8px 12px; border: 1px solid var(--border-control); color: var(--text-primary); background: var(--bg-base); font-size: 13px; cursor: pointer; }
+.professional-controls .control-secondary:hover { color: var(--accent); border-color: var(--accent); }
+.professional-controls .control-reset-group { margin-block: 20px; }
+.professional-controls .control-checkbox { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; cursor: pointer; }
+.professional-controls .control-checkbox input { width: 20px; height: 20px; flex-shrink: 0; }
+.professional-controls .control-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 12px; }
+.editorial-workspace .professional-controls .control-panel__footer { flex-wrap: wrap; gap: 6px; padding: 8px; }
+.professional-controls .control-panel__footer a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 12px; }
+.editorial-workspace .professional-controls .sketch-canvas { touch-action: none; }
+.workspace-navigation [aria-label='Undo shape change'] .rail-button-label,
+.workspace-navigation [aria-label='Redo shape change'] .rail-button-label,
+.workspace-navigation [aria-label='Reset simulation'] .rail-button-label { display: inline; }
+.workspace-navigation .workspace-navigation__tools { scrollbar-width: thin; }
+@media (max-width: 767px) {
+  .editorial-workspace .professional-controls { position: fixed; inset: auto var(--gutter) 48px; width: auto; height: 72%; max-height: calc(100% - 72px); }
+  .professional-controls .import-tab, .professional-controls .engineering-setting input[type='range'] { min-height: 44px; }
+  .professional-controls .engineering-setting__number input { min-height: 44px; font-size: 16px; }
+  .workspace-navigation__tools button { min-width: 44px; }
+  .professional-controls .profile-import input[type='file'] { min-height: 44px; }
+}
+
+.editorial-workspace .session-toast { display: flex; align-items: center; gap: 12px; padding: 8px 12px; }
+.editorial-workspace .session-toast button { flex-shrink: 0; width: 44px; height: 44px; background: transparent; border: 1px solid var(--border-control); color: var(--text-primary); font-size: 20px; cursor: pointer; }

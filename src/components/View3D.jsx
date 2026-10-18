@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+import { sceneProfile, profileCacheKey } from "../visualization/profile.js";
 
 const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
 const DESKTOP_STREAMLINE_COUNT = 220;
@@ -239,23 +241,6 @@ function traceStreamPath(field, x0, y0, ds, maxSteps) {
   return new Float32Array(coords);
 }
 
-function buildBackgroundTexture(THREE) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 16;
-  canvas.height = 256;
-  const ctx = canvas.getContext("2d");
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, "#06080c");
-  gradient.addColorStop(0.48, "#0c0e14");
-  gradient.addColorStop(1, "#06080c");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.needsUpdate = true;
-  return texture;
-}
-
 function buildMetalEnvMap(THREE) {
   const faceColors = [
     "#0c1420",
@@ -286,7 +271,7 @@ function buildAxisLabel(THREE, text, color) {
   canvas.height = 64;
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = "700 28px Share Tech Mono, monospace";
+  ctx.font = "600 28px 'IBM Plex Sans', sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = color;
@@ -304,34 +289,6 @@ function buildAxisLabel(THREE, text, color) {
   return sprite;
 }
 
-/* ── Compute local velocity magnitude at a world-space streamline point ──
-   Uses analytical approximation based on profile proximity & wake effects.
-   When solver data is available, samples from the LBM grid. */
-function localVelocity(x, y, z, profileBounds, solver) {
-  const localX = x - 0.05;
-  const bodyW = profileBounds.width * 0.5 || 1;
-  const bodyH = profileBounds.height * 0.5 || 0.45;
-  const distFromCenter = Math.sqrt((y * y) / (bodyH * bodyH) + (z * z) / (0.44 * 0.44));
-
-  // stagnation near nose
-  const noseProx = Math.exp(-((localX + bodyW * 0.5) ** 2) / 0.6);
-  // acceleration over upper/lower surface
-  const surfaceAccel = Math.exp(-(localX * localX) / 1.0) * Math.max(0, 1.2 - distFromCenter);
-  // wake deceleration
-  const wakeDecel = smoothstep(0.0, 2.5, localX) * Math.exp(-Math.max(localX, 0) * 0.3);
-  // freestream baseline
-  let vel = 0.5;
-  vel -= noseProx * 0.4;                      // slow down at nose
-  vel += surfaceAccel * 0.45;                  // speed up over body
-  vel -= wakeDecel * 0.25 * (1 / (1 + distFromCenter * 0.8)); // slow in wake core
-  if (solver?.ux?.length) {
-    const centerFlow = Math.abs(solver.ux[(solver.ux.length / 2) | 0] || 0);
-    vel += clamp((centerFlow - 0.12) * 1.8, -0.08, 0.12);
-  }
-
-  return clamp(vel, 0.0, 1.0);
-}
-
 function pressureCoefficient(x, y, bounds) {
   const xT = clamp((x + bounds.width * 0.5) / bounds.width, 0, 1);
   const yT = clamp((y + bounds.height * 0.5) / bounds.height, 0, 1);
@@ -346,24 +303,30 @@ const GLTF_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/
 const DRACO_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js";
 const DRACO_DECODER_PATH = "https://www.gstatic.com/draco/versioned/decoders/1.5.6/";
 const F1_MODEL_URL = import.meta.env.BASE_URL + "f1car.glb";
-const F1_PRESETS = new Set(["f1car", "frontwing", "rearwing"]);
 
-export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3d", preset }) {
+
+export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3d", preset, simplify = 0, onExit, captureRequestRef }) {
+  const [showReference, setShowReference] = useState(false);
+  const [autoOrbit, setAutoOrbit] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [resourceError, setResourceError] = useState("");
+  const [referenceNotice, setReferenceNotice] = useState("");
+  const autoOrbitRef = useRef(false);
   const mountRef = useRef(null);
   const threeRef = useRef(null);
-  const latestConfigRef = useRef({ poly, cx, cy, sx, sy, aoa, mode, preset });
+  const latestConfigRef = useRef({ poly, cx, cy, sx, sy, aoa, mode, preset, simplify, showReference });
 
   const prevPolyRef = useRef(poly);
   useEffect(() => {
-    latestConfigRef.current = { poly, cx, cy, sx, sy, aoa, mode, preset };
+    latestConfigRef.current = { poly, cx, cy, sx, sy, aoa, mode, preset, simplify, showReference };
     const t = threeRef.current;
     if (t?.buildProfile) t.buildProfile(latestConfigRef.current);
     // 20.3 — Camera auto-framing on shape change
     if (t?.animateToTarget && poly !== prevPolyRef.current) {
-      t.animateToTarget(0.12, 1.45, 7.35);
+      t.resetView();
     }
     prevPolyRef.current = poly;
-  }, [poly, cx, cy, sx, sy, aoa, mode, preset]);
+  }, [poly, cx, cy, sx, sy, aoa, mode, preset, simplify, showReference]);
 
   useEffect(() => {
     const el = mountRef.current;
@@ -371,13 +334,22 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
     let disposed = false;
     let script = null;
+    let referenceDecoder = null;
+    const disposeReferenceDecoder = () => { referenceDecoder?.dispose(); referenceDecoder = null; };
+    const pendingResources = [];
 
     const initWhenReady = () => {
       if (disposed || threeRef.current) return;
       const THREE = window.THREE;
       if (!THREE) return;
-      initThree(THREE);
+      try { initThree(THREE); } catch {
+        pendingResources.reverse().forEach(resource => { if (resource.isObject3D) disposeObject(resource); else resource.dispose?.(); resource.disconnect?.(); });
+        el.querySelectorAll("canvas").forEach(canvas => canvas.remove());
+        setLoading(false); setResourceError("3D could not initialize. Return to a 2D view or reload to try again.");
+      }
     };
+
+    const scriptError = () => { script?.remove(); if (!disposed) { setLoading(false); setResourceError("3D resources could not load. Check your connection or return to a 2D view."); } };
 
     if (window.THREE) {
       initWhenReady();
@@ -391,12 +363,14 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         document.head.appendChild(script);
       }
       script.addEventListener("load", initWhenReady);
+      script.addEventListener("error", scriptError);
     }
 
     function initThree(THREE) {
       const width = el.clientWidth || 900;
       const height = el.clientHeight || 520;
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+      pendingResources.push(renderer);
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setClearColor(0x0a0c12, 1);
@@ -405,10 +379,12 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       el.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      const backgroundTexture = buildBackgroundTexture(THREE);
+      pendingResources.push(scene);
+      const backgroundTexture = null;
       const metalEnvMap = buildMetalEnvMap(THREE);
-      scene.background = backgroundTexture;
-      scene.fog = new THREE.Fog(0x050810, 6.5, 15);
+      pendingResources.push(metalEnvMap);
+      scene.background = new THREE.Color(0x06080c);
+      scene.fog = new THREE.Fog(0x050810, 10, 30);
 
       const isCompact = typeof window !== "undefined" && window.innerWidth < 720;
       const camera = new THREE.PerspectiveCamera(isCompact ? 42 : 34, width / height, 0.1, 100);
@@ -419,6 +395,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       let gizmoRenderer = null, gizmoScene = null, gizmoCamera = null, gizmoGroup = null;
       if (!isCompact) {
         gizmoRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+        pendingResources.push(gizmoRenderer);
         gizmoRenderer.setSize(64, 64);
         gizmoRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         gizmoRenderer.setClearColor(0x000000, 0);
@@ -427,6 +404,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         el.appendChild(gizmoRenderer.domElement);
 
         gizmoScene = new THREE.Scene();
+        pendingResources.push(gizmoScene);
         gizmoCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 10);
         gizmoCamera.position.set(0, 0, 3);
         gizmoGroup = new THREE.Group();
@@ -515,7 +493,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         new THREE.LineBasicMaterial({
           vertexColors: true,
           transparent: true,
-          opacity: 0.85,
+          opacity: 0.3,
           depthWrite: false,
         })
       );
@@ -537,17 +515,32 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       scene.add(f1ModelGroup);
 
       function loadF1Model() {
+        const referenceFailed = () => {
+          f1ModelLoading = false;
+          if (!disposed) setReferenceNotice("Car reference unavailable. Showing the simulation profile.");
+        };
         if (f1Model || f1ModelLoading) return;
         f1ModelLoading = true;
+        setReferenceNotice("Loading car reference; the simulation profile remains visible.");
 
         function doLoad() {
+          if (disposed) return;
           const loader = new THREE.GLTFLoader();
           if (THREE.DRACOLoader) {
-            const draco = new THREE.DRACOLoader();
-            draco.setDecoderPath(DRACO_DECODER_PATH);
-            loader.setDRACOLoader(draco);
+            referenceDecoder = new THREE.DRACOLoader();
+            referenceDecoder.setDecoderPath(DRACO_DECODER_PATH);
+            loader.setDRACOLoader(referenceDecoder);
           }
+          // A late parse may finish after unmount; release its own decoder too.
+          const decoder = referenceDecoder;
+          const releaseDecoder = () => {
+            decoder?.dispose();
+            if (referenceDecoder === decoder) referenceDecoder = null;
+          };
           loader.load(F1_MODEL_URL, (gltf) => {
+            releaseDecoder();
+            if (disposed) { disposeObject(gltf.scene); return; }
+            setReferenceNotice("");
             f1Model = gltf.scene;
             // Compute bounding box and normalize to fit scene
             const box = new THREE.Box3().setFromObject(f1Model);
@@ -577,7 +570,9 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
             // Trigger rebuild with current config
             buildProfile(latestConfigRef.current);
           }, undefined, (err) => {
+            releaseDecoder();
             console.warn("F1 GLB load failed:", err);
+            if (!disposed) setReferenceNotice("Car reference unavailable. Showing the simulation profile.");
             f1ModelLoading = false;
           });
         }
@@ -588,42 +583,16 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         } else {
           const script1 = document.createElement("script");
           script1.src = DRACO_LOADER_URL;
+          script1.onerror = referenceFailed;
           script1.onload = () => {
             const script2 = document.createElement("script");
             script2.src = GLTF_LOADER_URL;
             script2.onload = doLoad;
+            script2.onerror = referenceFailed;
             document.head.appendChild(script2);
           };
           document.head.appendChild(script1);
         }
-      }
-
-      function normalizeProfile(rawPoly, config) {
-        if (!rawPoly || rawPoly.length < 3) return null;
-
-        const xs = rawPoly.map(point => point[0]);
-        const ys = rawPoly.map(point => point[1]);
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
-        const rangeX = maxX - minX || 1;
-        const rangeY = maxY - minY || 1;
-        const shapeWidth = isCompact ? 1.86 : 2.05;
-        const requestedRatio = (config.sy || 1) / (config.sx || 1);
-        const shapeHeight = shapeWidth * clamp(requestedRatio * 0.82, 0.28, 0.92);
-        const angle = (config.aoa || 0) * Math.PI / 180;
-        const cosA = Math.cos(angle);
-        const sinA = Math.sin(angle);
-
-        return rawPoly.map(([x, y]) => {
-          const lx = ((x - minX) / rangeX - 0.5) * shapeWidth;
-          const ly = (0.5 - (y - minY) / rangeY) * shapeHeight;
-          return [
-            lx * cosA - ly * sinA,
-            lx * sinA + ly * cosA,
-          ];
-        });
       }
 
       // 22.3 — Geometry cache keyed on polygon hash
@@ -637,18 +606,6 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       let cachedHeroPaths = null;
       let cachedVelRange = [0.5, 1.5];
       let cachedFlowHash = null;
-
-      function hashPoly(poly) {
-        if (!poly || !poly.length) return "";
-        let h = "";
-        for (let i = 0; i < poly.length; i++) {
-          const p = poly[i];
-          const x = (p[0] ?? p.x ?? 0).toFixed(3);
-          const y = (p[1] ?? p.y ?? 0).toFixed(3);
-          h += x + "," + y + ";";
-        }
-        return h;
-      }
 
       function buildProfile(config) {
         if (profileMesh) {
@@ -669,7 +626,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         }
 
         // Show F1 GLB model for F1 presets, hide extruded polygon
-        const isF1 = F1_PRESETS.has(config.preset);
+        const isF1 = config.preset === "f1car" && config.showReference;
         if (isF1) {
           loadF1Model();
           if (f1Model) {
@@ -685,7 +642,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           f1ModelGroup.visible = false;
         }
 
-        const pts = normalizeProfile(config.poly, config);
+        const pts = sceneProfile(config.poly, config, isCompact);
         if (!pts) return;
 
         const xs = pts.map(point => point[0]);
@@ -702,7 +659,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         if (!(isF1 && f1Model)) profileBounds = bounds;
 
         // 22.3 — Reuse cached geometry if polygon unchanged
-        const polyHash = hashPoly(config.poly);
+        const polyHash = profileCacheKey(config);
         let geometry, edgeGeometry;
 
         if (polyHash === cachedPolyHash && cachedExtrudeGeo) {
@@ -720,7 +677,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
           geometry = new THREE.ExtrudeGeometry(shape, {
             depth: bounds.depth,
-            bevelEnabled: true,
+            bevelEnabled: false,
             bevelThickness: 0.09,
             bevelSize: 0.075,
             bevelSegments: 9,
@@ -808,8 +765,9 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         }
 
         // Compute potential flow field and trace streamlines
-        if (polyHash !== cachedFlowHash) {
-          cachedFlowHash = polyHash;
+        const flowHash = `${polyHash}:${isF1 && !!f1Model}`;
+        if (flowHash !== cachedFlowHash) {
+          cachedFlowHash = flowHash;
           let bodyWorld = pts.map(([x, y]) => [x + 0.05, y]);
           let fxMin = -5.2, fxMax = 5.5, fyMin = -1.9, fyMax = 1.9;
           let fW = 280, fH = 110;
@@ -1225,18 +1183,18 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
       let isDragging = false;
       let previousPointer = { x: 0, y: 0 };
-      let lastInteractionTime = 0;
+
       const domEl = renderer.domElement;
 
       const onPointerDown = event => {
         isDragging = true;
-        lastInteractionTime = performance.now() / 1000;
+        isLerping = false;
         previousPointer = { x: event.clientX, y: event.clientY };
         domEl.setPointerCapture?.(event.pointerId);
       };
       const onPointerMove = event => {
         if (!isDragging) return;
-        lastInteractionTime = performance.now() / 1000;
+        isLerping = false;
         orbit.theta -= (event.clientX - previousPointer.x) * 0.006;
         orbit.phi -= (event.clientY - previousPointer.y) * 0.006;
         orbit.phi = clamp(orbit.phi, 0.45, Math.PI - 0.35);
@@ -1244,11 +1202,12 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       };
       const onPointerUp = event => {
         isDragging = false;
-        domEl.releasePointerCapture?.(event.pointerId);
+        if (domEl.hasPointerCapture?.(event.pointerId)) domEl.releasePointerCapture(event.pointerId);
       };
       const onWheel = event => {
-        lastInteractionTime = performance.now() / 1000;
-        orbit.radius = clamp(orbit.radius + event.deltaY * 0.004, 3.4, 9.2);
+        event.preventDefault();
+        isLerping = false;
+        orbit.radius = clamp(orbit.radius + event.deltaY * 0.004, 3.4, 14);
       };
 
       // 24.2 — Pinch-zoom + two-finger pan touch gestures
@@ -1263,19 +1222,19 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           const t0 = event.touches[0], t1 = event.touches[1];
           lastTouchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
           lastTouchMid = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
-          lastInteractionTime = performance.now() / 1000;
+          isLerping = false;
         }
       };
       const onTouchMove = event => {
         if (event.touches.length === 2 && isTouchPanning) {
           event.preventDefault();
-          lastInteractionTime = performance.now() / 1000;
+          isLerping = false;
           const t0 = event.touches[0], t1 = event.touches[1];
           const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
           const mid = { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
           // Pinch → zoom
           const dDist = dist - lastTouchDist;
-          orbit.radius = clamp(orbit.radius - dDist * 0.01, 3.4, 9.2);
+          orbit.radius = clamp(orbit.radius - dDist * 0.01, 3.4, 14);
           // Two-finger pan → orbit
           orbit.theta -= (mid.x - lastTouchMid.x) * 0.004;
           orbit.phi -= (mid.y - lastTouchMid.y) * 0.004;
@@ -1290,7 +1249,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       domEl.addEventListener("pointermove", onPointerMove);
       domEl.addEventListener("pointerup", onPointerUp);
       domEl.addEventListener("pointercancel", onPointerUp);
-      domEl.addEventListener("wheel", onWheel, { passive: true });
+      domEl.addEventListener("wheel", onWheel, { passive: false });
       domEl.addEventListener("touchstart", onTouchStart, { passive: false });
       domEl.addEventListener("touchmove", onTouchMove, { passive: false });
       domEl.addEventListener("touchend", onTouchEnd);
@@ -1310,8 +1269,8 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
 
       function animate() {
         animId = requestAnimationFrame(animate);
-        const elapsed = clock.getElapsedTime();
         const dt = Math.min(clock.getDelta(), 0.05);
+        const elapsed = clock.elapsedTime;
 
         // 20.3 — Smooth camera lerp for auto-framing
         if (isLerping) {
@@ -1326,15 +1285,7 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           }
         }
 
-        // 20.4 — Idle camera drift with vertical oscillation
-        const idleTime = elapsed - lastInteractionTime;
-        if (!isDragging && !isLerping && idleTime > 5) {
-          orbit.theta += 0.0008;
-          orbit.phi += Math.sin(elapsed * 0.15) * 0.0003;
-          orbit.phi = clamp(orbit.phi, 0.45, Math.PI - 0.35);
-        } else if (!isDragging && !isLerping) {
-          orbit.theta += 0.0008;
-        }
+        if (autoOrbitRef.current && !isDragging && !isLerping) orbit.theta += dt * 0.048;
 
         const sinPhi = Math.sin(orbit.phi);
         camera.position.set(
@@ -1344,18 +1295,30 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         );
         camera.lookAt(focus);
 
-        profileGroup.rotation.y = Math.sin(elapsed * 0.28) * 0.035;
+        profileGroup.rotation.y = 0;
         updateStreamlines(elapsed);
         renderer.render(scene, camera);
+        captureRequestRef?.current?.(renderer.domElement, { ...latestConfigRef.current, mode: "3d", referenceShown: !!f1Model && f1ModelGroup.visible, fields: [], comparing: false });
         if (gizmoGroup) {
           gizmoGroup.quaternion.copy(camera.quaternion).invert();
           gizmoRenderer.render(gizmoScene, gizmoCamera);
         }
       }
 
+      const homeRadius = () => Math.min(14, Math.max(isCompact ? 8.9 : 7.35, 2.7 / (2 * Math.tan(camera.fov * Math.PI / 360) * camera.aspect)));
+      const resetView = () => animateToTarget(0.12, 1.45, homeRadius());
+      const controlView = action => {
+        isLerping = false;
+        if (action === "reset") resetView();
+        else if (action === "front") animateToTarget(0, Math.PI / 2, homeRadius());
+        else if (action === "top") animateToTarget(0, .45, homeRadius());
+        else if (action === "in" || action === "out") orbit.radius = clamp(orbit.radius + (action === "in" ? -.6 : .6), 3.4, 14);
+        else if (action === "left" || action === "right") orbit.theta += action === "left" ? .12 : -.12;
+        else if (action === "up" || action === "down") orbit.phi = clamp(orbit.phi + (action === "up" ? -.12 : .12), .45, Math.PI - .35);
+      };
+      renderer.domElement.setAttribute("aria-label", "3D profile and qualitative flow illustration");
       buildProfile(latestConfigRef.current);
       updateStreamlines(0);
-      animate();
 
       const ro = new ResizeObserver(() => {
         const nextWidth = el.clientWidth || 1;
@@ -1364,11 +1327,14 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
         camera.aspect = nextWidth / nextHeight;
         camera.updateProjectionMatrix();
       });
+      pendingResources.push(ro);
       ro.observe(el);
 
       threeRef.current = {
         buildProfile,
         animateToTarget,
+        resetView,
+        controlView,
         renderer,
         scene,
         gizmoRenderer,
@@ -1396,11 +1362,18 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
           domEl.removeEventListener("touchend", onTouchEnd);
         },
       };
+      pendingResources.length = 0;
+      setLoading(false);
+      animate();
     }
 
     return () => {
       disposed = true;
-      if (script) script.removeEventListener("load", initWhenReady);
+      disposeReferenceDecoder();
+      if (script) {
+        script.removeEventListener("load", initWhenReady); script.removeEventListener("error", scriptError);
+        if (!window.THREE && script.dataset.aerolabThree === "true") script.remove();
+      }
 
       const t = threeRef.current;
       if (t) {
@@ -1430,9 +1403,28 @@ export default function View3D({ poly, solverRef, cx, cy, sx, sy, aoa, mode = "3
       }
 
     };
-  }, [solverRef]);
+  }, [solverRef, captureRequestRef]);
 
   return (
-    <div ref={mountRef} className="view-3d-stage" />
+    <div ref={mountRef} className="view-3d-stage" tabIndex={0} role="region" aria-label="3D scene. Drag or arrow keys to orbit; plus/minus to zoom; Home to reset."
+      onKeyDown={event => {
+        if (event.target !== event.currentTarget) return;
+        const action = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down", "+": "in", "=": "in", "-": "out", Home: "reset" }[event.key];
+        if (action) { event.preventDefault(); event.stopPropagation(); threeRef.current?.controlView(action); }
+      }}>
+      <div className="scene-controls" role="group" aria-label="3D camera controls">
+        <button type="button" onClick={() => threeRef.current?.controlView("reset")}>Reset view</button>
+        <button type="button" onClick={() => threeRef.current?.controlView("front")}>Front</button>
+        <button type="button" onClick={() => threeRef.current?.controlView("top")}>Above</button>
+        <button type="button" aria-label="Zoom in" onClick={() => threeRef.current?.controlView("in")}>+</button>
+        <button type="button" aria-label="Zoom out" onClick={() => threeRef.current?.controlView("out")}>−</button>
+        <button type="button" aria-pressed={autoOrbit} onClick={() => { autoOrbitRef.current = !autoOrbit; setAutoOrbit(!autoOrbit); }}>Auto orbit</button>
+        {preset === "f1car" && <label><input type="checkbox" checked={showReference} onChange={event => setShowReference(event.target.checked)} /> Car reference</label>}
+      </div>
+      <p className="scene-caption">{showReference && preset === "f1car" ? "Illustrative car reference; not the simulated contour." : "Centered profile extrusion · depth illustrative"}</p>
+      {loading && <p className="scene-message" role="status">Loading 3D scene…</p>}
+      {resourceError && <div className="scene-message" role="alert">{resourceError}<button type="button" onClick={onExit}>Return to 2D</button></div>}
+      {showReference && referenceNotice && <p className="scene-message" role="status">{referenceNotice}</p>}
+    </div>
   );
 }
