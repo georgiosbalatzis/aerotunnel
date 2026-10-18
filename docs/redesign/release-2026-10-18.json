@@ -1,0 +1,195 @@
+{
+  "sourceCommit": "01ef615",
+  "pagesCommit": "b7efaf66476c6842e6fb78a9eec37bcab13f2700",
+  "pagesStatus": "built",
+  "validation": {
+    "lint": "pass, 0 errors / 0 warnings",
+    "build": "pass, 62 modules",
+    "unitTests": {
+      "passed": 36,
+      "failed": 0
+    },
+    "browserTests": {
+      "passed": 38,
+      "failed": 0,
+      "referenceUpdates": false
+    }
+  },
+  "cleanup": {
+    "backup": "aerotunnel-cleanup-20261018-c5073gff",
+    "removedUnusedFiles": [
+      "src/components/LiveMetricsColumn.jsx",
+      "src/components/MetricCard.jsx",
+      "src/assets/hero.png",
+      "src/assets/react.svg",
+      "src/assets/vite.svg",
+      "public/icons.svg"
+    ],
+    "archivedSourceFolder": "f1car",
+    "retainedRuntimeModel": "public/f1car.glb",
+    "licenseFiles": [
+      "public/licenses/ibmplexsans-OFL.txt",
+      "public/licenses/f1-car-CC-BY-4.0.txt",
+      "public/licenses/README.txt",
+      "public/licenses/barlowcondensed-OFL.txt"
+    ],
+    "removedGeneratedFolders": [
+      "src/engine/solver-wasm/target",
+      "test-results",
+      "playwright-report"
+    ],
+    "mergedBranches": [
+      "f1-glb-3d-model",
+      "fix-3d-streamline-body-interaction",
+      "phase-1-tokens-fonts",
+      "phase-10-polish-accessibility",
+      "phase-10.5-aero-tunnel-3d-flow-lines",
+      "phase-11-immersive-3d-canvas",
+      "phase-12-cinematic-streamlines",
+      "phase-13-profile-body-visual-upgrade",
+      "phase-14-minimalist-floating-ui",
+      "phase-15-professional-cfd-hud-overlay",
+      "phase-16-lighting-atmosphere",
+      "phase-17-color-system-overhaul",
+      "phase-18-typography-micro-interactions",
+      "phase-19-responsive-performance",
+      "phase-2-layout-skeleton",
+      "phase-20-final-polish-animations",
+      "phase-21-solver-stability-diagnostics",
+      "phase-22-webgl-draw-call-optimization",
+      "phase-23-canvas-2d-rendering-optimization",
+      "phase-24-mobile-first-ux-overhaul",
+      "phase-25-session-persistence-autosave",
+      "phase-26-parametric-geometry-editor",
+      "phase-27-advanced-visualization-modes",
+      "phase-28-wasm-solver-acceleration",
+      "phase-29-data-interop-export",
+      "phase-3-command-bar-icon-rail",
+      "phase-30-comparison-undo",
+      "phase-4-control-panel-flyout",
+      "phase-5-canvas-hud-redesign",
+      "phase-6-metrics-ribbon",
+      "phase-7-analysis-view",
+      "phase-8-live-metrics-column",
+      "phase-9-responsive-passes"
+    ],
+    "deletedLocalBranches": [
+      "f1-glb-3d-model",
+      "fix-3d-streamline-body-interaction",
+      "phase-1-tokens-fonts",
+      "phase-10-polish-accessibility",
+      "phase-10.5-aero-tunnel-3d-flow-lines",
+      "phase-11-immersive-3d-canvas",
+      "phase-12-cinematic-streamlines",
+      "phase-13-profile-body-visual-upgrade",
+      "phase-14-minimalist-floating-ui",
+      "phase-15-professional-cfd-hud-overlay",
+      "phase-16-lighting-atmosphere",
+      "phase-17-color-system-overhaul",
+      "phase-18-typography-micro-interactions",
+      "phase-19-responsive-performance",
+      "phase-2-layout-skeleton",
+      "phase-20-final-polish-animations",
+      "phase-21-solver-stability-diagnostics",
+      "phase-22-webgl-draw-call-optimization",
+      "phase-23-canvas-2d-rendering-optimization",
+      "phase-24-mobile-first-ux-overhaul",
+      "phase-25-session-persistence-autosave",
+      "phase-26-parametric-geometry-editor",
+      "phase-27-advanced-visualization-modes",
+      "phase-28-wasm-solver-acceleration",
+      "phase-29-data-interop-export",
+      "phase-3-command-bar-icon-rail",
+      "phase-30-comparison-undo",
+      "phase-4-control-panel-flyout",
+      "phase-5-canvas-hud-redesign",
+      "phase-6-metrics-ribbon",
+      "phase-7-analysis-view",
+      "phase-8-live-metrics-column",
+      "phase-9-responsive-passes"
+    ]
+  },
+  "liveVerification": {
+    "date": "2026-10-18T12:18:45.277Z",
+    "url": "https://georgiosbalatzis.github.io/aerotunnel/",
+    "sourceCommit": "01ef615",
+    "checks": [
+      {
+        "width": 1440,
+        "height": 900,
+        "theme": "light",
+        "result": "passed",
+        "wasm": true,
+        "runPause": true,
+        "navigation": true,
+        "exports": [
+          "PNG 2400px",
+          "legacy JSON v2"
+        ],
+        "themePersistence": true,
+        "solverContinuity": true,
+        "threeD": true,
+        "errors": []
+      },
+      {
+        "width": 375,
+        "height": 812,
+        "theme": "dark",
+        "result": "passed",
+        "wasm": true,
+        "runPause": true,
+        "navigation": true,
+        "exports": [
+          "PNG 2400px",
+          "legacy JSON v2"
+        ],
+        "themePersistence": true,
+        "solverContinuity": true,
+        "threeD": false,
+        "errors": []
+      }
+    ],
+    "assets": [
+      {
+        "file": "theme.js",
+        "bytes": 2420,
+        "sha256": "5569bfb175031dd2c00c2d8886d624fff375386a4b4f4f93241103c98917c4de"
+      },
+      {
+        "file": "assets/index-DmX_IuPQ.js",
+        "bytes": 347220,
+        "sha256": "f6d81b21f70e2ae37665417df0716eb7975ac6735a0f48fd39925df635eef646"
+      },
+      {
+        "file": "assets/index-Cew-7Ndd.css",
+        "bytes": 93021,
+        "sha256": "d76797c4c7157def2a20daec9b83d510a6b57a8a40325cb50a7e9cf3aae2a86f"
+      },
+      {
+        "file": "f1car.glb",
+        "bytes": 1001232,
+        "sha256": "571de6616ab15e97ba932c6840d95b74e6900fc26b4437b280b12a4fc55e822e"
+      },
+      {
+        "file": "licenses/README.txt",
+        "bytes": 994,
+        "sha256": "f6d052f5da8496fc8adbc34051e23a9bd984086672bf9294b4a16efd5d9bec0d"
+      },
+      {
+        "file": "licenses/f1-car-CC-BY-4.0.txt",
+        "bytes": 722,
+        "sha256": "332cc3db627a2785c9d10bca1bcd92f20ab7e13c196986b63eaeba23ef82faec"
+      },
+      {
+        "file": "licenses/ibmplexsans-OFL.txt",
+        "bytes": 4362,
+        "sha256": "d741e57d5f865e294df801f96b7b5161a88b211df65887e4358d271c9fc5fb4f"
+      },
+      {
+        "file": "licenses/barlowcondensed-OFL.txt",
+        "bytes": 4376,
+        "sha256": "10b0e6bb43166a50fbe7cde2895bd7f703738a5da843acb5c97c95dc9ea26817"
+      }
+    ]
+  }
+}
